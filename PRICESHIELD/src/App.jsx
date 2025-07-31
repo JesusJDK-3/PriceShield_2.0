@@ -1,16 +1,23 @@
 import './styles/all.css';
+import './styles/model.css'
 import logo from './assets/img/log.png';
-import SearchBox from './components/SearchBox'; 
+import SearchBox from './components/SearchBox';
+import Modal from "./components/Modal.jsx"
+import { useState } from "react";
 
 function App() {
 
-   // Función para manejar la búsqueda - ESTO FALTABA
+  // Función para manejar la búsqueda - ESTO FALTABA
   const handleSearch = (searchTerm) => {
     console.log('Buscando:', searchTerm);
+
     // Aquí puedes agregar tu lógica de búsqueda
     // Por ejemplo: hacer una petición a una API, filtrar datos, etc.
-  }; 
-  
+  };
+
+  const [isModelOpen, setIsModalOpen] = useState(false);
+
+
   return (
     <div className="todo">
       <div className="container">
@@ -30,7 +37,9 @@ function App() {
         </div>
 
         <nav className="herramientas">
-          <button className="alerta">
+
+          <button onClick={() => setIsModalOpen(true)} className="alerta">
+
             <div className="iconos">
               <i className="bi bi-bell-fill icono-alerta"></i>
             </div>
@@ -40,7 +49,7 @@ function App() {
           </button>
 
           <div className="subherramientas">
-            <button className="dashboard">
+            <button onClick={() => setIsModalOpen(true)} className="dashboard">
               <div className="iconos">
                 <i className="bi bi-bar-chart-line-fill icono-dash"></i>
               </div>
@@ -49,7 +58,7 @@ function App() {
               <p>Control para monitorear la transparencia de precios de cada producto</p>
             </button>
 
-            <button className="productos">
+            <button  className="productos">
               <div className="iconos">
                 <i className="bi bi-bag-check-fill icono-pro"></i>
               </div>
@@ -83,7 +92,9 @@ function App() {
           <p>Actualización</p>
         </div>
       </div>
+      <Modal isOpen={isModelOpen} closeModal={() => setIsModalOpen(false)} />
     </div>
+
   );
 }
 

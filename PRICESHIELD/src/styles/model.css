@@ -1,0 +1,119 @@
+.mod {
+    position: fixed;
+    /* Esto lo saca del flujo normal */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(0.8px);
+    /* Fondo oscuro semitransparente */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    /* Asegúrate de que esté encima de todo */
+}
+
+.cerrar {
+    display: flex;
+    flex-direction: row-reverse;
+
+}
+
+.cerrar button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: aliceblue;
+    cursor: pointer;
+
+}
+
+.cerrar button:hover {
+    color: red;
+    transition: 300ms;
+}
+
+button{
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 5px;
+    
+}
+button .Google{
+    border: none;
+}
+input{
+    border-radius: 8px;
+    gap: 2px;
+    padding: 8px;
+}
+.ojo{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+}
+.contraseña{
+    width: 100%;
+}
+.ojito{
+    
+    font-size: 30px;
+    transform: translateX(15px);
+    transform: translateY(5px);
+    color: #F7F6FB;
+    cursor: pointer;
+}
+.datos {
+    padding: 50px;
+    padding-top: 15px;
+    border-radius: 10px;
+    text-align: center;
+    background-color: #252529;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    color: #FEFEFE;
+}
+
+.formModal{
+    display: grid;
+    grid-template-rows: 1fr 1fr 1fr;
+}
+
+.cor, .con{
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+}
+
+
+input[type="submit"]{
+cursor: pointer;
+background: linear-gradient(to right, #193a9d, #081f63, #081f63);
+color: #F7F6FB;
+border: none;
+}
+input[type="text"]{
+background-color: #F7F6FB;
+border: none;
+}
+.separador {
+  border: none;
+  height: 2px;
+  background: linear-gradient(to right, #193a9d, #081f63);
+  margin: 30px 0; /* Espaciado vertical entre contenedores */
+  margin-bottom: 10px;
+  width: 100%; /* O ajusta a lo que necesites */
+  border-radius: 1px;
+}
+
+@media (max-width: 768px) {
+    .datos {
+        padding: 50px 30px;
+        padding-top: 10px;
+        
+    }
+
+}
