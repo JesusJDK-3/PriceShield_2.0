@@ -1,0 +1,9 @@
+
+body {
+   background: linear-gradient(to right, #193a9d, #081f63, #081f63);
+    /*background-color: #193a9d;*/
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    /* Mejora tipográfica */
+}

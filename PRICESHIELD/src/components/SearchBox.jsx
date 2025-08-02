@@ -13,7 +13,7 @@ const SearchBox = ({ onSearch }) => {
 
   return (
     <div className="search-box">
-      <form method="get" id="search-form" onSubmit={handleSubmit}>
+      <form className='formularioBuscar' method="get" id="search-form" onSubmit={handleSubmit}>
         <input
           type="text"
           id="search-input"

@@ -41,8 +41,13 @@ button{
     padding: 5px;
     
 }
-button .Google{
+.FormJe{
+    padding: 30px;
+    padding-top: 0px;
+}
+.FormJe .Google{
     border: none;
+    width: 100%;
 }
 input{
     border-radius: 8px;
@@ -53,21 +58,23 @@ input{
     display: flex;
     align-items: center;
     justify-content: center;
-    
+    background-color: #F7F6FB;
+    margin: 0px;
+    padding: 0px;
+    border-radius: 8px;
 }
 .contraseña{
     width: 100%;
+    border: none;
 }
 .ojito{
-    
+    margin-bottom: 0px;
     font-size: 30px;
-    transform: translateX(15px);
-    transform: translateY(5px);
-    color: #F7F6FB;
+    color: black;
     cursor: pointer;
 }
 .datos {
-    padding: 50px;
+    padding: 20px;
     padding-top: 15px;
     border-radius: 10px;
     text-align: center;
@@ -86,6 +93,7 @@ input{
     align-items: center;
     display: flex;
     flex-direction: row;
+    
 }
 
 

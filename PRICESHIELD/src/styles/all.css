@@ -1,13 +1,6 @@
 /* Estilos generales del body */
 
-body {
-   background: linear-gradient(to right, #193a9d, #081f63, #081f63);
-    /*background-color: #193a9d;*/
-    margin: 0;
-    padding: 0;
-    font-family: 'Poppins', sans-serif;
-    /* Mejora tipográfica */
-}
+
 
 /* Contenedor general */
 .todo {
@@ -99,6 +92,7 @@ body {
     text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
     width: 96%;
     max-width: 1200px;
+    padding-bottom: 30px;
 }
 
 .footer b {
@@ -119,11 +113,15 @@ body {
     padding: 0.5rem;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     max-width: 600px;
+    
 }
-
+.formularioBuscar{
+    justify-content: space-between;
+    display: flex;
+}
 .search-box input[type="text"] {
     padding: 0.5rem 1rem;
-    border-radius: 8px;
+    border-radius: 25px;
     border: none;
     outline: none;
     width: 60%;
@@ -135,7 +133,7 @@ body {
     background-color: #4A3FA3;
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 25px;
     cursor: pointer;
     font-weight: bold;
 }

@@ -1,0 +1,159 @@
+
+.logIcon {
+    display: flex;
+    align-items: center;
+}
+
+.logoPD {
+    border-top-right-radius: 8px;
+    border-top-left-radius: 8px;
+
+}
+
+.logIcon img {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+}
+
+.contenedor_general {
+    display: grid;
+    width: 100%;
+    gap: 1.8rem;
+    grid-template-columns: 14rem auto;
+}
+
+.barra {
+    background-color: #F7F6FB;
+    display: flex;
+    flex-direction: column;
+    height: 680px;
+    top: 1rem;
+    border-radius: 8px;
+    border: none;
+    gap: 5px;
+    align-content: center;
+
+}
+
+.barra a {
+    display: flex;
+    color: black;
+    gap: 1rem;
+    align-items: center;
+    text-decoration: none;
+    background-color: #F7F6FB;
+    padding-left: 20px;
+}
+
+.barra .logoPD:hover {
+    background-color: #F7F6FB;
+    transform: none;
+
+}
+
+.barra a:hover {
+    background-color: #ffffff;
+    transition: 300ms;
+    transform: scaleY(1.05);
+    transform-origin: center top;
+    border-radius: 15px;
+}
+
+/*.barra a:last-child {
+    position: absolute;
+    bottom: 1.5rem;
+    width: 203px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+}*/
+.ultimo{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 70%;
+    border: none;
+}
+
+.usuario {
+    margin-left: 5px;
+    border-radius: 8px;
+    color: #081f63;
+    display: flex;
+    align-items: center;
+}
+
+.usuario .nombre {
+    justify-content: center;
+    align-items: center;
+}
+
+.buscador {
+    align-items: center;
+    justify-content: center;
+}
+
+.buProductos {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.buscar {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    background-color: #F7F6FB;
+    border-radius: 25px;
+    margin-right: 18px;
+}
+
+.productosX {
+    
+    display: flex;
+    flex-wrap: wrap;
+    align-content: start;
+    overflow-y: scroll ;
+    scrollbar-width: none;
+    height: 620px;
+}
+
+.producto {
+    align-items: center;
+    align-content: center;
+    margin: 15px;
+    margin-left: 0px;
+    background-color: #F7F6FB;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.productoI {
+    color: rgb(15, 216, 119)
+}
+.dashI{
+    
+    color: rgb(231, 243, 1);
+}
+.alertaI{
+    color: rgb(253, 117, 117);
+}
+.detallesPro {
+    max-width: 200px;
+}
+
+.producto img {
+    width: 100px;
+    height: 120px;
+}
+
+.caraU {
+    font-size: 32px;
+    margin-right: 5px;
+    margin-left: 5px;
+}
+
+.imagenP {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+}
