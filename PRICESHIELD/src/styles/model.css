@@ -72,6 +72,8 @@ input{
     font-size: 30px;
     color: black;
     cursor: pointer;
+    margin-left: 3px;
+    margin-right: 3px;
 }
 .datos {
     padding: 20px;

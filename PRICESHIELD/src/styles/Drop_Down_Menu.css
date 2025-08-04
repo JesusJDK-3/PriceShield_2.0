@@ -1,0 +1,129 @@
+.barra {
+    background-color: #F7F6FB;
+    display: flex;
+    flex-direction: column;
+    height: 680px;
+    top: 1rem;
+    border-radius: 8px;
+    border: none;
+    gap: 5px;
+    align-content: center;
+    /*width: 224px;
+    transition: width 500ms ease;*/
+}
+.DropDown{
+    display: flex;
+   justify-content: space-between;
+   margin-top: 10px;
+   align-items: center;
+}
+.down{
+    margin-right: 20px;
+    font-size: 35px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+.barra .logoPD {
+    margin-top: 0px;
+    padding-top: 0px;
+    padding-left: 10px;
+}
+.barra a {
+    display: flex;
+    color: black;
+    gap: 1rem;
+    align-items: center;
+    text-decoration: none;
+    background-color: #F7F6FB;
+    padding-left: 20px;
+}
+
+.barra .logoPD:hover {
+    background-color: #F7F6FB;
+    transform: none;
+
+}
+
+.barra a:hover {
+    background-color: #ffffff;
+    transition: 300ms;
+    transform: scaleY(1.05);
+    transform-origin: center top;
+    border-radius: 15px;
+}
+
+/*.barra a:last-child {
+    position: absolute;
+    bottom: 1.5rem;
+    width: 203px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+}*/
+.ultimo{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 70%;
+    border: none;
+}
+.productoI {
+    color: rgb(15, 216, 119)
+}
+.dashI{
+    
+    color: rgb(231, 243, 1);
+}
+.alertaI{
+    color: rgb(253, 117, 117);
+}
+.nosotrosI{
+    color: rgb(176, 54, 246);
+}
+.productoI, .dashI, .alertaI, .nosotrosI{
+    
+    font-size: 25px;
+}
+.logIcon {
+    display: flex;
+    align-items: center;
+}
+
+.logoPD {
+    border-top-right-radius: 8px;
+    border-top-left-radius: 8px;
+
+}
+
+.logIcon img {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+}
+/*.productoI, .dashI, .alertaI, .nosotrosI,
+.logIcon h2 {
+    opacity: 1;
+    transition: opacity 500ms ease;
+    width: 32px;
+    transition: width 500ms ease;
+}*/
+@media (max-width: 768px) {
+    
+    .barra {
+        
+        display: none;
+    }
+    
+    /*.barra a{
+        
+        padding-left: 0px;
+    }
+    .productoI, .dashI, .alertaI, .nosotrosI,
+    .logIcon h2 {
+        opacity: 0; 
+        width: 0px;
+       
+    }
+    .logIcon img{
+        padding-left: 10px;
+    }*/
+}

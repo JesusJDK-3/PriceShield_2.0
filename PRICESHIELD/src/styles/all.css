@@ -211,11 +211,10 @@ i {
         background-color: #4A3FA3;
         color: white;
         border: none;
-        border-radius: 8px;
         cursor: pointer;
         flex-shrink: 0;
         font-weight: bold;
-        width: 100%;
+        width: 40%;
     }
     #search-form{
         justify-content: center;
