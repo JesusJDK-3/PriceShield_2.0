@@ -2,7 +2,7 @@
     background-color: #F7F6FB;
     display: flex;
     flex-direction: column;
-    height: 680px;
+    height: 95%;
     top: 1rem;
     border-radius: 8px;
     border: none;
@@ -36,6 +36,7 @@
     text-decoration: none;
     background-color: #F7F6FB;
     padding-left: 20px;
+    border-radius: 25px;
 }
 
 .barra .logoPD:hover {
@@ -108,10 +109,11 @@
 }*/
 @media (max-width: 768px) {
     
-    .barra {
-        
-        display: none;
-    }
+   .ultimo{
+    height: 80%;
+   }
+
+    
     
     /*.barra a{
         

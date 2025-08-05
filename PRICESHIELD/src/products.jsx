@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import './styles/products.css';
 import './styles/model.css';
 import productoImg from './assets/img/acite.jpg';
@@ -7,8 +8,25 @@ import Drop_DownM from './components/Drop_Down_Menu.jsx';
 
 function Products() {
   const [isOpenM, setIsOpenM] = useState(true); // estado de la barra lateral
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 768) {
+        setIsOpenM(false); // Oculta el menú en pantallas pequeñas
+      } else {
+        setIsOpenM(true); // Muestra el menú en pantallas grandes
+      }
+    };
 
-  const productos = Array(10).fill({
+    // Ejecuta una vez al montar
+    handleResize();
+
+    // Agrega listener
+    window.addEventListener('resize', handleResize);
+
+    // Limpieza al desmontar el componente
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  const productos = Array(20).fill({
     nombre: "Aceite Primor de 900ml",
     precio: "S/100",
     supermercado: "Metro",
@@ -21,26 +39,23 @@ function Products() {
 
   return (
     <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
-      {/* Mostrar el menú solo si está abierto */}
-      <Drop_DownM isOpenM={isOpenM} closeDown={() => setIsOpenM(false)} />
-
+      <div className="barraJex">
+       <Drop_DownM isOpenM={isOpenM} closeDown={() => setIsOpenM(false)} />
+       
+      </div>
       <div className="buProductos">
-        <div className={`abrirDown ${isOpenM ? 'mostrarContenido' : ''}`}>
-          {!isOpenM && (<i className="bi bi-list abrirMenu" onClick={() => setIsOpenM(true)}></i>)}
+        <div className='abrirDown'>
+          <i className="bi bi-list abrirMenu" onClick={() => setIsOpenM(true)}></i>
           <div className="buscar">
-          
-          <div className="buscador">
-            <SearchBox onSearch={handleSearch} />
-          </div>
-
-          <div className="usuario">
-            <span>Dany</span>
-            <i className="bi bi-person-circle caraU"></i>
+            <div className="buscador">
+              <SearchBox onSearch={handleSearch} />
+            </div>
+            <div className="usuario">
+              <span>Dany</span>
+              <i className="bi bi-person-circle caraU"></i>
+            </div>
           </div>
         </div>
-        </div>
-        
-
         <div className="productosX">
           {productos.map((producto, index) => (
             <div className="producto" key={index}>
