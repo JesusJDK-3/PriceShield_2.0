@@ -15,7 +15,7 @@ app = Flask(__name__)
 #configurar CORS  para permitir peticiones desde react  (puerto 5173 de vite)
 CORS(app, origins=['http://localhost:5173'])
 
-#configurar la clave secreta para sesiones
+#configurar la clave secreta para sesiones....NO LVIDARME COMVERTIRLO EN RAMDOM....
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 #registrar las rutas de autenticacion con el prefijo /api/auth
