@@ -188,7 +188,7 @@
   }
 }
 
-@media (max-height: 600px) {
+@media (max-height: 630px) {
   .DetallesProducto {
     padding: 0;
     gap: 0.5rem;
