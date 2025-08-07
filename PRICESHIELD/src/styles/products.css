@@ -5,7 +5,10 @@
     grid-template-columns: 14rem auto;
 }
 
-
+.ContenedorProductosXReutilizable {
+    overflow-y: auto;
+    scrollbar-width: none;
+}
 
 .usuario {
     margin-left: 5px;
@@ -41,7 +44,7 @@
     grid-template-columns: 1fr auto;
     background-color: #F7F6FB;
     border-radius: 25px;
-    margin-right: 18px;
+    margin-right: 8px;
 }
 
 .productosX {

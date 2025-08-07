@@ -11,6 +11,7 @@
     /*width: 224px;
     transition: width 500ms ease;*/
 }
+
 .DropDown{
     display: flex;
    justify-content: space-between;
