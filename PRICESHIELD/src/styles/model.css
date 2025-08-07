@@ -121,7 +121,7 @@ border: none;
 
 @media (max-width: 768px) {
     .datos {
-        padding: 50px 30px;
+        padding: 50px 10px;
         padding-top: 10px;
         
     }
