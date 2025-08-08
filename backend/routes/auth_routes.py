@@ -1,5 +1,5 @@
-from flask import Blueprint
-from controllers.auth_controller import auth_controller
+from flask import Blueprint# permite agrupar las rutas de autenticacion en unarchivo separado
+from controllers.auth_controller import auth_controller#Desde el archivo auth_controller.py dentro de la carpeta controllers, importa el objeto auth_controller
 
 # Crear el Blueprint para las rutas de autenticación
 auth_bp = Blueprint('auth', __name__)

@@ -1,13 +1,13 @@
-from flask import request, jsonify
-from models.user_model import User
+from flask import request, jsonify #el request nos permite acceder a datos de otras peticionesy el jsonify convierte diccionario de phyton a respusta json
+from models.user_model import User #Desde el archivo user_model.py dentro de la carpeta models, importa la clase User
 
 class AuthController:
     """
     Controlador que maneja toda la lógica de autenticación
     """
-    
-    def __init__(self):
-        self.user_model = User()
+
+    def __init__(self):#Inicializa el controlador de autenticación
+        self.user_model = User()#crea también un objeto de la clase User y guárdalo en self.user_model
     
     def smart_auth(self):
         """
@@ -26,8 +26,8 @@ class AuthController:
                     'success': False,
                     'message': 'No se recibieron datos'
                 }), 400
-            
-            correo = data.get('correo', '').strip()
+
+            correo = data.get('correo', '').strip()#el strip() elimina espacios en blanco al inicio y al final
             contraseña = data.get('contraseña', '')
             
             # Validar que no estén vacíos
