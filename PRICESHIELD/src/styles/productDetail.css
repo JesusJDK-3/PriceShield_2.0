@@ -48,6 +48,12 @@
   max-height: 970px;
 }
 
+.LogoDelMerca {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+}
+
 .DetallesProducto {
   display: flex;
   flex-direction: row;
@@ -56,10 +62,47 @@
   flex-wrap: wrap;
   max-width: 900px;
 }
+.PrecioMasBajoT{
+  font-size: 20px;
+  margin: auto 0px;
+  text-align: center;
+}
+
+.MercadoLogo {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.PrecioMasBajoP {
+  width: 80%;
+  align-self: center;
+  padding: 10px;
+  background-color: #F7F6FB;
+ border: none;
+}
 
 .PrecioMasBajo {
   width: 80%;
   align-self: center;
+  padding: 10px;
+  background-color: #F7F6FB;
+  border-radius: 8px;
+  border: 1px solid #6b6768;
+  box-shadow: #081F63 0px 0px 5px;
+}
+
+.PrecioMasBajo:hover {
+  background-color: #E6E9F8;
+  color: #081F63;
+  transition: 300ms;
+  transform: scale(1.05);
+}
+
+.dato {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .PaProVer {
@@ -72,9 +115,11 @@
   margin-top: 15%;
   padding: 5px;
 }
-.barra{
-    max-height: 1040px;
+
+.barra {
+  max-height: 1040px;
 }
+
 .MercadoDelP {
   color: #D71038;
   background-color: #FEEEF1;
@@ -104,7 +149,7 @@
 
 .DetallesProducto img {
   height: auto;
-  width: 100%;
+  /*width: 100%;*/
   max-width: 300px;
   max-height: 280px;
   object-fit: contain;
@@ -129,12 +174,37 @@
   max-width: 1200px;
   max-height: 970px;
   height: 100%;
+  justify-content: space-around;
 }
-.DetallesMenoresP{
-    align-items: center;
+
+.DetallesMenoresP {
+      /* align-items: center; */
     margin: 0 7vw;
     margin-left: 0px;
+    justify-content: space-around;
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: 1rem;
 }
+
+@media (max-width: 1148px) {
+  .LogoDelMerca {
+    display: none;
+  }
+  
+}
+
+@media (max-width: 1010px) {
+  .NombreDelMercado {
+    display: none;
+  }
+
+  .LogoDelMerca {
+    display: flex;
+  }
+}
+
 /* RESPONSIVE */
 @media (max-width: 867px) {
   .detalleProducto {
@@ -142,7 +212,15 @@
     padding: 10px;
     gap: 1rem;
     overflow-y: auto;
-  scrollbar-width: none;
+    scrollbar-width: none;
+  }
+
+  .NombreDelMercado {
+    display: flex;
+  }
+
+  .LogoDelMerca {
+    display: flex;
   }
 
   .DetallesProducto {
@@ -175,11 +253,11 @@
     flex-direction: column;
     align-items: center;
     gap: 1rem;
-    max-height: 230px;
+    /* max-height: 230px;*/
   }
 
   .PaProVer {
-    
+margin-top: 0px;
     height: auto;
   }
 
@@ -188,6 +266,22 @@
   }
 }
 
+/*@media (max-height: 680px) {
+  .DetallesProducto {
+    padding: 0;
+    gap: 0.5rem;
+    margin-bottom: 10px;
+  }
+
+  .PaProVer {
+    margin-top: 0;
+  }
+  .DetallesProducto img {
+  
+  max-width: 250px;
+  max-height: 230px;
+}
+}
 @media (max-height: 630px) {
   .DetallesProducto {
     padding: 0;
@@ -203,4 +297,21 @@
   max-width: 250px;
   max-height: 230px;
 }
+}*/
+@media (max-height: 702px) {
+  .DetallesProducto {
+    padding: 0;
+    gap: 0.5rem;
+    margin-bottom: 10px;
+  }
+
+  .PaProVer {
+    margin-top: 0;
+  }
+
+  .DetallesProducto img {
+
+    max-width: 250px;
+    max-height: 230px;
+  }
 }

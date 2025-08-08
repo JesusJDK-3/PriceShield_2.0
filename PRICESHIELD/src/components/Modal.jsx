@@ -153,59 +153,7 @@ const Modal = ({ isOpen, closeModal }) => {
             </div>
 
             {/* Estilos para los mensajes del servidor - se integran con tus estilos existentes */}
-            <style jsx>{`
-                .server-message {
-                    margin-top: 15px;
-                    padding: 12px;
-                    border-radius: 8px;
-                    text-align: center;
-                    font-size: 14px;
-                    font-weight: 500;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 8px;
-                    animation: slideIn 0.3s ease-out;
-                }
-
-                .server-message.success {
-                    background-color: #d4edda;
-                    color: #155724;
-                    border: 1px solid #c3e6cb;
-                }
-
-                .server-message.error {
-                    background-color: #f8d7da;
-                    color: #721c24;
-                    border: 1px solid #f5c6cb;
-                }
-
-                .server-message i {
-                    font-size: 16px;
-                }
-
-                @keyframes slideIn {
-                    from {
-                        opacity: 0;
-                        transform: translateY(-10px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-
-                /* Estilos para cuando está cargando */
-                input:disabled {
-                    opacity: 0.7;
-                    cursor: not-allowed;
-                }
-
-                input[type="submit"]:disabled {
-                    background-color: #6c757d;
-                    cursor: not-allowed;
-                }
-            `}</style>
+            
         </div>
     );
 };
