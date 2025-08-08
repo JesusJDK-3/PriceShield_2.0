@@ -1,11 +1,12 @@
 import React from 'react';
+import productsGeneral from './productsGeneral.jsx';
 import ProductCard from './ProductCard.jsx';
 
-const ProductosX = ({ productos }) => {
+const ProductosX = () => {
   return (
     <>
-      {productos.map((producto, index) => (
-        <ProductCard key={index} producto={producto} />
+      {productsGeneral.map((productsGeneral, index) => (
+        <ProductCard key={index} producto={productsGeneral} />
       ))}
     </>
   );
