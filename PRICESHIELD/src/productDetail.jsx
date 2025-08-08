@@ -219,7 +219,12 @@ function ProductDetail() {
                 <p><strong>Precio:</strong> {producto.precio}</p>
                 <p><strong>Supermercado:</strong> {producto.supermercado}</p>
               </div>
-              <button onClick={handleClickD}>Mira el Dasboard</button>
+              <div className="BotonDashboardContainer">
+                <button className="BotonDashboard" onClick={handleClickD}>
+                  📊 Mira el Dashboard
+                </button>
+              </div>
+
             </div>
             {/* FIN  Producto Seleccionado*/}
             {/* Mostrar Precio más bajo usando SupermercadoMB Etiqueta roja*/}

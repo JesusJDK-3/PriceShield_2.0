@@ -1,0 +1,29 @@
+.CuadrosInformati {
+  display: flex;
+  flex-direction: row;
+  margin-top: 20px;
+  justify-content: space-around;
+}
+.precioActual, .precioPromedio, .precioMinimo, .precioMaximo {
+  text-align: center;
+  background-color: #f0f0f0;
+  padding: 20px 8px;
+  border-radius: 10px;
+  width: auto;
+}
+.precioActual{
+    border: solid 2px #4CAF50;
+}
+.precioPromedio{
+    border: solid 2px #2196F3;
+}
+.precioMinimo{
+    border: solid 2px #FF9800;
+}
+.precioMaximo{
+    border: solid 2px #F44336;
+}
+.DetallesProducto .imgDasPro{
+    max-width: 150px;
+}
+

@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import './styles/products.css';
 import './styles/model.css';
 import './styles/productDetail.css';
+import './styles/dash.css';
 import TopBar from './components/TopBar.jsx';
 import Drop_DownM from './components/Drop_Down_Menu.jsx';
 
@@ -36,16 +37,103 @@ function ProductDetail() {
                     <div className='abrirDown'>
                         <TopBar onSearch={handleSearch} openMenu={() => setIsOpenM(true)} />
                     </div>
+                    {/* Fin Barra de busqueda superior */}
                     <div className="detalleProducto">
                         <div className="DPExtendido">
+                            {/* Botón regresar superior */}
                             <div className="BotRP">
                                 <button className='BotonRegresar' onClick={() => navigate(-1)}> <span className='flechita'>←</span> Volver</button>
                             </div>
+                            {/* Fin Botón regresar superior */}
+                            {/* Producto Seleccionado*/}
+                            <div >
+                                <h1>Busca un Producto</h1>
+                            </div>
+                            {/* FIN  Producto Seleccionado*/}
 
-                            <div className="DetallesProducto">
-                                <div>No se encontró información del producto.</div>
+                        </div>
+                        <div className="mercadosYprecios">
+                            {/* Div de Supermercados y precios segùn el producto Seleccionado*/}
+                            <div className="footerMercados">
+                                <button className="PrecioMasBajo">
+                                    <div className="dato">
+                                        <div className="MercadoLogo">
+                                            <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
+                                                <circle cx="10" cy="10" r="10" fill="#3498db" />
+                                                <text x="10" y="10" textAnchor="middle" dominantBaseline="central" fill="white" fontSize="12">
+                                                    A
+                                                </text>
+                                            </svg>
+                                            <b>Alerta</b>
+                                        </div>
+                                        <br />
+                                        <p>S/15</p>
+                                    </div>
+                                </button>
+                                <button className="PrecioMasBajo">
+                                    <div className="dato">
+                                        <div className="MercadoLogo">
+                                            <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
+                                                <circle cx="10" cy="10" r="10" fill="#3498db" />
+                                                <text x="10" y="10" textAnchor="middle" dominantBaseline="central" fill="white" fontSize="12">
+                                                    A
+                                                </text>
+                                            </svg>
+                                            <b>Alerta</b>
+                                        </div>
+                                        <br />
+                                        <p>S/15</p>
+                                    </div>
+                                </button>
+                                <button className="PrecioMasBajo">
+                                    <div className="dato">
+                                        <div className="MercadoLogo">
+                                            <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
+                                                <circle cx="10" cy="10" r="10" fill="#3498db" />
+                                                <text x="10" y="10" textAnchor="middle" dominantBaseline="central" fill="white" fontSize="12">
+                                                    A
+                                                </text>
+                                            </svg>
+                                            <b>Alerta</b>
+                                        </div>
+                                        <br />
+                                        <p>S/15</p>
+                                    </div>
+                                </button>
+                                <button className="PrecioMasBajo">
+                                    <div className="dato">
+                                        <div className="MercadoLogo">
+                                            <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
+                                                <circle cx="10" cy="10" r="10" fill="#3498db" />
+                                                <text x="10" y="10" textAnchor="middle" dominantBaseline="central" fill="white" fontSize="12">
+                                                    A
+                                                </text>
+                                            </svg>
+                                            <b>Alerta</b>
+                                        </div>
+                                        <br />
+                                        <p>S/15</p>
+                                    </div>
+                                </button>
+                                <button className="PrecioMasBajo">
+                                    <div className="dato">
+                                        <div className="MercadoLogo">
+                                            <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
+                                                <circle cx="10" cy="10" r="10" fill="#3498db" />
+                                                <text x="10" y="10" textAnchor="middle" dominantBaseline="central" fill="white" fontSize="12">
+                                                    A
+                                                </text>
+                                            </svg>
+                                            <b>Alerta</b>
+                                        </div>
+                                        <br />
+                                        <p>S/15</p>
+                                    </div>
+                                </button>
+                                {/* ALERTAS*/}
                             </div>
                         </div>
+                        {/* FIN Div de Supermercados y precios segùn el producto Seleccionado*/}
                     </div>
                 </div>
             </div>
@@ -73,15 +161,46 @@ function ProductDetail() {
                         {/* Fin Botón regresar superior */}
                         {/* Producto Seleccionado*/}
                         <div className="DetallesProducto">
-                            <img src={producto.imagen} alt={producto.nombre} />
+                            <img src={producto.imagen} alt={producto.nombre} className='imgDasPro'/>
                             <div className="DetallesMenoresP">
                                 <h2>{producto.nombre}</h2>
-                                <p><strong>Precio:</strong> {producto.precio}</p>
                                 <p><strong>Supermercado:</strong> {producto.supermercado}</p>
                             </div>
                         </div>
                         {/* FIN  Producto Seleccionado*/}
+                        <div className="Dash">
+                            <div className="CuadrosInformati">
+                                <div className="precioActual">
+                                    <h1 className="PACT">{producto.precio}</h1>
+                                    <h5>Precio Actual</h5>
+                                    <small className='mensaVPA'>↑1.5%</small>
+                                </div>
+                                <div className="precioPromedio">
+                                    <h1 className="PPROM">
+                                        S/26
+                                    </h1>
+                                    <h5>Precio Promedio</h5>
+                                    <small className="mensaVPPO">Ultimos 30 dìas</small>
+                                </div>
+                                <div className="precioMinimo">
+                                    <h1 className="PMIN">
+                                        S/20
+                                    </h1>
+                                    <h5>Precio Mínimo</h5>
+                                    <small className="mensaVPMI">Hace 15 dìas</small>
+                                </div>
+                                <div className="precioMaximo">
+                                    <h1 className="PMAX">
+                                        S/30
+                                    </h1>
+                                    <h5>Precio Máximo</h5>
+                                    <small className="mensaVPMX">Hace 20 dìas</small>
+                                </div>
+                            </div>
+                            <div className="dashboardPresetancion">
 
+                            </div>
+                        </div>
                     </div>
                     <div className="mercadosYprecios">
                         {/* Div de Supermercados y precios segùn el producto Seleccionado*/}

@@ -161,6 +161,32 @@
   width: 27.5%;
   /*margin-right: 20px;*/
 }
+.BotonDashboardContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+      width: 100%;
+}
+
+.BotonDashboard {
+  background-color: #081f63;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.BotonDashboard:hover {
+  background-color: #0d2b8a;
+  transform: translateY(-2px);
+}
+
+.BotonDashboard:active {
+  transform: translateY(0);
+}
 
 .footerMercados {
   display: flex;
@@ -314,4 +340,10 @@ margin-top: 0px;
     max-width: 250px;
     max-height: 230px;
   }
+  .DetallesProducto{
+    margin-bottom: 0px;
+  }
+.BotonDashboardContainer{
+  margin-top: 0px;
+}
 }
