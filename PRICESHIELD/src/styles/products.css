@@ -70,6 +70,13 @@
 
 .detallesPro {
     max-width: 200px;
+        max-width: 200px;
+    padding-bottom: 10px;
+    display: flex
+;
+    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 5px
 }
 
 .producto img {

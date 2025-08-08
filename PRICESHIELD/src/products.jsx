@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import './styles/products.css';
 import './styles/model.css';
-import productoImg from './assets/img/acite.jpg';
 import TopBar from './components/TopBar.jsx';
 import ProductosX from './components/ProductosX.jsx';
 import Drop_DownM from './components/Drop_Down_Menu.jsx';
@@ -21,17 +20,10 @@ function Products() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-  const productos = Array(30).fill({
-    nombre: "Aceite Primor de 900ml",
-    precio: "S/100",
-    supermercado: "Metro",
-    imagen: productoImg,
-  });
-
+ 
   const handleSearch = (searchTerm) => {
     console.log('Buscando:', searchTerm);
   };
-
   return (
     <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
       <div className="barraJex">
@@ -42,7 +34,7 @@ function Products() {
           <TopBar onSearch={handleSearch} openMenu={() => setIsOpenM(true)} />
         </div>
         <div className="productosX">
-    <ProductosX productos={productos} />
+    <ProductosX/>
   </div>
       </div>
     </div>
