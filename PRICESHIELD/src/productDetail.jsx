@@ -6,11 +6,7 @@ import './styles/model.css';
 import './styles/productDetail.css';
 import TopBar from './components/TopBar.jsx';
 import Drop_DownM from './components/Drop_Down_Menu.jsx';
-import productoImg from './assets/img/acite.jpg';
-import productoImG from './assets/img/gloria.jpeg';
-import productoImgA from './assets/img/arroz.jpg';
-import productoImgAZ from './assets/img/azucar.jpg';
-import productoImgI from './assets/img/ICA-KOLA1.jpg';
+import productsDetailG from './components/productsDetailG.jsx';
 function ProductDetail() {
   const [isOpenM, setIsOpenM] = useState(true);
   useEffect(() => { // Responsivo
@@ -43,154 +39,7 @@ function ProductDetail() {
     producto.supermercado = item.supermercado;
     navigate('/detalle', { state: producto });
   };
-  const productos = [   // Lista de productos
-    // Aceite
-    {
-      nombre: "Aceite Primor de 900ml",
-      precio: "S/100",
-      supermercado: "Metro",
-      imagen: productoImg,
-    },
-    {
-      nombre: "Aceite Primor de 900ml",
-      precio: "S/92.5",
-      supermercado: "PlazaVea",
-      imagen: productoImg,
-    },
-    {
-      nombre: "Aceite Primor de 900ml",
-      precio: "S/95.0",
-      supermercado: "Tottus",
-      imagen: productoImg,
-    },
-    {
-      nombre: "Aceite Primor de 900ml",
-      precio: "S/97.8",
-      supermercado: "RealPlaza",
-      imagen: productoImg,
-    },
-
-    // Leche
-    {
-      nombre: "Leche Gloria 1L",
-      precio: "S/4.8",
-      supermercado: "Tottus",
-      imagen: productoImG,
-    },
-    {
-      nombre: "Leche Gloria 1L",
-      precio: "S/5.1",
-      supermercado: "RealPlaza",
-      imagen: productoImG,
-    },
-    {
-      nombre: "Leche Gloria 1L",
-      precio: "S/4.9",
-      supermercado: "Metro",
-      imagen: productoImG,
-    },
-    {
-      nombre: "Leche Gloria 1L",
-      precio: "S/5.3",
-      supermercado: "PlazaVea",
-      imagen: productoImG,
-    },
-
-    // Arroz
-    {
-      nombre: "Arroz Costeño 5kg",
-      precio: "S/24.5",
-      supermercado: "Metro",
-      imagen: productoImgA,
-    },
-    {
-      nombre: "Arroz Costeño 5kg",
-      precio: "S/30.2",
-      supermercado: "Tottus",
-      imagen: productoImgA,
-    },
-    {
-      nombre: "Arroz Costeño 5kg",
-      precio: "S/26.0",
-      supermercado: "PlazaVea",
-      imagen: productoImgA,
-    },
-    {
-      nombre: "Arroz Costeño 5kg",
-      precio: "S/28.4",
-      supermercado: "RealPlaza",
-      imagen: productoImgA,
-    },
-
-    // Azúcar
-    {
-      nombre: "Azúcar Rubia 1kg",
-      precio: "S/3.5",
-      supermercado: "PlazaVea",
-      imagen: productoImgAZ,
-    },
-    {
-      nombre: "Azúcar Rubia 1kg",
-      precio: "S/7.9",
-      supermercado: "RealPlaza",
-      imagen: productoImgAZ,
-    },
-    {
-      nombre: "Azúcar Rubia 1kg",
-      precio: "S/4.2",
-      supermercado: "Metro",
-      imagen: productoImgAZ,
-    },
-    {
-      nombre: "Azúcar Rubia 1kg",
-      precio: "S/5.0",
-      supermercado: "Tottus",
-      imagen: productoImgAZ,
-    },
-
-    // Gaseosa
-    {
-      nombre: "Gaseosa Inka Kola 1.5L",
-      precio: "S/6.3",
-      supermercado: "Metro",
-      imagen: productoImgI,
-    },
-    {
-      nombre: "Gaseosa Inka Kola 1.5L",
-      precio: "S/9.7",
-      supermercado: "Tottus",
-      imagen: productoImgI,
-    },
-    {
-      nombre: "Gaseosa Inka Kola 1.5L",
-      precio: "S/7.2",
-      supermercado: "PlazaVea",
-      imagen: productoImgI,
-    },
-    {
-      nombre: "Gaseosa Inka Kola 1.5L",
-      precio: "S/8.0",
-      supermercado: "RealPlaza",
-      imagen: productoImgI,
-    }
-  ];
-  const SupermercadoG = []; // Todos los detalles de los productos con el mismo nombre
-  const SupermercadoMB = [];// Todos los detalles del producto más barato
-  for (let i = 0; i < productos.length; i++) { // Itera sobre todos los productos
-    // Si el nombre del producto coincide con el seleccionado, lo agrega a SupermercadoG
-    if (productos[i].nombre === producto.nombre) {
-      SupermercadoG.push(productos[i]);
-    }
-  }
-  SupermercadoG.sort((a, b) => {// Ordena los productos por precio
-    // Convierte los precios a números para compararlos
-    const precioA = parseFloat(a.precio.replace("S/", ""));
-    const precioB = parseFloat(b.precio.replace("S/", ""));
-    return precioA - precioB;
-  });
-  if (SupermercadoG.length > 0) {// Si hay productos con el mismo nombre
-    SupermercadoMB.push(SupermercadoG[0]); // solo el más barato
-  }
+  const SupermercadoG = productsDetailG(producto); // Obtiene los detalles del producto seleccionado
   return (
     <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
       {/* Barra lateral de menú */}
@@ -229,7 +78,7 @@ function ProductDetail() {
             {/* FIN  Producto Seleccionado*/}
             {/* Mostrar Precio más bajo usando SupermercadoMB Etiqueta roja*/}
             <h3 className='PrecioMasBajoT'>Encuentra el precio más bajo en:</h3>
-            {SupermercadoMB.map((item, index) => (
+            {SupermercadoG.slice(0, 1).map((item, index) => (
               <button className="PrecioMasBajoP" key={index} onClick={() => handleClick(item)}>
                 <div className="PaProVer">
                   <div className="MercadoDelP">

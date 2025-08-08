@@ -1,13 +1,13 @@
 .CuadrosInformati {
   display: flex;
   flex-direction: row;
-  margin-top: 20px;
+  margin-top: 10px;
   justify-content: space-around;
 }
 .precioActual, .precioPromedio, .precioMinimo, .precioMaximo {
   text-align: center;
   background-color: #f0f0f0;
-  padding: 20px 8px;
+  padding: 10px 8px;
   border-radius: 10px;
   width: auto;
 }
@@ -23,7 +23,34 @@
 .precioMaximo{
     border: solid 2px #F44336;
 }
-.DetallesProducto .imgDasPro{
+.DetallesProducto .imgDasProD{
     max-width: 150px;
 }
 
+.DashboardContainer{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 5px;
+    height: 50vh;
+}
+@media (max-width: 867px) {
+
+
+  .DetallesProducto  .imgDasProD {
+    height: auto;
+    width: 90%;
+    max-width: 220px;
+    margin: 0 auto;
+  }
+
+}
+@media (max-height: 702px) {
+  
+  .DetallesProducto .imgDasProD {
+
+    /*max-width: 250px;*/
+    max-height: 230px;
+  }
+  
+}

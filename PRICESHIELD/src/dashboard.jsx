@@ -1,5 +1,6 @@
 // ProductDetail.jsx
 import React, { useState, useEffect } from 'react';
+import DashboardChart from './components/DashBoardChar.jsx';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './styles/products.css';
 import './styles/model.css';
@@ -56,7 +57,7 @@ function ProductDetail() {
                             {/* Div de Supermercados y precios segùn el producto Seleccionado*/}
                             <div className="footerMercados">
                                 <button className="PrecioMasBajo">
-                                    <div className="dato">
+                                    <div className="datoPPT">
                                         <div className="MercadoLogo">
                                             <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                                                 <circle cx="10" cy="10" r="10" fill="#3498db" />
@@ -71,7 +72,7 @@ function ProductDetail() {
                                     </div>
                                 </button>
                                 <button className="PrecioMasBajo">
-                                    <div className="dato">
+                                    <div className="datoPPT">
                                         <div className="MercadoLogo">
                                             <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                                                 <circle cx="10" cy="10" r="10" fill="#3498db" />
@@ -86,7 +87,7 @@ function ProductDetail() {
                                     </div>
                                 </button>
                                 <button className="PrecioMasBajo">
-                                    <div className="dato">
+                                    <div className="datoPPT">
                                         <div className="MercadoLogo">
                                             <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                                                 <circle cx="10" cy="10" r="10" fill="#3498db" />
@@ -101,7 +102,7 @@ function ProductDetail() {
                                     </div>
                                 </button>
                                 <button className="PrecioMasBajo">
-                                    <div className="dato">
+                                    <div className="datoPPT">
                                         <div className="MercadoLogo">
                                             <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                                                 <circle cx="10" cy="10" r="10" fill="#3498db" />
@@ -116,7 +117,7 @@ function ProductDetail() {
                                     </div>
                                 </button>
                                 <button className="PrecioMasBajo">
-                                    <div className="dato">
+                                    <div className="datoPPT">
                                         <div className="MercadoLogo">
                                             <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                                                 <circle cx="10" cy="10" r="10" fill="#3498db" />
@@ -161,7 +162,7 @@ function ProductDetail() {
                         {/* Fin Botón regresar superior */}
                         {/* Producto Seleccionado*/}
                         <div className="DetallesProducto">
-                            <img src={producto.imagen} alt={producto.nombre} className='imgDasPro'/>
+                            <img src={producto.imagen} alt={producto.nombre} className='imgDasProD'/>
                             <div className="DetallesMenoresP">
                                 <h2>{producto.nombre}</h2>
                                 <p><strong>Supermercado:</strong> {producto.supermercado}</p>
@@ -201,12 +202,17 @@ function ProductDetail() {
 
                             </div>
                         </div>
+                        {/* Div dashboard*/}
+                        <div className="DashboardContainer">
+                            <DashboardChart />
+                            </div>
+                            {/* FIN Div dashboard*/}
                     </div>
                     <div className="mercadosYprecios">
                         {/* Div de Supermercados y precios segùn el producto Seleccionado*/}
                         <div className="footerMercados">
                             <button className="PrecioMasBajo">
-                                <div className="dato">
+                                <div className="datoPPT">
                                     <div className="MercadoLogo">
                                         <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                                             <circle cx="10" cy="10" r="10" fill="#3498db" />
@@ -221,7 +227,7 @@ function ProductDetail() {
                                 </div>
                             </button>
                             <button className="PrecioMasBajo">
-                                <div className="dato">
+                                <div className="datoPPT">
                                     <div className="MercadoLogo">
                                         <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                                             <circle cx="10" cy="10" r="10" fill="#3498db" />
@@ -236,7 +242,7 @@ function ProductDetail() {
                                 </div>
                             </button>
                             <button className="PrecioMasBajo">
-                                <div className="dato">
+                                <div className="datoPPT">
                                     <div className="MercadoLogo">
                                         <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                                             <circle cx="10" cy="10" r="10" fill="#3498db" />
@@ -251,7 +257,7 @@ function ProductDetail() {
                                 </div>
                             </button>
                             <button className="PrecioMasBajo">
-                                <div className="dato">
+                                <div className="datoPPT">
                                     <div className="MercadoLogo">
                                         <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                                             <circle cx="10" cy="10" r="10" fill="#3498db" />
@@ -266,7 +272,7 @@ function ProductDetail() {
                                 </div>
                             </button>
                             <button className="PrecioMasBajo">
-                                <div className="dato">
+                                <div className="datoPPT">
                                     <div className="MercadoLogo">
                                         <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                                             <circle cx="10" cy="10" r="10" fill="#3498db" />
