@@ -1,7 +1,7 @@
 import bcrypt #Encripta contraseñas 
 from services.db import db #Importa nuestra conexión a MongoDB
 from datetime import datetime
-import re #libreri de Expresiones regulares (validar emails)
+import re #libreria de Expresiones regulares (validar emails)
 
 class User:
     """
