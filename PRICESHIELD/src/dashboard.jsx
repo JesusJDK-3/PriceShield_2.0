@@ -187,10 +187,10 @@ function ProductDetail() {
                                 </div>
                                 <div className="precioMinimo">
                                     <h1 className="PMIN">
-                                        {detalle.productoConPrecioMinimo.precio}
+                                        {detalle.productoConPrecioMinimoSuperMercado.precio}
                                     </h1>
                                     <h5>Precio Mínimo</h5>
-                                    <small className="mensaVPMI">En el mes {detalle.mesDelPrecioMinimo}</small>
+                                    <small className="mensaVPMI">En el mes {detalle.mesproductoConPrecioMinimoSuperMercado}</small>
                                 </div>
                                 <div className="precioMaximo">
                                     <h1 className="PMAX">

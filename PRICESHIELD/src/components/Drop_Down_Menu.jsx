@@ -29,9 +29,9 @@ const Drop_DownM = ({ isOpenM, closeDown }) => {
       </Link>
       {/*Fin Sección productos */}
       {/*Sección Dasboard pasando el producto usando la fucion handleDashboardClick */}
-      <a onClick={handleDashboardClick}>
+      <a onClick={handleDashboardClick} style={{ cursor: 'pointer' }}>
         <i className="bi bi-bar-chart-line-fill dashI"></i>
-        <p>Dashboard</p>
+        <p>Panel</p>
       </a>
       {/*Fin Sección Dasboard pasando el producto usando la fucion handleDashboardClick */}
 
