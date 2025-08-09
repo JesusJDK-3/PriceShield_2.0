@@ -4,6 +4,7 @@
   margin-top: 10px;
   justify-content: space-around;
 }
+
 .precioActual, .precioPromedio, .precioMinimo, .precioMaximo {
   text-align: center;
   background-color: #f0f0f0;
@@ -11,46 +12,73 @@
   border-radius: 10px;
   width: auto;
 }
-.precioActual{
-    border: solid 2px #4CAF50;
-}
-.precioPromedio{
-    border: solid 2px #2196F3;
-}
-.precioMinimo{
-    border: solid 2px #FF9800;
-}
-.precioMaximo{
-    border: solid 2px #F44336;
-}
-.DetallesProducto .imgDasProD{
-    max-width: 150px;
+
+.precioActual   { border: solid 2px #4CAF50; }
+.precioPromedio { border: solid 2px #2196F3; }
+.precioMinimo   { border: solid 2px #FF9800; }
+.precioMaximo   { border: solid 2px #F44336; }
+
+.DetallesProducto .imgDasProD {
+  max-width: 150px;
 }
 
-.DashboardContainer{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 5px;
-    height: 50vh;
+.BarraYDash {
+  width: 100%;
+  height: 300px;
 }
+
+.DashboardContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 5px;
+  height: 100%;
+}
+
+/* Ajustes por ancho */
+@media (max-width: 1148px) {
+  .DashboardContainer { height: 46vh; }
+  .CuadrosInformati { margin-top: 0; }
+  .DetallesProducto .imgDasProD { max-height: 100px; }
+}
+
+@media (max-width: 1010px) {
+  .DashboardContainer { height: 50%; }
+}
+
 @media (max-width: 867px) {
-
-
-  .DetallesProducto  .imgDasProD {
-    height: auto;
+  .DetallesProducto .imgDasProD {
     width: 90%;
-    max-width: 220px;
+    max-width: 140px;
+    height: auto;
     margin: 0 auto;
   }
-
 }
-@media (max-height: 702px) {
-  
-  .DetallesProducto .imgDasProD {
 
-    /*max-width: 250px;*/
-    max-height: 230px;
+/* Ajustes por alto */
+@media (max-height: 702px) {
+  .DetallesProducto .imgDasProD {
+    
+    max-height: 100px;
   }
-  
+  .Dash { font-size: 13px; }
+  .BotRP { padding-bottom: 0; }
+}
+
+@media (max-height: 680px) {
+  .Dash { font-size: 9px; }
+  .precioActual, .precioPromedio, .precioMinimo, .precioMaximo {
+    height: 70px;
+    padding: 10px 5px;
+  }
+  .BarraYDash { height: 250px; }
+}
+
+@media (max-width: 490px) {
+  .CuadrosInformati{
+    font-size: 10px;
+  }
+  .precioActual, .precioPromedio, .precioMinimo, .precioMaximo {
+    
+    padding: 1px;}
 }

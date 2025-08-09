@@ -78,7 +78,7 @@ function ProductDetail() {
             {/* FIN  Producto Seleccionado*/}
             {/* Mostrar Precio más bajo usando SupermercadoMB Etiqueta roja*/}
             <h3 className='PrecioMasBajoT'>Encuentra el precio más bajo en:</h3>
-            {SupermercadoG.slice(0, 1).map((item, index) => (
+            {SupermercadoG?.result?.slice(0, 1).map((item, index) => (
               <button className="PrecioMasBajoP" key={index} onClick={() => handleClick(item)}>
                 <div className="PaProVer">
                   <div className="MercadoDelP">
@@ -98,13 +98,24 @@ function ProductDetail() {
             {/* Div de Supermercados y precios segùn el producto Seleccionado*/}
             <div className="footerMercados">
               {/*Supermercados y precios segùn el producto Seleccionado usando SupermercadoG*/}
-              {SupermercadoG.map((itemG, index) => (
-                <button className="PrecioMasBajo" key={index} onClick={() => handleClick(itemG)}>
+              {SupermercadoG.productos.map((itemG, index) => (
+                <button
+                  className="PrecioMasBajo"
+                  key={index}
+                  onClick={() => handleClick(itemG)}
+                >
                   <div className="datoPPT">
                     <div className="MercadoLogo">
                       <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                         <circle cx="10" cy="10" r="10" fill="#3498db" />
-                        <text x="10" y="10" textAnchor="middle" dominantBaseline="central" fill="white" fontSize="12">
+                        <text
+                          x="10"
+                          y="10"
+                          textAnchor="middle"
+                          dominantBaseline="central"
+                          fill="white"
+                          fontSize="12"
+                        >
                           {itemG.supermercado.charAt(0)}
                         </text>
                       </svg>
@@ -115,6 +126,7 @@ function ProductDetail() {
                   </div>
                 </button>
               ))}
+
               {/*Fin Supermercados y precios segùn el producto Seleccionado usando SupermercadoG*/}
             </div>
           </div>

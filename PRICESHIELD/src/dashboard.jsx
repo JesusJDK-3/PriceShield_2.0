@@ -1,6 +1,7 @@
 // ProductDetail.jsx
 import React, { useState, useEffect } from 'react';
 import DashboardChart from './components/DashBoardChar.jsx';
+import productsDetailG from './components/productsDetailG.jsx';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './styles/products.css';
 import './styles/model.css';
@@ -27,6 +28,7 @@ function ProductDetail() {
         console.log('Buscando:', searchTerm);
     };
     const { state: producto } = useLocation();// Obtiene el producto seleccionado desde el estado de la ubicación
+    const detalle = productsDetailG(producto);
     const navigate = useNavigate(); // Navegación para regresar a la lista de productos
     if (!producto) {
         return (
@@ -178,24 +180,24 @@ function ProductDetail() {
                                 </div>
                                 <div className="precioPromedio">
                                     <h1 className="PPROM">
-                                        S/26
+                                        {detalle.precioPromedio}
                                     </h1>
                                     <h5>Precio Promedio</h5>
-                                    <small className="mensaVPPO">Ultimos 30 dìas</small>
+                                    <small className="mensaVPPO"></small>
                                 </div>
                                 <div className="precioMinimo">
                                     <h1 className="PMIN">
-                                        S/20
+                                        {detalle.productoConPrecioMinimo.precio}
                                     </h1>
                                     <h5>Precio Mínimo</h5>
-                                    <small className="mensaVPMI">Hace 15 dìas</small>
+                                    <small className="mensaVPMI">En el mes {detalle.mesDelPrecioMinimo}</small>
                                 </div>
                                 <div className="precioMaximo">
                                     <h1 className="PMAX">
-                                        S/30
+                                        {detalle.precioMaximo}
                                     </h1>
                                     <h5>Precio Máximo</h5>
-                                    <small className="mensaVPMX">Hace 20 dìas</small>
+                                    <small className="mensaVPMX">En el mes {detalle.mesDelPrecioMaximo} </small>
                                 </div>
                             </div>
                             <div className="dashboardPresetancion">
