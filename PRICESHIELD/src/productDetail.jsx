@@ -251,7 +251,7 @@ function ProductDetail() {
               {/*Supermercados y precios segùn el producto Seleccionado usando SupermercadoG*/}
               {SupermercadoG.map((itemG, index) => (
                 <button className="PrecioMasBajo" key={index} onClick={() => handleClick(itemG)}>
-                  <div className="dato">
+                  <div className="datoPPT">
                     <div className="MercadoLogo">
                       <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                         <circle cx="10" cy="10" r="10" fill="#3498db" />
