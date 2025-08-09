@@ -1,5 +1,7 @@
 // ProductDetail.jsx
 import React, { useState, useEffect } from 'react';
+import DashboardChart from './components/DashBoardChar.jsx';
+import productsDetailG from './components/productsDetailG.jsx';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './styles/products.css';
 import './styles/model.css';
@@ -26,6 +28,7 @@ function ProductDetail() {
         console.log('Buscando:', searchTerm);
     };
     const { state: producto } = useLocation();// Obtiene el producto seleccionado desde el estado de la ubicación
+    const detalle = productsDetailG(producto);
     const navigate = useNavigate(); // Navegación para regresar a la lista de productos
     if (!producto) {
         return (
@@ -56,7 +59,7 @@ function ProductDetail() {
                             {/* Div de Supermercados y precios segùn el producto Seleccionado*/}
                             <div className="footerMercados">
                                 <button className="PrecioMasBajo">
-                                    <div className="dato">
+                                    <div className="datoPPT">
                                         <div className="MercadoLogo">
                                             <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                                                 <circle cx="10" cy="10" r="10" fill="#3498db" />
@@ -71,7 +74,7 @@ function ProductDetail() {
                                     </div>
                                 </button>
                                 <button className="PrecioMasBajo">
-                                    <div className="dato">
+                                    <div className="datoPPT">
                                         <div className="MercadoLogo">
                                             <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                                                 <circle cx="10" cy="10" r="10" fill="#3498db" />
@@ -86,7 +89,7 @@ function ProductDetail() {
                                     </div>
                                 </button>
                                 <button className="PrecioMasBajo">
-                                    <div className="dato">
+                                    <div className="datoPPT">
                                         <div className="MercadoLogo">
                                             <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                                                 <circle cx="10" cy="10" r="10" fill="#3498db" />
@@ -101,7 +104,7 @@ function ProductDetail() {
                                     </div>
                                 </button>
                                 <button className="PrecioMasBajo">
-                                    <div className="dato">
+                                    <div className="datoPPT">
                                         <div className="MercadoLogo">
                                             <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                                                 <circle cx="10" cy="10" r="10" fill="#3498db" />
@@ -116,7 +119,7 @@ function ProductDetail() {
                                     </div>
                                 </button>
                                 <button className="PrecioMasBajo">
-                                    <div className="dato">
+                                    <div className="datoPPT">
                                         <div className="MercadoLogo">
                                             <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                                                 <circle cx="10" cy="10" r="10" fill="#3498db" />
@@ -161,7 +164,7 @@ function ProductDetail() {
                         {/* Fin Botón regresar superior */}
                         {/* Producto Seleccionado*/}
                         <div className="DetallesProducto">
-                            <img src={producto.imagen} alt={producto.nombre} className='imgDasPro'/>
+                            <img src={producto.imagen} alt={producto.nombre} className='imgDasProD'/>
                             <div className="DetallesMenoresP">
                                 <h2>{producto.nombre}</h2>
                                 <p><strong>Supermercado:</strong> {producto.supermercado}</p>
@@ -177,36 +180,41 @@ function ProductDetail() {
                                 </div>
                                 <div className="precioPromedio">
                                     <h1 className="PPROM">
-                                        S/26
+                                        {detalle.precioPromedio}
                                     </h1>
                                     <h5>Precio Promedio</h5>
-                                    <small className="mensaVPPO">Ultimos 30 dìas</small>
+                                    <small className="mensaVPPO"></small>
                                 </div>
                                 <div className="precioMinimo">
                                     <h1 className="PMIN">
-                                        S/20
+                                        {detalle.productoConPrecioMinimo.precio}
                                     </h1>
                                     <h5>Precio Mínimo</h5>
-                                    <small className="mensaVPMI">Hace 15 dìas</small>
+                                    <small className="mensaVPMI">En el mes {detalle.mesDelPrecioMinimo}</small>
                                 </div>
                                 <div className="precioMaximo">
                                     <h1 className="PMAX">
-                                        S/30
+                                        {detalle.precioMaximo}
                                     </h1>
                                     <h5>Precio Máximo</h5>
-                                    <small className="mensaVPMX">Hace 20 dìas</small>
+                                    <small className="mensaVPMX">En el mes {detalle.mesDelPrecioMaximo} </small>
                                 </div>
                             </div>
                             <div className="dashboardPresetancion">
 
                             </div>
                         </div>
+                        {/* Div dashboard*/}
+                        <div className="DashboardContainer">
+                            <DashboardChart />
+                            </div>
+                            {/* FIN Div dashboard*/}
                     </div>
                     <div className="mercadosYprecios">
                         {/* Div de Supermercados y precios segùn el producto Seleccionado*/}
                         <div className="footerMercados">
                             <button className="PrecioMasBajo">
-                                <div className="dato">
+                                <div className="datoPPT">
                                     <div className="MercadoLogo">
                                         <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                                             <circle cx="10" cy="10" r="10" fill="#3498db" />
@@ -221,7 +229,7 @@ function ProductDetail() {
                                 </div>
                             </button>
                             <button className="PrecioMasBajo">
-                                <div className="dato">
+                                <div className="datoPPT">
                                     <div className="MercadoLogo">
                                         <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                                             <circle cx="10" cy="10" r="10" fill="#3498db" />
@@ -236,7 +244,7 @@ function ProductDetail() {
                                 </div>
                             </button>
                             <button className="PrecioMasBajo">
-                                <div className="dato">
+                                <div className="datoPPT">
                                     <div className="MercadoLogo">
                                         <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                                             <circle cx="10" cy="10" r="10" fill="#3498db" />
@@ -251,7 +259,7 @@ function ProductDetail() {
                                 </div>
                             </button>
                             <button className="PrecioMasBajo">
-                                <div className="dato">
+                                <div className="datoPPT">
                                     <div className="MercadoLogo">
                                         <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                                             <circle cx="10" cy="10" r="10" fill="#3498db" />
@@ -266,7 +274,7 @@ function ProductDetail() {
                                 </div>
                             </button>
                             <button className="PrecioMasBajo">
-                                <div className="dato">
+                                <div className="datoPPT">
                                     <div className="MercadoLogo">
                                         <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
                                             <circle cx="10" cy="10" r="10" fill="#3498db" />
