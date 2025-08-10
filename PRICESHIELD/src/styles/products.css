@@ -65,8 +65,14 @@
     padding: 15px;
     padding-bottom: 5px;
     border-radius: 8px;
+    cursor: pointer;
 }
 
+.producto:hover {
+    background-color: #F8F7FC;
+    transition: 300ms;
+    transform: scale(1.05);
+}
 
 .detallesPro {
     max-width: 200px;

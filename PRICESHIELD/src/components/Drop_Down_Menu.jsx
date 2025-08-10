@@ -29,19 +29,19 @@ const Drop_DownM = ({ isOpenM, closeDown }) => {
       </Link>
       {/*Fin Sección productos */}
       {/*Sección Dasboard pasando el producto usando la fucion handleDashboardClick */}
-      <a onClick={handleDashboardClick}>
+      <a onClick={handleDashboardClick} style={{ cursor: 'pointer' }}>
         <i className="bi bi-bar-chart-line-fill dashI"></i>
-        <p>Dashboard</p>
+        <p>Panel</p>
       </a>
       {/*Fin Sección Dasboard pasando el producto usando la fucion handleDashboardClick */}
 
       <div className="ultimo">
         {/*Sección Alertas */}
-        <a href="#">
+        <Link to="/alert">
           <i className="bi bi-exclamation-triangle alertaI"></i>
           <p>Alertas</p>
           <span className="msg_count">14</span>
-        </a>
+        </Link>
         {/*Fin Sección Alertas */}
         {/*Sección Nosotros */}
         <a href="#">

@@ -1,6 +1,9 @@
 /* Estilos generales del body */
 
-
+/*.Registrarse{
+    display: grid;
+    grid-template-rows: auto 1fr;
+}
 
 /* Contenedor general */
 .todo {
@@ -9,30 +12,71 @@
     align-items: center;
 }
 
+.BotonRegistrar {
+    width: 90%;
+    display: flex;
+    justify-content: end
+}
+
+.BotonEfirst {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.Registrate {
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 300ms ease;
+    margin-top: 2.5rem;
+}
+
+.Regis {
+    background:transparent;
+    border-radius: 5px;
+    color: white;
+    border: none;
+}
+.Regis:hover {
+    background: #1f1f21;
+    transition: 300ms;
+    transform: scale(1.05);
+}
+
 /* Contenedor principal */
 .container {
     background-color: #F8F7FC;
+    color: black;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1.8rem;
     width: 90%;
     max-width: 1200px;
     box-sizing: border-box;
-    margin: 5rem auto;
+    /*margin: 5rem auto;*/
     margin-bottom: 1rem;
     padding: 2rem;
     border-radius: 12px;
-    margin-top: 6rem;
+
 }
 
-.alerta, .dashboard, .productos {
+.alerta,
+.dashboard,
+.productos {
     background-color: #FFFFFF;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     border: none;
     cursor: pointer;
 }
-.alerta:hover, .dashboard:hover, .productos:hover {
+
+.alerta:hover,
+.dashboard:hover,
+.productos:hover {
     transition: 300ms;
     transform: scale(1.05);
     background-color: #F8F7FC;
@@ -113,12 +157,14 @@
     padding: 0.5rem;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
     max-width: 600px;
-    
+
 }
-.formularioBuscar{
+
+.formularioBuscar {
     justify-content: space-between;
     display: flex;
 }
+
 .search-box input[type="text"] {
     padding: 0.5rem 1rem;
     border-radius: 25px;
@@ -139,7 +185,7 @@
 }
 
 /* Mejora para imágenes internas de herramientas */
-.iconos{
+.iconos {
     border-radius: 15px;
     border: 1px solid rgba(255, 255, 255, 0.2);
     background-color: #F8F7FC;
@@ -153,13 +199,16 @@ i {
     font-size: 2rem;
     margin-bottom: 0.5rem;
 }
-.icono-alerta{
+
+.icono-alerta {
     color: rgb(253, 117, 117);
 }
-.icono-dash{
+
+.icono-dash {
     color: rgb(231, 243, 1);
 }
-.icono-pro{
+
+.icono-pro {
     color: rgb(15, 216, 119);
 }
 
@@ -207,7 +256,7 @@ i {
     }
 
     .search-box input[type="submit"] {
-        
+
         background-color: #4A3FA3;
         color: white;
         border: none;
@@ -216,7 +265,8 @@ i {
         font-weight: bold;
         width: 40%;
     }
-    #search-form{
+
+    #search-form {
         justify-content: center;
         align-items: center;
     }

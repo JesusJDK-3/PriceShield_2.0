@@ -1,0 +1,18 @@
+.AlertaDProducto {
+   padding: 10px;
+    border-radius: 8px;
+    background-color: #F7F9FC;
+    display: flex;
+    width:99%;
+    flex-direction: column;
+    max-height: 970px;
+}
+.AlertaDPExtendido {
+    padding: 10px;
+  border-radius: 8px;
+  background-color: #F7F9FC;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  max-height: 970px;
+}
