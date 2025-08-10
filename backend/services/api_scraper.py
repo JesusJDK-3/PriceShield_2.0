@@ -91,24 +91,21 @@ class SupermarketAPI:
             supermarket_info = self.SUPERMERCADOS_API[supermarket_key]
             url = supermarket_info["url"]
             
-            # Parámetros de búsqueda
-            params = {
-                'q': query,  # Query de búsqueda (parámetro correcto)
-                '_from': 0,
-                '_to': limit - 1
-            }
-
-            
-
-            # O aún más simple (como tu segundo scraper que funcionaba):
+            # Usar URL simple sin parámetros de paginación para evitar error 206
             response = requests.get(
                 f"{url}?q={query}", 
                 headers=self.headers, 
                 timeout=10
             )
+            
+            print(f"🔍 {supermarket_info['name']}: Status {response.status_code}")
 
-            if response.status_code == 200:
+            if response.status_code in [200, 206]:
                 products_data = response.json()
+                
+                # Limitar productos después de obtenerlos (evitar paginación API)
+                if len(products_data) > limit:
+                    products_data = products_data[:limit]
                 
                 # Procesar y limpiar datos
                 processed_products = self._process_products(
@@ -129,7 +126,7 @@ class SupermarketAPI:
                     "success": False,
                     "supermarket": supermarket_info["name"],
                     "error": f"Error HTTP: {response.status_code}",
-                    "message": "No se pudo conectar con la API"
+                    "message": f"Respuesta del servidor: {response.text[:100]}..."
                 }
                 
         except requests.exceptions.Timeout:
