@@ -69,11 +69,9 @@ function App() {
           path="/dashboard" 
           element={<ProductDashboard user={user} logout={logout} />} 
         />
-        
       </Routes>
-      
     </Router>
   );
 }
 
-export default App;
+export default App;
