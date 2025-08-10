@@ -37,11 +37,11 @@ const Drop_DownM = ({ isOpenM, closeDown }) => {
 
       <div className="ultimo">
         {/*Sección Alertas */}
-        <a href="#">
+        <Link to="/alert">
           <i className="bi bi-exclamation-triangle alertaI"></i>
           <p>Alertas</p>
           <span className="msg_count">14</span>
-        </a>
+        </Link>
         {/*Fin Sección Alertas */}
         {/*Sección Nosotros */}
         <a href="#">

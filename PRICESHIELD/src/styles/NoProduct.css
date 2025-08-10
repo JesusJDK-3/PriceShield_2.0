@@ -1,0 +1,16 @@
+.NotificacionSinProducto{
+    height: 100%;
+    align-content: center;
+}
+.TextoSinProducto{
+    font-size: 2rem;
+    color: #000;
+    text-align: center;
+    margin-top: 20px;
+}
+@media (max-width: 867px) {
+    .NotificacionSinProducto {
+     height: 25vh;
+}
+    
+}

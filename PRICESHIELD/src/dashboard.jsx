@@ -9,6 +9,7 @@ import './styles/productDetail.css';
 import './styles/dash.css';
 import TopBar from './components/TopBar.jsx';
 import Drop_DownM from './components/Drop_Down_Menu.jsx';
+import SinProducto from './components/NoProduct.jsx';
 
 function ProductDetail() {
     const [isOpenM, setIsOpenM] = useState(true);
@@ -31,116 +32,9 @@ function ProductDetail() {
     const detalle = productsDetailG(producto);
     const navigate = useNavigate(); // Navegación para regresar a la lista de productos
     if (!producto) {
-        return (
-            <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
-                <div className="barraJex">
-                    <Drop_DownM isOpenM={isOpenM} closeDown={() => setIsOpenM(false)} />
-                </div>
-                <div className="buProductos">
-                    <div className='abrirDown'>
-                        <TopBar onSearch={handleSearch} openMenu={() => setIsOpenM(true)} />
-                    </div>
-                    {/* Fin Barra de busqueda superior */}
-                    <div className="detalleProducto">
-                        <div className="DPExtendido">
-                            {/* Botón regresar superior */}
-                            <div className="BotRP">
-                                <button className='BotonRegresar' onClick={() => navigate(-1)}> <span className='flechita'>←</span> Volver</button>
-                            </div>
-                            {/* Fin Botón regresar superior */}
-                            {/* Producto Seleccionado*/}
-                            <div >
-                                <h1>Busca un Producto</h1>
-                            </div>
-                            {/* FIN  Producto Seleccionado*/}
-
-                        </div>
-                        <div className="mercadosYprecios">
-                            {/* Div de Supermercados y precios segùn el producto Seleccionado*/}
-                            <div className="footerMercados">
-                                <button className="PrecioMasBajo">
-                                    <div className="datoPPT">
-                                        <div className="MercadoLogo">
-                                            <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
-                                                <circle cx="10" cy="10" r="10" fill="#3498db" />
-                                                <text x="10" y="10" textAnchor="middle" dominantBaseline="central" fill="white" fontSize="12">
-                                                    A
-                                                </text>
-                                            </svg>
-                                            <b>Alerta</b>
-                                        </div>
-                                        <br />
-                                        <p>S/15</p>
-                                    </div>
-                                </button>
-                                <button className="PrecioMasBajo">
-                                    <div className="datoPPT">
-                                        <div className="MercadoLogo">
-                                            <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
-                                                <circle cx="10" cy="10" r="10" fill="#3498db" />
-                                                <text x="10" y="10" textAnchor="middle" dominantBaseline="central" fill="white" fontSize="12">
-                                                    A
-                                                </text>
-                                            </svg>
-                                            <b>Alerta</b>
-                                        </div>
-                                        <br />
-                                        <p>S/15</p>
-                                    </div>
-                                </button>
-                                <button className="PrecioMasBajo">
-                                    <div className="datoPPT">
-                                        <div className="MercadoLogo">
-                                            <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
-                                                <circle cx="10" cy="10" r="10" fill="#3498db" />
-                                                <text x="10" y="10" textAnchor="middle" dominantBaseline="central" fill="white" fontSize="12">
-                                                    A
-                                                </text>
-                                            </svg>
-                                            <b>Alerta</b>
-                                        </div>
-                                        <br />
-                                        <p>S/15</p>
-                                    </div>
-                                </button>
-                                <button className="PrecioMasBajo">
-                                    <div className="datoPPT">
-                                        <div className="MercadoLogo">
-                                            <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
-                                                <circle cx="10" cy="10" r="10" fill="#3498db" />
-                                                <text x="10" y="10" textAnchor="middle" dominantBaseline="central" fill="white" fontSize="12">
-                                                    A
-                                                </text>
-                                            </svg>
-                                            <b>Alerta</b>
-                                        </div>
-                                        <br />
-                                        <p>S/15</p>
-                                    </div>
-                                </button>
-                                <button className="PrecioMasBajo">
-                                    <div className="datoPPT">
-                                        <div className="MercadoLogo">
-                                            <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
-                                                <circle cx="10" cy="10" r="10" fill="#3498db" />
-                                                <text x="10" y="10" textAnchor="middle" dominantBaseline="central" fill="white" fontSize="12">
-                                                    A
-                                                </text>
-                                            </svg>
-                                            <b>Alerta</b>
-                                        </div>
-                                        <br />
-                                        <p>S/15</p>
-                                    </div>
-                                </button>
-                                {/* ALERTAS*/}
-                            </div>
-                        </div>
-                        {/* FIN Div de Supermercados y precios segùn el producto Seleccionado*/}
-                    </div>
-                </div>
-            </div>
-        );
+        
+        return <SinProducto isOpenM={isOpenM} setIsOpenM={setIsOpenM} handleSearch={handleSearch} navigate={navigate} />;
+    
     }
     return (
         <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
@@ -200,9 +94,7 @@ function ProductDetail() {
                                     <small className="mensaVPMX">En el mes {detalle.mesDelPrecioMaximo} </small>
                                 </div>
                             </div>
-                            <div className="dashboardPresetancion">
-
-                            </div>
+                            
                         </div>
                         {/* Div dashboard*/}
                         <div className="DashboardContainer">
