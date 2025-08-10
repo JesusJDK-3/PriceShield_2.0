@@ -2,9 +2,10 @@ import productsGeneral from './productsGeneral.jsx';
 
 const productsDetailG = (producto) => {
   const result = [];
+  if (producto !== null) {
   // 1️⃣ Filtrar todos los productos que tengan el mismo nombre que el que recibimos como parámetro
-  const productosCoincidentes = productsGeneral.filter(productoGeneral => productoGeneral.nombre === producto.nombre);
-
+  const productosCoincidentes = productsGeneral.filter(productoGeneral => productoGeneral.nombre === producto.nombre) ;
+  const productoCoincidenteSuperMercado = productosCoincidentes.filter(productoGeneral => productoGeneral.supermercado === producto.supermercado);
   // 2️⃣ Ordenar la lista por precio de menor a mayor
   productosCoincidentes.sort((productoA, productoB) => {
     const precioA = parseFloat(productoA.precio.replace("S/", "").trim());
@@ -19,11 +20,15 @@ for (let i = 0; i < productosCoincidentes.length; i++) {
     parseFloat(producto.precio.replace("S/", "").trim())
   );
 
+  const listaPreciosNumericosSuperMercado = productoCoincidenteSuperMercado.map(producto =>
+    parseFloat(producto.precio.replace("S/", "").trim())
+  );
+
   // 4️⃣ Calcular precio mínimo, máximo y promedio
   const precioMinimo = Math.min(...listaPreciosNumericos);
   const precioMaximo = Math.max(...listaPreciosNumericos);
   const precioPromedio = listaPreciosNumericos.reduce((acumulador, precio) => acumulador + precio, 0) / listaPreciosNumericos.length;
-
+const precioMinimoSuperMercado = Math.min(...listaPreciosNumericosSuperMercado);
   // 5️⃣ Encontrar el producto con el precio más bajo y más alto
   const productoConPrecioMinimo = productosCoincidentes.find(producto =>
     parseFloat(producto.precio.replace("S/", "").trim()) === precioMinimo
@@ -31,11 +36,14 @@ for (let i = 0; i < productosCoincidentes.length; i++) {
   const productoConPrecioMaximo = productosCoincidentes.find(producto =>
     parseFloat(producto.precio.replace("S/", "").trim()) === precioMaximo
   );
+  const productoConPrecioMinimoSuperMercado = productosCoincidentes.find(producto =>
+    parseFloat(producto.precio.replace("S/", "").trim()) === precioMinimoSuperMercado
+  );
 
   // 6️⃣ Variables para guardar los meses
   let mesDelPrecioMinimo = null;
   let mesDelPrecioMaximo = null;
-
+  let mesproductoConPrecioMinimoSuperMercado = null;
   // 7️⃣ Buscar dentro de preciosMensuales el mes con el menor y mayor precio
   if (productoConPrecioMinimo?.preciosMensuales) {
     const listaPreciosMensualesMin = Object.entries(productoConPrecioMinimo.preciosMensuales).map(([mes, precio]) => ({
@@ -56,7 +64,16 @@ for (let i = 0; i < productosCoincidentes.length; i++) {
     const mesEncontradoMax = listaPreciosMensualesMax.find(dato => dato.precioNumerico === mayorPrecioMensual);
     mesDelPrecioMaximo = mesEncontradoMax?.mes || null;
   }
-
+  if (productoConPrecioMinimoSuperMercado?.preciosMensuales) {
+    const listaPreciosMensualesMinSuperMercado = Object.entries(productoConPrecioMinimoSuperMercado.preciosMensuales).map(([mes, precio]) => ({
+      mes,  
+      precioNumerico: parseFloat(precio.replace("S/", "").trim())
+    }));
+    const menorPrecioMensualSuperMercado = Math.min(...listaPreciosMensualesMinSuperMercado.map(dato => dato.precioNumerico));
+    const mesEncontradoMinSuperMercado = listaPreciosMensualesMinSuperMercado.find(dato => dato.precioNumerico === menorPrecioMensualSuperMercado);
+    mesproductoConPrecioMinimoSuperMercado = mesEncontradoMinSuperMercado?.mes || null;
+  }
+  
   // 8️⃣ Retornar toda la información como un objeto
   return {
     result,
@@ -65,9 +82,13 @@ for (let i = 0; i < productosCoincidentes.length; i++) {
     mesDelPrecioMinimo,
     productoConPrecioMaximo,
     mesDelPrecioMaximo,
+    productoConPrecioMinimoSuperMercado,
+    mesproductoConPrecioMinimoSuperMercado,
+    precioMinimo: parseFloat(precioMinimo.toFixed(2)),
     precioMaximo: parseFloat(precioMaximo.toFixed(2)),
     precioPromedio: parseFloat(precioPromedio.toFixed(2))
   };
+   }
 };
 
 export default productsDetailG;

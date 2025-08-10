@@ -37,7 +37,8 @@ const DashboardChart = () => {
     labels: isCompact
       ? ['Ene', 'Feb', 'Mar', 'Abr'] // Menos etiquetas en modo compacto
       : ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul'], // Todas las etiquetas en modo normal
-    datasets: [
+   
+      datasets: [
       {
         type: 'bar', // Tipo barra
         label: 'Precio mensual (S/)', // Etiqueta de la barra

@@ -110,7 +110,7 @@ const productosGeneral = [
     supermercado: "Metro",
     imagen: productoImgA,
     preciosMensuales: {
-      enero: "S/24.5", febrero: "S/24.8", marzo: "S/25.0", abril: "S/24.6",
+      enero: "S/24.5", febrero: "S/29.8", marzo: "S/29.0", abril: "S/24.6",
       mayo: "S/25.2", junio: "S/25.5", julio: "S/25.1", agosto: "S/24.9",
       septiembre: "S/25.6", octubre: "S/25.8", noviembre: "S/25.3", diciembre: "S/26.0"
     }
@@ -134,7 +134,7 @@ const productosGeneral = [
     supermercado: "PlazaVea",
     imagen: productoImgA,
     preciosMensuales: {
-      enero: "S/26.0", febrero: "S/26.2", marzo: "S/25.8", abril: "S/26.4",
+      enero: "S/26.0", febrero: "S/29.2", marzo: "S/29.8", abril: "S/26.4",
       mayo: "S/26.6", junio: "S/26.8", julio: "S/26.3", agosto: "S/26.1",
       septiembre: "S/27.0", octubre: "S/27.3", noviembre: "S/26.7", diciembre: "S/27.5"
     }
@@ -146,9 +146,9 @@ const productosGeneral = [
     supermercado: "RealPlaza",
     imagen: productoImgA,
     preciosMensuales: {
-      enero: "S/28.4", febrero: "S/28.7", marzo: "S/28.2", abril: "S/29.0",
+      enero: "S/29.4", febrero: "S/29.7", marzo: "S/29.2", abril: "S/29.0",
       mayo: "S/29.3", junio: "S/29.5", julio: "S/29.0", agosto: "S/28.8",
-      septiembre: "S/29.8", octubre: "S/30.0", noviembre: "S/29.4", diciembre: "S/30.2"
+      septiembre: "S/29.8", octubre: "S/30.0", noviembre: "S/30.4", diciembre: "S/30.2"
     }
   },
 

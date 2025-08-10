@@ -2,9 +2,10 @@
     background-color: #F7F6FB;
     display: flex;
     flex-direction: column;
-    height: 95%;
+    height: 100%;
     top: 1rem;
-    border-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-top-right-radius: 8px;
     border: none;
     gap: 5px;
     align-content: center;

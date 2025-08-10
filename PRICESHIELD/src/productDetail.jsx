@@ -70,7 +70,7 @@ function ProductDetail() {
               </div>
               <div className="BotonDashboardContainer">
                 <button className="BotonDashboard" onClick={handleClickD}>
-                  📊 Mira el Dashboard
+                  📊 Panel
                 </button>
               </div>
 
