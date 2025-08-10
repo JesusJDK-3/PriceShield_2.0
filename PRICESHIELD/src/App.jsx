@@ -6,7 +6,6 @@ import Products from './products';
 import ProductDetail from './productDetail'; 
 import ProductDashboard from './dashboard'; 
 import './styles/App.css'
-import Alerts from './alerts';
 
 function App() {
   // Estado global para manejar autenticación
@@ -70,7 +69,7 @@ function App() {
           path="/dashboard" 
           element={<ProductDashboard user={user} logout={logout} />} 
         />
-        <Route path="/alert" element={<Alerts user={user} logout={logout} />} />
+        
       </Routes>
       
     </Router>
