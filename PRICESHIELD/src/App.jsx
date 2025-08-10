@@ -5,6 +5,7 @@ import First from './first';
 import Products from './products'; 
 import ProductDetail from './productDetail'; 
 import ProductDashboard from './dashboard'; 
+import Alerts from './alerts';
 import './styles/App.css'
 
 function App() {
@@ -68,6 +69,10 @@ function App() {
         <Route 
           path="/dashboard" 
           element={<ProductDashboard user={user} logout={logout} />} 
+        />
+        <Route 
+          path="/alert" 
+          element={<Alerts user={user} logout={logout} />} 
         />
       </Routes>
     </Router>
