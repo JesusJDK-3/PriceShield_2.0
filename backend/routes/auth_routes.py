@@ -4,6 +4,40 @@ from controllers.auth_controller import auth_controller#Desde el archivo auth_co
 # Crear el Blueprint para las rutas de autenticación
 auth_bp = Blueprint('auth', __name__)
 
+# Agregar esta ruta a tu auth_routes.py
+
+@auth_bp.route('/google-auth', methods=['POST'])
+def google_auth():
+    """
+    Endpoint para autenticación con Google OAuth
+    
+    POST /api/auth/google-auth
+    
+    Body JSON:
+    {
+        "correo": "usuario@gmail.com",
+        "nombre": "Nombre Usuario",
+        "google_id": "google_user_id",
+        "foto": "url_foto_google",
+        "auth_method": "google"
+    }
+    
+    Respuesta exitosa:
+    {
+        "success": true,
+        "message": "Login con Google exitoso",
+        "action": "google_login",
+        "user": {
+            "id": "user_id_mongodb",
+            "email": "usuario@gmail.com",
+            "nombre": "Nombre Usuario",
+            "foto": "url_foto",
+            "auth_method": "google"
+        }
+    }
+    """
+    return auth_controller.google_auth()
+
 @auth_bp.route('/smart-auth', methods=['POST'])
 def smart_auth():
     """

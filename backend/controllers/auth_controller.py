@@ -1,14 +1,139 @@
-from flask import request, jsonify #el request nos permite acceder a datos de otras peticionesy el jsonify convierte diccionario de phyton a respusta json
-from models.user_model import User #Desde el archivo user_model.py dentro de la carpeta models, importa la clase User
+from flask import request, jsonify
+from models.user_model import User
+from datetime import datetime
 
 class AuthController:
     """
     Controlador que maneja toda la lógica de autenticación
     """
-
-    def __init__(self):#Inicializa el controlador de autenticación
-        self.user_model = User()#crea también un objeto de la clase User y guárdalo en self.user_model
     
+    def __init__(self):
+        """Inicializa el controlador de autenticación"""
+        self.user_model = User()
+    
+    def google_auth(self):
+        """
+        Función para manejar autenticación con Google OAuth
+        """
+        try:
+            # Obtener datos del frontend
+            data = request.get_json()
+            
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'message': 'No se recibieron datos'
+                }), 400
+
+            correo = data.get('correo', '').strip()
+            nombre = data.get('nombre', '').strip()
+            google_id = data.get('google_id', '')
+            foto = data.get('foto', '')
+            
+            print(f"📥 Datos recibidos de Google: {data}")  # Debug
+            
+            # Validar datos mínimos requeridos
+            if not correo or not google_id:
+                return jsonify({
+                    'success': False,
+                    'message': 'Email y Google ID son obligatorios'
+                }), 400
+            
+            # Validar email
+            if not self.user_model.validate_email(correo):
+                return jsonify({
+                    'success': False,
+                    'message': 'Email no válido'
+                }), 400
+            
+            # Buscar si el usuario ya existe por email
+            existing_user = self.user_model.find_by_email(correo)
+            
+            if existing_user:
+                # Usuario existe - verificar si ya tiene Google ID o agregarlo
+                if existing_user.get('google_id') == google_id:
+                    # Usuario ya autenticado con Google anteriormente
+                    print(f"✅ Login exitoso para usuario existente: {correo}")
+                    return jsonify({
+                        'success': True,
+                        'message': 'Login con Google exitoso',
+                        'action': 'google_login',
+                        'user': {
+                            'id': str(existing_user['_id']),
+                            'email': existing_user['correo'],
+                            'nombre': existing_user.get('nombre', nombre),
+                            'foto': existing_user.get('foto', foto),
+                            'auth_method': 'google'
+                        }
+                    }), 200
+                else:
+                    # Usuario existe pero sin Google ID - vincular cuenta
+                    self.user_model.collection.update_one(
+                        {'_id': existing_user['_id']},
+                        {
+                            '$set': {
+                                'google_id': google_id,
+                                'nombre': nombre,
+                                'foto': foto,
+                                'updated_at': datetime.now()
+                            }
+                        }
+                    )
+                    
+                    print(f"🔗 Cuenta vinculada con Google: {correo}")
+                    return jsonify({
+                        'success': True,
+                        'message': 'Cuenta vinculada con Google exitosamente',
+                        'action': 'google_link',
+                        'user': {
+                            'id': str(existing_user['_id']),
+                            'email': correo,
+                            'nombre': nombre,
+                            'foto': foto,
+                            'auth_method': 'google'
+                        }
+                    }), 200
+            else:
+                # Usuario no existe - crear nuevo usuario con Google
+                user_document = {
+                    'correo': correo.lower(),
+                    'nombre': nombre,
+                    'google_id': google_id,
+                    'foto': foto,
+                    'auth_method': 'google',
+                    'created_at': datetime.now(),
+                    'updated_at': datetime.now()
+                }
+                
+                result = self.user_model.collection.insert_one(user_document)
+                
+                if result.inserted_id:
+                    print(f"🆕 Nuevo usuario registrado con Google: {correo}")
+                    return jsonify({
+                        'success': True,
+                        'message': 'Registro con Google exitoso. ¡Bienvenido a PriceShield!',
+                        'action': 'google_register',
+                        'user': {
+                            'id': str(result.inserted_id),
+                            'email': correo,
+                            'nombre': nombre,
+                            'foto': foto,
+                            'auth_method': 'google'
+                        }
+                    }), 201
+                else:
+                    return jsonify({
+                        'success': False,
+                        'message': 'Error al registrar usuario con Google'
+                    }), 400
+                    
+        except Exception as e:
+            print(f"❌ Error en google_auth: {e}")
+            return jsonify({
+                'success': False,
+                'message': 'Error interno del servidor'
+            }), 500
+
     def smart_auth(self):
         """
         Función inteligente que maneja tanto login como registro automáticamente
@@ -27,7 +152,7 @@ class AuthController:
                     'message': 'No se recibieron datos'
                 }), 400
 
-            correo = data.get('correo', '').strip()#el strip() elimina espacios en blanco al inicio y al final
+            correo = data.get('correo', '').strip()
             contraseña = data.get('contraseña', '')
             
             # Validar que no estén vacíos
