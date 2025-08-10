@@ -4,7 +4,6 @@ import First from './first';        // Importa correctamente con mayúscula
 import Products from './products'; // Importa correctamente con mayúscula
 import ProductDetail from './productDetail'; 
 import ProductDashboard from './dashboard'; 
-import Alerts from './alerts';
 import './styles/App.css'
 
 function App() {
@@ -15,7 +14,6 @@ function App() {
         <Route path="/products" element={<Products />} />
         <Route path="/detalle" element={<ProductDetail />} />
         <Route path="/dashboard" element={<ProductDashboard />} />
-        <Route path="/alert" element={<Alerts/>}/>
       </Routes>
     </Router>
   );
