@@ -29,7 +29,7 @@ class ProductController:
             
             query = data.get('query', '').strip()
             supermarket = data.get('supermarket')  # Opcional
-            limit = data.get('limit', 30)  # Por defecto 30 productos
+            limit = data.get('limit', 20)  # Por defecto 20 productos
             save_to_db = data.get('save_to_db', True)  # Por defecto guardar
             
             # Validar query
@@ -99,7 +99,7 @@ class ProductController:
             # Obtener parámetros de query string
             query = request.args.get('query', '').strip()
             supermarket = request.args.get('supermarket')
-            limit = int(request.args.get('limit', 100))
+            limit = int(request.args.get('limit', 50))
             sort_by = request.args.get('sort_by', 'price')
             
             if not query:
@@ -213,7 +213,7 @@ class ProductController:
         Obtiene las búsquedas más populares
         """
         try:
-            limit = int(request.args.get('limit', 20))
+            limit = int(request.args.get('limit', 10))
             
             if limit < 1 or limit > 100:
                 return jsonify({
@@ -661,7 +661,7 @@ class ProductController:
                     # Buscar productos para este término
                     products_data = supermarket_api.search_products(
                         query=term,
-                        limit=30  # Menos productos por término para ser más eficiente
+                        limit=15  # Menos productos por término para ser más eficiente
                     )
                     
                     # Guardar en base de datos

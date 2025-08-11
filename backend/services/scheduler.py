@@ -114,7 +114,7 @@ class DatabaseScheduler:
                     # Buscar productos
                     products_data = supermarket_api.search_products(
                         query=term,
-                        limit=30
+                        limit=20
                     )
                     
                     # Guardar en base de datos

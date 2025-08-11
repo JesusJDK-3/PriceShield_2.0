@@ -1,7 +1,6 @@
 from services.db import db
 from datetime import datetime, timedelta
 import re
-import unicodedata
 
 class Product:
     """
@@ -73,48 +72,53 @@ class Product:
             }
     
     def search_saved_products(self, query, supermarket=None, limit=50, sort_by="price"):
+        """
+        Busca productos guardados en la base de datos
         
+        Args:
+            query (str): Término de búsqueda
+            supermarket (str): Filtrar por supermercado específico
+            limit (int): Límite de resultados
+            sort_by (str): Campo para ordenar (price, name, scraped_at)
+            
+        Returns:
+            list: Lista de productos encontrados
+        """
         try:
-            # BÚSQUEDA INTELIGENTE mejorada
-            search_terms = self._prepare_search_terms(query)
-            
-            # Construir filtros de búsqueda más flexibles
-            search_conditions = []
-            
-            for term in search_terms:
-                search_conditions.extend([
-                    {"name": {"$regex": term, "$options": "i"}},
-                    {"brand": {"$regex": term, "$options": "i"}},
-                    {"description": {"$regex": term, "$options": "i"}},
-                    {"categories": {"$regex": term, "$options": "i"}}
-                ])
-            
-            search_filter = {"$or": search_conditions}
+            # Construir filtros de búsqueda
+            search_filter = {
+                "$or": [
+                    {"name": {"$regex": query, "$options": "i"}},
+                    {"brand": {"$regex": query, "$options": "i"}},
+                    {"description": {"$regex": query, "$options": "i"}},
+                    {"categories": {"$regex": query, "$options": "i"}}
+                ]
+            }
             
             # Filtrar por supermercado si se especifica
             if supermarket:
-                search_filter = {"$and": [search_filter, {"supermarket_key": supermarket}]}
-                
-                # Definir orden
-                sort_options = {
-                    "price": [("price", 1)],  # Precio ascendente
-                    "price_desc": [("price", -1)],  # Precio descendente
-                    "name": [("name", 1)],  # Nombre A-Z
-                    "scraped_at": [("scraped_at", -1)]  # Más recientes primero
-                }
-                
-                sort_order = sort_options.get(sort_by, [("price", 1)])
-                
-                # Realizar búsqueda
-                products = list(self.products_collection.find(
-                    search_filter
-                ).sort(sort_order).limit(limit))
-                
-                # Limpiar el campo _id para JSON
-                for product in products:
-                    product["_id"] = str(product["_id"])
-                
-                return products
+                search_filter["supermarket_key"] = supermarket
+            
+            # Definir orden
+            sort_options = {
+                "price": [("price", 1)],  # Precio ascendente
+                "price_desc": [("price", -1)],  # Precio descendente
+                "name": [("name", 1)],  # Nombre A-Z
+                "scraped_at": [("scraped_at", -1)]  # Más recientes primero
+            }
+            
+            sort_order = sort_options.get(sort_by, [("price", 1)])
+            
+            # Realizar búsqueda
+            products = list(self.products_collection.find(
+                search_filter
+            ).sort(sort_order).limit(limit))
+            
+            # Limpiar el campo _id para JSON
+            for product in products:
+                product["_id"] = str(product["_id"])
+            
+            return products
             
         except Exception as e:
             print(f"Error buscando productos: {e}")
@@ -187,7 +191,7 @@ class Product:
             print(f"Error en comparación de precios: {e}")
             return {}
     
-    def get_popular_searches(self, limit=20):
+    def get_popular_searches(self, limit=10):
         """
         Obtiene las búsquedas más populares
         
@@ -380,7 +384,7 @@ class Product:
 
     # Agregar estos métodos a la clase Product
 
-    def get_all_products(self, page=1, limit=1000, sort_by="scraped_at", supermarket=None):
+    def get_all_products(self, page=1, limit=50, sort_by="scraped_at", supermarket=None):
         """
         Obtiene todos los productos guardados con paginación
         """
@@ -535,54 +539,6 @@ class Product:
         except Exception as e:
             print(f"Error limpiando productos antiguos: {e}")
             return 0
-        
-    def _prepare_search_terms(self, query):
-        """
-        Prepara términos de búsqueda más inteligentes
-        """
-        
-        # Normalizar texto (quitar tildes, convertir a minúsculas)
-        def normalize_text(text):
-            # Quitar tildes
-            text = unicodedata.normalize('NFD', text)
-            text = ''.join(char for char in text if unicodedata.category(char) != 'Mn')
-            return text.lower().strip()
-        
-        # Normalizar query original
-        normalized_query = normalize_text(query)
-        
-        # Crear variaciones de búsqueda
-        search_terms = [
-            query,  # Término original
-            normalized_query,  # Sin tildes
-            query.lower(),  # Solo minúsculas
-            normalized_query.lower()  # Sin tildes y minúsculas
-        ]
-        
-        # Dividir en palabras individuales para búsqueda por partes
-        words = normalized_query.split()
-        search_terms.extend(words)
-        
-        # Agregar variaciones comunes de palabras
-        word_variations = {
-            'leche': ['milk', 'lacteo', 'lactea'],
-            'arroz': ['rice', 'grano'],
-            'aceite': ['oil', 'oliva', 'girasol'],
-            'pollo': ['chicken', 'ave', 'pechuga'],
-            'carne': ['meat', 'res', 'vacuno'],
-            'pan': ['bread', 'integral'],
-            'agua': ['water', 'mineral'],
-            'shampoo': ['champu', 'cabello'],
-            'jabon': ['soap', 'barra']
-        }
-        
-        for word in words:
-            if word in word_variations:
-                search_terms.extend(word_variations[word])
-        
-        # Remover duplicados y términos muy cortos
-        search_terms = list(set([term for term in search_terms if len(term) >= 2]))
-        
-        return search_terms
+
 # Crear instancia global
 product_model = Product()
