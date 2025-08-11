@@ -25,6 +25,66 @@ def handle_route_errors(f):
             }), 500
     return wrapper
 
+# =================== NUEVAS RUTAS PRINCIPALES ===================
+
+@product_routes.route('/all', methods=['GET'])
+@optional_auth
+@handle_route_errors
+def get_all_products():
+    """
+    GET /api/products/all?page=1&limit=50&sort_by=scraped_at&supermarket=plazavea
+    
+    Obtiene todos los productos guardados en la base de datos con paginación
+    
+    Query Parameters:
+    - page (opcional): Página actual (por defecto 1)
+    - limit (opcional): Productos por página (por defecto 50, máximo 100)
+    - sort_by (opcional): price, price_desc, name, scraped_at, updated_at (por defecto scraped_at)
+    - supermarket (opcional): Filtrar por supermercado específico
+    
+    Respuesta:
+    {
+        "success": true,
+        "products": [...],
+        "pagination": {
+            "current_page": 1,
+            "total_pages": 10,
+            "total_products": 500,
+            "products_per_page": 50,
+            "has_next": true,
+            "has_prev": false
+        }
+    }
+    """
+    return product_controller.get_all_saved_products()
+
+@product_routes.route('/update-database', methods=['POST'])
+@auth_required  # Solo usuarios autenticados pueden forzar actualizaciones
+@handle_route_errors
+def manual_database_update():
+    """
+    POST /api/products/update-database
+    
+    Actualiza manualmente la base de datos con productos populares
+    
+    Body JSON (opcional):
+    {
+        "force_update": false    # Opcional: forzar actualización aunque sea reciente
+    }
+    
+    Respuesta:
+    {
+        "success": true,
+        "message": "Actualización de base de datos iniciada",
+        "status": "processing",
+        "terms_to_process": 25,
+        "estimated_time_minutes": 50
+    }
+    """
+    return product_controller.manual_database_update()
+
+# =================== RUTAS EXISTENTES MEJORADAS ===================
+
 @product_routes.route('/search', methods=['POST'])
 @optional_auth  # Permitir uso sin autenticación pero mejor con auth
 @handle_route_errors
@@ -202,7 +262,119 @@ def get_product_statistics():
     """
     return product_controller.get_product_statistics()
 
-# Rutas adicionales para funcionalidades específicas
+# =================== RUTAS ADICIONALES ===================
+
+@product_routes.route('/recent', methods=['GET'])
+@optional_auth
+@handle_route_errors
+def get_recent_products():
+    """
+    GET /api/products/recent?days_back=7&limit=50
+    
+    Obtiene productos agregados/actualizados recientemente
+    
+    Query Parameters:
+    - days_back (opcional): Días hacia atrás (por defecto 7)
+    - limit (opcional): Límite de productos (por defecto 50)
+    
+    Respuesta:
+    {
+        "success": true,
+        "products": [...],
+        "count": 25
+    }
+    """
+    try:
+        days_back = int(request.args.get('days_back', 7))
+        limit = int(request.args.get('limit', 50))
+        
+        if days_back < 1 or days_back > 30:
+            return jsonify({
+                "success": False,
+                "error": "Parámetro inválido",
+                "message": "days_back debe estar entre 1 y 30"
+            }), 400
+        
+        if limit < 1 or limit > 100:
+            return jsonify({
+                "success": False,
+                "error": "Parámetro inválido", 
+                "message": "limit debe estar entre 1 y 100"
+            }), 400
+        
+        products = product_controller.product_model.get_recent_products(days_back, limit)
+        
+        return jsonify({
+            "success": True,
+            "products": products,
+            "count": len(products),
+            "days_back": days_back
+        }), 200
+        
+    except ValueError as e:
+        return jsonify({
+            "success": False,
+            "error": "Parámetro inválido",
+            "message": "Los parámetros deben ser números válidos"
+        }), 400
+        
+    except Exception as e:
+        print(f"❌ Error obteniendo productos recientes: {e}")
+        return jsonify({
+            "success": False,
+            "error": "Error interno del servidor",
+            "message": str(e)
+        }), 500
+
+@product_routes.route('/categories/<category>', methods=['GET'])
+@optional_auth
+@handle_route_errors
+def get_products_by_category(category):
+    """
+    GET /api/products/categories/{category}?limit=20
+    
+    Obtiene productos por categoría específica
+    
+    Query Parameters:
+    - limit (opcional): Límite de productos (por defecto 20)
+    
+    Respuesta:
+    {
+        "success": true,
+        "category": "lacteos",
+        "products": [...],
+        "count": 15
+    }
+    """
+    try:
+        limit = int(request.args.get('limit', 20))
+        
+        if limit < 1 or limit > 100:
+            limit = 20
+        
+        products = product_controller.product_model.get_products_by_category(category, limit)
+        
+        return jsonify({
+            "success": True,
+            "category": category,
+            "products": products,
+            "count": len(products)
+        }), 200
+        
+    except ValueError as e:
+        return jsonify({
+            "success": False,
+            "error": "Parámetro inválido",
+            "message": "El parámetro 'limit' debe ser un número"
+        }), 400
+        
+    except Exception as e:
+        print(f"❌ Error obteniendo productos por categoría: {e}")
+        return jsonify({
+            "success": False,
+            "error": "Error interno del servidor",
+            "message": str(e)
+        }), 500
 
 @product_routes.route('/health', methods=['GET'])
 @handle_route_errors
@@ -218,11 +390,22 @@ def health_check():
         
         # Verificar APIs de supermercados (simple ping)
         supermarkets_status = {}
-        for key, info in product_controller.supermarket_api.SUPERMERCADOS_API.items():
-            supermarkets_status[key] = {
-                "name": info["name"],
-                "active": info["active"]
-            }
+        try:
+            from services.api_scraper import supermarket_api
+            for key, info in supermarket_api.SUPERMERCADOS_API.items():
+                supermarkets_status[key] = {
+                    "name": info["name"],
+                    "active": info["active"]
+                }
+        except Exception as e:
+            supermarkets_status = {"error": "No se pudo verificar APIs"}
+        
+        # Verificar scheduler
+        try:
+            from services.scheduler import database_scheduler
+            scheduler_status = database_scheduler.is_running
+        except Exception as e:
+            scheduler_status = False
         
         return jsonify({
             "success": True,
@@ -233,6 +416,9 @@ def health_check():
                 "total_products": product_count
             },
             "supermarkets": supermarkets_status,
+            "scheduler": {
+                "active": scheduler_status
+            },
             "timestamp": getattr(request, 'timestamp', time.time())
         }), 200
         
@@ -299,7 +485,7 @@ def get_brands():
         
         # Obtener marcas únicas de la base de datos
         pipeline = [
-            {"$match": {"brand": {"$ne": "Sin marca"}}},
+            {"$match": {"brand": {"$ne": "Sin marca", "$ne": None, "$ne": ""}}},
             {"$group": {
                 "_id": "$brand",
                 "product_count": {"$sum": 1}
@@ -335,6 +521,66 @@ def get_brands():
             "error": "Error interno del servidor",
             "message": str(e)
         }), 500
+
+# =================== RUTAS DE CONTROL DEL SCHEDULER ===================
+
+@product_routes.route('/scheduler/status', methods=['GET'])
+@auth_required
+@handle_route_errors
+def get_scheduler_status():
+    """
+    GET /api/products/scheduler/status
+    
+    Obtiene el estado del programador de tareas
+    """
+    try:
+        from services.scheduler import database_scheduler
+        
+        return jsonify({
+            "success": True,
+            "scheduler": {
+                "active": database_scheduler.is_running,
+                "next_update": "Diario a las 02:00 AM",
+                "cleanup": "Domingos a las 03:00 AM",
+                "popular_terms_count": len(database_scheduler.popular_terms)
+            }
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": "Error obteniendo estado del scheduler",
+            "message": str(e)
+        }), 500
+
+@product_routes.route('/scheduler/force-update', methods=['POST'])
+@auth_required
+@handle_route_errors
+def force_scheduler_update():
+    """
+    POST /api/products/scheduler/force-update
+    
+    Fuerza una actualización inmediata del scheduler (solo para testing)
+    """
+    try:
+        from services.scheduler import database_scheduler
+        
+        result = database_scheduler.force_update_now()
+        
+        return jsonify({
+            "success": True,
+            "message": result,
+            "status": "started"
+        }), 202
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": "Error forzando actualización",
+            "message": str(e)
+        }), 500
+
+# =================== MIDDLEWARE Y MANEJO DE ERRORES ===================
 
 # Middleware para agregar timestamp a las peticiones
 @product_routes.before_request

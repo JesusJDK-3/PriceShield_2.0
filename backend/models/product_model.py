@@ -1,6 +1,7 @@
 from services.db import db
 from datetime import datetime, timedelta
 import re
+import unicodedata
 
 class Product:
     """
@@ -72,53 +73,48 @@ class Product:
             }
     
     def search_saved_products(self, query, supermarket=None, limit=50, sort_by="price"):
-        """
-        Busca productos guardados en la base de datos
         
-        Args:
-            query (str): Término de búsqueda
-            supermarket (str): Filtrar por supermercado específico
-            limit (int): Límite de resultados
-            sort_by (str): Campo para ordenar (price, name, scraped_at)
-            
-        Returns:
-            list: Lista de productos encontrados
-        """
         try:
-            # Construir filtros de búsqueda
-            search_filter = {
-                "$or": [
-                    {"name": {"$regex": query, "$options": "i"}},
-                    {"brand": {"$regex": query, "$options": "i"}},
-                    {"description": {"$regex": query, "$options": "i"}},
-                    {"categories": {"$regex": query, "$options": "i"}}
-                ]
-            }
+            # BÚSQUEDA INTELIGENTE mejorada
+            search_terms = self._prepare_search_terms(query)
+            
+            # Construir filtros de búsqueda más flexibles
+            search_conditions = []
+            
+            for term in search_terms:
+                search_conditions.extend([
+                    {"name": {"$regex": term, "$options": "i"}},
+                    {"brand": {"$regex": term, "$options": "i"}},
+                    {"description": {"$regex": term, "$options": "i"}},
+                    {"categories": {"$regex": term, "$options": "i"}}
+                ])
+            
+            search_filter = {"$or": search_conditions}
             
             # Filtrar por supermercado si se especifica
             if supermarket:
-                search_filter["supermarket_key"] = supermarket
-            
-            # Definir orden
-            sort_options = {
-                "price": [("price", 1)],  # Precio ascendente
-                "price_desc": [("price", -1)],  # Precio descendente
-                "name": [("name", 1)],  # Nombre A-Z
-                "scraped_at": [("scraped_at", -1)]  # Más recientes primero
-            }
-            
-            sort_order = sort_options.get(sort_by, [("price", 1)])
-            
-            # Realizar búsqueda
-            products = list(self.products_collection.find(
-                search_filter
-            ).sort(sort_order).limit(limit))
-            
-            # Limpiar el campo _id para JSON
-            for product in products:
-                product["_id"] = str(product["_id"])
-            
-            return products
+                search_filter = {"$and": [search_filter, {"supermarket_key": supermarket}]}
+                
+                # Definir orden
+                sort_options = {
+                    "price": [("price", 1)],  # Precio ascendente
+                    "price_desc": [("price", -1)],  # Precio descendente
+                    "name": [("name", 1)],  # Nombre A-Z
+                    "scraped_at": [("scraped_at", -1)]  # Más recientes primero
+                }
+                
+                sort_order = sort_options.get(sort_by, [("price", 1)])
+                
+                # Realizar búsqueda
+                products = list(self.products_collection.find(
+                    search_filter
+                ).sort(sort_order).limit(limit))
+                
+                # Limpiar el campo _id para JSON
+                for product in products:
+                    product["_id"] = str(product["_id"])
+                
+                return products
             
         except Exception as e:
             print(f"Error buscando productos: {e}")
@@ -191,7 +187,7 @@ class Product:
             print(f"Error en comparación de precios: {e}")
             return {}
     
-    def get_popular_searches(self, limit=10):
+    def get_popular_searches(self, limit=20):
         """
         Obtiene las búsquedas más populares
         
@@ -382,5 +378,211 @@ class Product:
         except Exception as e:
             print(f"Error guardando historial de precios: {e}")
 
+    # Agregar estos métodos a la clase Product
+
+    def get_all_products(self, page=1, limit=1000, sort_by="scraped_at", supermarket=None):
+        """
+        Obtiene todos los productos guardados con paginación
+        """
+        try:
+            # Construir filtro
+            filter_query = {}
+            if supermarket:
+                filter_query["supermarket_key"] = supermarket
+            
+            # Definir orden
+            sort_options = {
+                "price": [("price", 1)],
+                "price_desc": [("price", -1)],
+                "name": [("name", 1)],
+                "scraped_at": [("scraped_at", -1)],
+                "updated_at": [("updated_at", -1)]
+            }
+            
+            sort_order = sort_options.get(sort_by, [("scraped_at", -1)])
+            
+            # Calcular skip para paginación
+            skip = (page - 1) * limit
+            
+            # Realizar consulta
+            products = list(self.products_collection.find(
+                filter_query
+            ).sort(sort_order).skip(skip).limit(limit))
+            
+            # Limpiar el campo _id para JSON
+            for product in products:
+                product["_id"] = str(product["_id"])
+            
+            return products
+            
+        except Exception as e:
+            print(f"Error obteniendo todos los productos: {e}")
+            return []
+
+    def get_total_products_count(self, supermarket=None):
+        """
+        Obtiene el total de productos en la base de datos
+        """
+        try:
+            filter_query = {}
+            if supermarket:
+                filter_query["supermarket_key"] = supermarket
+                
+            return self.products_collection.count_documents(filter_query)
+            
+        except Exception as e:
+            print(f"Error contando productos: {e}")
+            return 0
+
+    def get_last_database_update(self):
+        """
+        Obtiene la fecha de la última actualización de la base de datos
+        """
+        try:
+            # Buscar en una colección de metadatos o usar el producto más reciente
+            latest_product = self.products_collection.find_one(
+                {},
+                sort=[("updated_at", -1)]
+            )
+            
+            if latest_product and latest_product.get("updated_at"):
+                return datetime.fromisoformat(latest_product["updated_at"])
+            
+            return None
+            
+        except Exception as e:
+            print(f"Error obteniendo última actualización: {e}")
+            return None
+
+    def update_last_database_update(self):
+        """
+        Actualiza el timestamp de la última actualización
+        """
+        try:
+            # Crear o actualizar documento de metadatos
+            metadata_collection = db['app_metadata']
+            
+            metadata_collection.update_one(
+                {"key": "last_database_update"},
+                {
+                    "$set": {
+                        "key": "last_database_update",
+                        "timestamp": datetime.now().isoformat(),
+                        "date": datetime.now().date().isoformat()
+                    }
+                },
+                upsert=True
+            )
+            
+            return True
+            
+        except Exception as e:
+            print(f"Error actualizando timestamp: {e}")
+            return False
+
+    def get_products_by_category(self, category, limit=20):
+        """
+        Obtiene productos por categoría
+        """
+        try:
+            products = list(self.products_collection.find({
+                "categories": {"$regex": category, "$options": "i"}
+            }).sort([("price", 1)]).limit(limit))
+            
+            for product in products:
+                product["_id"] = str(product["_id"])
+            
+            return products
+            
+        except Exception as e:
+            print(f"Error obteniendo productos por categoría: {e}")
+            return []
+
+    def get_recent_products(self, days_back=7, limit=50):
+        """
+        Obtiene productos agregados/actualizados recientemente
+        """
+        try:
+            date_limit = datetime.now() - timedelta(days=days_back)
+            
+            products = list(self.products_collection.find({
+                "updated_at": {"$gte": date_limit.isoformat()}
+            }).sort([("updated_at", -1)]).limit(limit))
+            
+            for product in products:
+                product["_id"] = str(product["_id"])
+            
+            return products
+            
+        except Exception as e:
+            print(f"Error obteniendo productos recientes: {e}")
+            return []
+
+    def clean_old_products(self, days_old=30):
+        """
+        Limpia productos muy antiguos de la base de datos
+        """
+        try:
+            cutoff_date = datetime.now() - timedelta(days=days_old)
+            
+            result = self.products_collection.delete_many({
+                "scraped_at": {"$lt": cutoff_date.isoformat()}
+            })
+            
+            print(f"🧹 Limpieza: {result.deleted_count} productos antiguos eliminados")
+            return result.deleted_count
+            
+        except Exception as e:
+            print(f"Error limpiando productos antiguos: {e}")
+            return 0
+        
+    def _prepare_search_terms(self, query):
+        """
+        Prepara términos de búsqueda más inteligentes
+        """
+        
+        # Normalizar texto (quitar tildes, convertir a minúsculas)
+        def normalize_text(text):
+            # Quitar tildes
+            text = unicodedata.normalize('NFD', text)
+            text = ''.join(char for char in text if unicodedata.category(char) != 'Mn')
+            return text.lower().strip()
+        
+        # Normalizar query original
+        normalized_query = normalize_text(query)
+        
+        # Crear variaciones de búsqueda
+        search_terms = [
+            query,  # Término original
+            normalized_query,  # Sin tildes
+            query.lower(),  # Solo minúsculas
+            normalized_query.lower()  # Sin tildes y minúsculas
+        ]
+        
+        # Dividir en palabras individuales para búsqueda por partes
+        words = normalized_query.split()
+        search_terms.extend(words)
+        
+        # Agregar variaciones comunes de palabras
+        word_variations = {
+            'leche': ['milk', 'lacteo', 'lactea'],
+            'arroz': ['rice', 'grano'],
+            'aceite': ['oil', 'oliva', 'girasol'],
+            'pollo': ['chicken', 'ave', 'pechuga'],
+            'carne': ['meat', 'res', 'vacuno'],
+            'pan': ['bread', 'integral'],
+            'agua': ['water', 'mineral'],
+            'shampoo': ['champu', 'cabello'],
+            'jabon': ['soap', 'barra']
+        }
+        
+        for word in words:
+            if word in word_variations:
+                search_terms.extend(word_variations[word])
+        
+        # Remover duplicados y términos muy cortos
+        search_terms = list(set([term for term in search_terms if len(term) >= 2]))
+        
+        return search_terms
 # Crear instancia global
 product_model = Product()

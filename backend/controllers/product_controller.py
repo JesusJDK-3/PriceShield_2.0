@@ -29,7 +29,7 @@ class ProductController:
             
             query = data.get('query', '').strip()
             supermarket = data.get('supermarket')  # Opcional
-            limit = data.get('limit', 20)  # Por defecto 20 productos
+            limit = data.get('limit', 30)  # Por defecto 30 productos
             save_to_db = data.get('save_to_db', True)  # Por defecto guardar
             
             # Validar query
@@ -99,7 +99,7 @@ class ProductController:
             # Obtener parámetros de query string
             query = request.args.get('query', '').strip()
             supermarket = request.args.get('supermarket')
-            limit = int(request.args.get('limit', 50))
+            limit = int(request.args.get('limit', 100))
             sort_by = request.args.get('sort_by', 'price')
             
             if not query:
@@ -213,7 +213,7 @@ class ProductController:
         Obtiene las búsquedas más populares
         """
         try:
-            limit = int(request.args.get('limit', 10))
+            limit = int(request.args.get('limit', 20))
             
             if limit < 1 or limit > 100:
                 return jsonify({
@@ -526,6 +526,174 @@ class ProductController:
                 "error": "Error interno del servidor",
                 "message": str(e)
             }), 500
+    
+    # Agregar estos métodos a tu clase ProductController en product_controller.py
+
+    def get_all_saved_products(self):
+        """
+        Obtiene todos los productos guardados en la base de datos con paginación
+        """
+        try:
+            # Obtener parámetros de paginación
+            page = int(request.args.get('page', 1))
+            limit = int(request.args.get('limit', 50))
+            sort_by = request.args.get('sort_by', 'scraped_at')
+            supermarket = request.args.get('supermarket')
+            
+            # Validar parámetros
+            if page < 1:
+                page = 1
+            if limit < 1 or limit > 100:
+                limit = 50
+                
+            # Obtener productos
+            products = product_model.get_all_products(
+                page=page,
+                limit=limit,
+                sort_by=sort_by,
+                supermarket=supermarket
+            )
+            
+            # Obtener total de productos para paginación
+            total_products = product_model.get_total_products_count(supermarket)
+            total_pages = (total_products + limit - 1) // limit
+            
+            return jsonify({
+                "success": True,
+                "products": products,
+                "pagination": {
+                    "current_page": page,
+                    "total_pages": total_pages,
+                    "total_products": total_products,
+                    "products_per_page": limit,
+                    "has_next": page < total_pages,
+                    "has_prev": page > 1
+                },
+                "filters": {
+                    "supermarket": supermarket,
+                    "sort_by": sort_by
+                }
+            }), 200
+            
+        except ValueError as e:
+            return jsonify({
+                "success": False,
+                "error": "Parámetro inválido",
+                "message": str(e)
+            }), 400
+        
+        except Exception as e:
+            print(f"❌ Error obteniendo todos los productos: {e}")
+            return jsonify({
+                "success": False,
+                "error": "Error interno del servidor",
+                "message": str(e)
+            }), 500
+
+    def manual_database_update(self):
+        """
+        Actualiza manualmente la base de datos con productos populares
+        """
+        try:
+            data = request.get_json() or {}
+            force_update = data.get('force_update', False)
+            
+            # Lista de términos populares para actualizar
+            popular_terms = [
+                "leche", "arroz", "aceite", "azúcar", "sal", "pan", "huevos", 
+                "pollo", "carne", "pescado", "tomate", "cebolla", "papa", 
+                "yogurt", "queso", "mantequilla", "atún", "pasta", "fideos",
+                "detergente", "jabón", "shampoo", "papel higiénico",
+                "galletas", "cereales", "agua", "gaseosa"
+            ]
+            
+            # Verificar si necesita actualización
+            if not force_update:
+                last_update = product_model.get_last_database_update()
+                if last_update:
+                    from datetime import datetime, timedelta
+                    hours_since_update = (datetime.now() - last_update).total_seconds() / 3600
+                    if hours_since_update < 23:
+                        return jsonify({
+                            "success": False,
+                            "message": "La base de datos fue actualizada recientemente",
+                            "last_update": last_update.isoformat(),
+                            "next_update_in_hours": round(24 - hours_since_update, 1)
+                        }), 429
+            
+            # Iniciar actualización en segundo plano
+            thread = threading.Thread(
+                target=self._update_database_background,
+                args=(popular_terms,)
+            )
+            thread.daemon = True
+            thread.start()
+            
+            return jsonify({
+                "success": True,
+                "message": "Actualización de base de datos iniciada",
+                "status": "processing",
+                "terms_to_process": len(popular_terms),
+                "estimated_time_minutes": len(popular_terms) * 2
+            }), 202
+            
+        except Exception as e:
+            print(f"❌ Error en actualización manual: {e}")
+            return jsonify({
+                "success": False,
+                "error": "Error interno del servidor",
+                "message": str(e)
+            }), 500
+
+    def _update_database_background(self, terms_list):
+        """
+        Actualiza la base de datos en segundo plano
+        """
+        try:
+            print("🔄 Iniciando actualización de base de datos...")
+            total_saved = 0
+            total_updated = 0
+            
+            for i, term in enumerate(terms_list):
+                try:
+                    print(f"🔍 Procesando término {i+1}/{len(terms_list)}: {term}")
+                    
+                    # Buscar productos para este término
+                    products_data = supermarket_api.search_products(
+                        query=term,
+                        limit=30  # Menos productos por término para ser más eficiente
+                    )
+                    
+                    # Guardar en base de datos
+                    save_result = product_model.save_products(products_data, term)
+                    
+                    if save_result["success"]:
+                        total_saved += save_result["saved_count"]
+                        total_updated += save_result["updated_count"]
+                        print(f"   ✅ {term}: {save_result['saved_count']} nuevos, {save_result['updated_count']} actualizados")
+                    else:
+                        print(f"   ❌ {term}: Error guardando")
+                    
+                    # Pausa entre términos para no sobrecargar las APIs
+                    time.sleep(2)
+                    
+                except Exception as e:
+                    print(f"   ❌ Error procesando {term}: {e}")
+                    continue
+            
+            # Actualizar timestamp de última actualización
+            product_model.update_last_database_update()
+            
+            print(f"✅ Actualización completada:")
+            print(f"   - Productos nuevos: {total_saved}")
+            print(f"   - Productos actualizados: {total_updated}")
+            print(f"   - Total procesados: {total_saved + total_updated}")
+            
+        except Exception as e:
+            print(f"❌ Error en actualización de base de datos: {e}")
+
+# También necesitas agregar la importación del supermarket_api al inicio del archivo
+# from services.api_scraper import supermarket_api
 
 # Crear instancia global del controlador
 product_controller = ProductController()

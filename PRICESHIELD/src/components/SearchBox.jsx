@@ -1,4 +1,3 @@
-// SearchBox.jsx
 import React, { useState } from 'react';
 
 const SearchBox = ({ onSearch, onResults }) => {
@@ -22,7 +21,7 @@ const SearchBox = ({ onSearch, onResults }) => {
 
     // Limpiar errores anteriores
     setError(null);
-    setIsLoading(true);
+    setIsLoading(true); // ✅ CORREGIDO: era setIsLoadingProducts(true)
 
     try {
       // Llamar callback onSearch si existe (para componentes padre)
@@ -30,37 +29,61 @@ const SearchBox = ({ onSearch, onResults }) => {
         onSearch(searchValue);
       }
 
-      // Realizar búsqueda en el backend
-      const response = await fetch('http://127.0.0.1:5000/api/products/search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query: searchValue,
-          limit: 20,
-          save_to_db: true
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Pasar los resultados al componente padre
-        if (onResults) {
-          onResults(data.results, searchValue);
+      // PASO 1: Buscar primero en productos guardados
+      console.log('🔍 Buscando en productos guardados...');
+      const savedResponse = await fetch(
+        `http://127.0.0.1:5000/api/products/search/saved?query=${encodeURIComponent(searchValue)}&limit=50&sort_by=price`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
         }
-        console.log('✅ Búsqueda exitosa:', data);
+      );
+
+      const savedData = await savedResponse.json();
+
+      if (savedData.success && savedData.products && savedData.products.length > 0) {
+        // Si encontramos productos guardados, mostrarlos
+        if (onResults) {
+          onResults(savedData.products, searchValue, 'search_saved');
+        }
+        console.log(`✅ Encontrados ${savedData.products.length} productos guardados`);
       } else {
-        setError(data.message || 'Error en la búsqueda');
-        console.error('❌ Error en búsqueda:', data);
+        // PASO 2: Si no hay productos guardados, buscar en APIs en tiempo real
+        console.log('🌐 No hay productos guardados, buscando en APIs...');
+        
+        const apiResponse = await fetch('http://127.0.0.1:5000/api/products/search', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query: searchValue,
+            limit: 20,
+            save_to_db: true // Guardar resultados para futuras búsquedas
+          })
+        });
+
+        const apiData = await apiResponse.json();
+
+        if (apiData.success) {
+          // Pasar los resultados de las APIs al componente padre
+          if (onResults) {
+            onResults(apiData.results, searchValue, 'search_api');
+          }
+          console.log('✅ Búsqueda en APIs exitosa:', apiData);
+        } else {
+          setError(apiData.message || 'Error en la búsqueda');
+          console.error('❌ Error en búsqueda:', apiData);
+        }
       }
 
     } catch (error) {
       console.error('❌ Error conectando con la API:', error);
       setError('Error de conexión. Verifica que el backend esté funcionando.');
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // ✅ CORREGIDO: era setIsLoadingProducts(false)
     }
   };
 
@@ -108,7 +131,12 @@ const SearchBox = ({ onSearch, onResults }) => {
           border: '1px solid #bbdefb',
           color: '#1976d2'
         }}>
-          🔍 Buscando productos en supermercados...
+          <div className="loading-steps">
+            <div>🔍 Buscando en productos guardados...</div>
+            <div style={{ fontSize: '12px', opacity: 0.7 }}>
+              Si no se encuentran resultados, buscaremos en tiempo real
+            </div>
+          </div>
         </div>
       )}
     </div>
