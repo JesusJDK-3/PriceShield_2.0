@@ -40,28 +40,28 @@ function alerts() {
                         </div>
                         {/* Fin Botón regresar superior */}
                         {/* Cuadritos de informacion de alertas*/}
-                        <div className="Dash">
-                            <div className="CuadrosInformati">
-                                <div className="precioActual">
+                        <div className="DivDAlerta">
+                            <div className="CuadrosInformatiAlerta">
+                                <div className="Alerta1">
                                     <h1 className="PACT">45</h1>
                                     <h5>Precio Actual</h5>
                                     <small className='mensaVPA'>↑1.5%</small>
                                 </div>
-                                <div className="precioPromedio">
+                                <div className="Alerta2">
                                     <h1 className="PPROM">
                                         50
                                     </h1>
                                     <h5>Precio Promedio</h5>
                                     <small className="mensaVPPO"></small>
                                 </div>
-                                <div className="precioMinimo">
+                                <div className="Alerta3">
                                     <h1 className="PMIN">
                                         45
                                     </h1>
                                     <h5>Precio Mínimo</h5>
                                     <small className="mensaVPMI">En el mes gaa</small>
                                 </div>
-                                <div className="precioMaximo">
+                                <div className="Alerta4">
                                     <h1 className="PMAX">
                                         100
                                     </h1>
@@ -69,11 +69,198 @@ function alerts() {
                                     <small className="mensaVPMX">En el mes ma </small>
                                 </div>
                             </div>
-                            
                         </div>
                         {/* FIN Cuadritos de informacion de alertas*/}
-                        <div className="NotificacionSinProducto">
-                            <h1 className="TextoSinProducto">Alertas</h1>
+                        <div className="NotificacionSinProductoAlerta">
+                            <div className="AlertasPs">
+                                <div className="Alerta">
+                                    <div className="DetallesAlerta">
+                                        <div className="AlertaDetallitos">
+                                            <i className="bi bi-patch-exclamation-fill"></i>
+                                            <div className="nombreYmas">
+                                                <h3>Leche Gloria 1L</h3>
+                                               <p>Metro</p>
+                                            </div>
+                                        </div>
+                                        <div className="AlertaOpciones">
+                                            <button className="DashAlerta">Ver en Panel</button>
+                                            <button className="IgnorarAlerta">Ignorar</button>
+                                            <button className="LeidoAlerta">Marcar como leído</button>
+                                        </div>
+                                    </div>
+                                    <div className="PrecioAlerta">
+                                        <h1 className="PrecioAlertaH1">S/ 4.50</h1>
+                                        <small className="mensaVPA">↑1.5%</small>
+                                    </div>
+                                </div>
+                                {/* BORRARRRRRRRRRRRRRRR*/}
+
+                                <div className="Alerta">
+                                    <div className="DetallesAlerta">
+                                        <div className="AlertaDetallitos">
+                                            <i className="bi bi-patch-exclamation-fill"></i>
+                                            <div className="nombreYmas">
+                                                <h3>Leche Gloria 1L</h3>
+                                               <p>Metro</p>
+                                            </div>
+                                        </div>
+                                        <div className="AlertaOpciones">
+                                            <button className="DashAlerta">Ver en Panel</button>
+                                            <button className="IgnorarAlerta">Ignorar</button>
+                                            <button className="LeidoAlerta">Marcar como leído</button>
+                                        </div>
+                                    </div>
+                                    <div className="PrecioAlerta">
+                                        <h1 className="PrecioAlertaH1">S/ 4.50</h1>
+                                        <small className="mensaVPA">↑1.5%</small>
+                                    </div>
+                                </div>
+                                <div className="Alerta">
+                                    <div className="DetallesAlerta">
+                                        <div className="AlertaDetallitos">
+                                            <i className="bi bi-patch-exclamation-fill"></i>
+                                            <div className="nombreYmas">
+                                                <h3>Leche Gloria 1L</h3>
+                                               <p>Metro</p>
+                                            </div>
+                                        </div>
+                                        <div className="AlertaOpciones">
+                                            <button className="DashAlerta">Ver en Panel</button>
+                                            <button className="IgnorarAlerta">Ignorar</button>
+                                            <button className="LeidoAlerta">Marcar como leído</button>
+                                        </div>
+                                    </div>
+                                    <div className="PrecioAlerta">
+                                        <h1 className="PrecioAlertaH1">S/ 4.50</h1>
+                                        <small className="mensaVPA">↑1.5%</small>
+                                    </div>
+                                </div><div className="Alerta">
+                                    <div className="DetallesAlerta">
+                                        <div className="AlertaDetallitos">
+                                            <i className="bi bi-patch-exclamation-fill"></i>
+                                            <div className="nombreYmas">
+                                                <h3>Leche Gloria 1L</h3>
+                                               <p>Metro</p>
+                                            </div>
+                                        </div>
+                                        <div className="AlertaOpciones">
+                                            <button className="DashAlerta">Ver en Panel</button>
+                                            <button className="IgnorarAlerta">Ignorar</button>
+                                            <button className="LeidoAlerta">Marcar como leído</button>
+                                        </div>
+                                    </div>
+                                    <div className="PrecioAlerta">
+                                        <h1 className="PrecioAlertaH1">S/ 4.50</h1>
+                                        <small className="mensaVPA">↑1.5%</small>
+                                    </div>
+                                </div>
+                                <div className="Alerta">
+                                    <div className="DetallesAlerta">
+                                        <div className="AlertaDetallitos">
+                                            <i className="bi bi-patch-exclamation-fill"></i>
+                                            <div className="nombreYmas">
+                                                <h3>Leche Gloria 1L</h3>
+                                               <p>Metro</p>
+                                            </div>
+                                        </div>
+                                        <div className="AlertaOpciones">
+                                            <button className="DashAlerta">Ver en Panel</button>
+                                            <button className="IgnorarAlerta">Ignorar</button>
+                                            <button className="LeidoAlerta">Marcar como leído</button>
+                                        </div>
+                                    </div>
+                                    <div className="PrecioAlerta">
+                                        <h1 className="PrecioAlertaH1">S/ 4.50</h1>
+                                        <small className="mensaVPA">↑1.5%</small>
+                                    </div>
+                                </div><div className="Alerta">
+                                    <div className="DetallesAlerta">
+                                        <div className="AlertaDetallitos">
+                                            <i className="bi bi-patch-exclamation-fill"></i>
+                                            <div className="nombreYmas">
+                                                <h3>Leche Gloria 1L</h3>
+                                               <p>Metro</p>
+                                            </div>
+                                        </div>
+                                        <div className="AlertaOpciones">
+                                            <button className="DashAlerta">Ver en Panel</button>
+                                            <button className="IgnorarAlerta">Ignorar</button>
+                                            <button className="LeidoAlerta">Marcar como leído</button>
+                                        </div>
+                                    </div>
+                                    <div className="PrecioAlerta">
+                                        <h1 className="PrecioAlertaH1">S/ 4.50</h1>
+                                        <small className="mensaVPA">↑1.5%</small>
+                                    </div>
+                                </div>
+                                <div className="Alerta">
+                                    <div className="DetallesAlerta">
+                                        <div className="AlertaDetallitos">
+                                            <i className="bi bi-patch-exclamation-fill"></i>
+                                            <div className="nombreYmas">
+                                                <h3>Leche Gloria 1L</h3>
+                                               <p>Metro</p>
+                                            </div>
+                                        </div>
+                                        <div className="AlertaOpciones">
+                                            <button className="DashAlerta">Ver en Panel</button>
+                                            <button className="IgnorarAlerta">Ignorar</button>
+                                            <button className="LeidoAlerta">Marcar como leído</button>
+                                        </div>
+                                    </div>
+                                    <div className="PrecioAlerta">
+                                        <h1 className="PrecioAlertaH1">S/ 4.50</h1>
+                                        <small className="mensaVPA">↑1.5%</small>
+                                    </div>
+                                </div>
+
+                                <div className="Alerta">
+                                    <div className="DetallesAlerta">
+                                        <div className="AlertaDetallitos">
+                                            <i className="bi bi-patch-exclamation-fill"></i>
+                                            <div className="nombreYmas">
+                                                <h3>Leche Gloria 1L</h3>
+                                               <p>Metro</p>
+                                            </div>
+                                        </div>
+                                        <div className="AlertaOpciones">
+                                            <button className="DashAlerta">Ver en Panel</button>
+                                            <button className="IgnorarAlerta">Ignorar</button>
+                                            <button className="LeidoAlerta">Marcar como leído</button>
+                                        </div>
+                                    </div>
+                                    <div className="PrecioAlerta">
+                                        <h1 className="PrecioAlertaH1">S/ 4.50</h1>
+                                        <small className="mensaVPA">↑1.5%</small>
+                                    </div>
+                                </div>
+                                <div className="Alerta">
+                                    <div className="DetallesAlerta">
+                                        <div className="AlertaDetallitos">
+                                            <i className="bi bi-patch-exclamation-fill"></i>
+                                            <div className="nombreYmas">
+                                                <h3>Leche Gloria 1L</h3>
+                                               <p>Metro</p>
+                                            </div>
+                                        </div>
+                                        <div className="AlertaOpciones">
+                                            <button className="DashAlerta">Ver en Panel</button>
+                                            <button className="IgnorarAlerta">Ignorar</button>
+                                            <button className="LeidoAlerta">Marcar como leído</button>
+                                        </div>
+                                    </div>
+                                    <div className="PrecioAlerta">
+                                        <h1 className="PrecioAlertaH1">S/ 4.50</h1>
+                                        <small className="mensaVPA">↑1.5%</small>
+                                    </div>
+                                </div>
+                               
+                                    
+                                
+                                
+                                
+                                {/* BORRARRRRRRRRRRRRRRR*/}
+                            </div>
                         </div>
                         {/* FIN  Producto Seleccionado*/}
                     </div>
