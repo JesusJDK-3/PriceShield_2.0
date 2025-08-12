@@ -6,6 +6,7 @@ import Products from './products';
 import ProductDetail from './productDetail'; 
 import ProductDashboard from './dashboard'; 
 import Alerts from './alerts';
+import We from './We';
 import './styles/App.css'
 
 function App() {
@@ -73,6 +74,10 @@ function App() {
         <Route 
           path="/alert" 
           element={<Alerts user={user} logout={logout} />} 
+        />
+        <Route 
+          path="/we" 
+          element={<We user={user} logout={logout} />} 
         />
       </Routes>
     </Router>

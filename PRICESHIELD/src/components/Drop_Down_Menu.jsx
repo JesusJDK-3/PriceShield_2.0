@@ -44,10 +44,10 @@ const Drop_DownM = ({ isOpenM, closeDown }) => {
         </Link>
         {/*Fin Sección Alertas */}
         {/*Sección Nosotros */}
-        <a href="#">
+        <Link to="/we">
           <i className="bi bi-person-badge nosotrosI"></i>
           <p>Nosotros</p>
-        </a>
+        </Link>
         {/*Fin Sección Nosotros */}
       </div>
     </div>

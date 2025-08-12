@@ -135,6 +135,10 @@
     flex-wrap: wrap;
     justify-content: flex-start;
   }
+  
+  .NotificacionSinProductoAlerta {
+  max-height: 240px;
+}
 }
 
 @media (max-width: 768px) {
@@ -162,6 +166,9 @@
   .PrecioAlerta {
     text-align: left;
   }
+  .NotificacionSinProductoAlerta {
+        max-height: 339px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -171,4 +178,25 @@
   .CuadrosInformatiAlerta {
     gap: 6px;
   }
+  .NotificacionSinProductoAlerta {
+  max-height: 408px;
+}
+}
+@media (max-width: 391px) {
+  
+  .NotificacionSinProductoAlerta {
+  max-height: 358px;
+}
+}
+@media (max-width: 376px) {
+  
+  .NotificacionSinProductoAlerta {
+  max-height: 190px;
+}
+}
+@media (max-width: 541px) {
+  
+  .NotificacionSinProductoAlerta {
+  max-height: 170px;
+}
 }
