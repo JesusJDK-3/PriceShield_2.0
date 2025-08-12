@@ -3,6 +3,14 @@
     align-items: center;
     align-content: center;
 }
+.soloContenido .NosotrosYBoton{
+    display: grid;
+    align-items: center;
+    justify-content: center;
+    width: 80%;
+    grid-template-columns: auto 1fr;
+    
+}
 .Nosotros {
     display: flex;
     flex-direction: column;

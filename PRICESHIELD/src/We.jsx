@@ -22,7 +22,11 @@ function We() {
             </div>
             <div className="ContenedorNosotros">
                 <div className="Nosotros">
-                <h1 className="tituloNosotros">Sobre PriceShield</h1>
+                    <div className="NosotrosYBoton">
+                        <i className="bi bi-list abrirMenu" onClick={() => setIsOpenM(true)}></i>
+                        <h1 className="tituloNosotros">Sobre PriceShield</h1>
+                    </div>
+                
                 <p className="descripcionNosotros">
                     PriceShield nació con una misión clara: detener la manipulación de precios en supermercados
                     y devolverle el control a quienes más importa: los consumidores.  
