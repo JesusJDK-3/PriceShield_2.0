@@ -73,7 +73,7 @@ class Product:
     
     def search_saved_products(self, query, supermarket=None, limit=50, sort_by="price"):
         """
-        Busca productos guardados en la base de datos
+        Busca productos guardados en la base de datos con búsqueda mejorada
         
         Args:
             query (str): Término de búsqueda
@@ -85,19 +85,55 @@ class Product:
             list: Lista de productos encontrados
         """
         try:
-            # Construir filtros de búsqueda
-            search_filter = {
+            # 🔧 BÚSQUEDA MEJORADA: Múltiples niveles de coincidencia
+            query_clean = query.strip().lower()
+            
+            # NIVEL 1: Coincidencia exacta (prioridad más alta)
+            exact_filter = {
+                "name": {"$regex": f"^{re.escape(query_clean)}$", "$options": "i"}
+            }
+            
+            # NIVEL 2: Coincidencia al inicio del nombre
+            starts_with_filter = {
+                "name": {"$regex": f"^{re.escape(query_clean)}", "$options": "i"}
+            }
+            
+            # NIVEL 3: Coincidencia de palabra completa
+            word_boundary_filter = {
                 "$or": [
-                    {"name": {"$regex": query, "$options": "i"}},
-                    {"brand": {"$regex": query, "$options": "i"}},
-                    {"description": {"$regex": query, "$options": "i"}},
-                    {"categories": {"$regex": query, "$options": "i"}}
+                    {"name": {"$regex": f"\\b{re.escape(query_clean)}\\b", "$options": "i"}},
+                    {"brand": {"$regex": f"\\b{re.escape(query_clean)}\\b", "$options": "i"}}
                 ]
             }
             
-            # Filtrar por supermercado si se especifica
-            if supermarket:
-                search_filter["supermarket_key"] = supermarket
+            # NIVEL 4: Coincidencia con todas las palabras del query
+            query_words = [word for word in query_clean.split() if len(word) >= 2]
+            if len(query_words) > 1:
+                all_words_filter = {
+                    "$and": [
+                        {"name": {"$regex": f"\\b{re.escape(word)}", "$options": "i"}}
+                        for word in query_words
+                    ]
+                }
+            else:
+                all_words_filter = None
+            
+            # NIVEL 5: Coincidencia flexible (solo si query > 3 caracteres)
+            flexible_filter = None
+            if len(query_clean) > 3:
+                flexible_filter = {
+                    "$or": [
+                        {"name": {"$regex": query_clean, "$options": "i"}},
+                        {"brand": {"$regex": query_clean, "$options": "i"}},
+                        {"description": {"$regex": query_clean, "$options": "i"}}
+                    ]
+                }
+            
+            # Aplicar filtro de supermercado si se especifica
+            def add_supermarket_filter(base_filter):
+                if supermarket:
+                    return {"$and": [base_filter, {"supermarket_key": supermarket}]}
+                return base_filter
             
             # Definir orden
             sort_options = {
@@ -109,20 +145,139 @@ class Product:
             
             sort_order = sort_options.get(sort_by, [("price", 1)])
             
-            # Realizar búsqueda
-            products = list(self.products_collection.find(
-                search_filter
-            ).sort(sort_order).limit(limit))
+            # 🎯 BÚSQUEDA POR NIVELES CON PUNTUACIÓN
+            all_products = []
+            seen_ids = set()
             
-            # Limpiar el campo _id para JSON
-            for product in products:
-                product["_id"] = str(product["_id"])
+            # NIVEL 1: Coincidencia exacta (score: 100)
+            exact_products = list(self.products_collection.find(
+                add_supermarket_filter(exact_filter)
+            ).sort(sort_order))
             
-            return products
+            for product in exact_products:
+                if str(product["_id"]) not in seen_ids:
+                    product["_id"] = str(product["_id"])
+                    product["search_score"] = 100
+                    all_products.append(product)
+                    seen_ids.add(str(product["_id"]))
+            
+            # NIVEL 2: Coincidencia al inicio (score: 90)
+            if len(all_products) < limit:
+                starts_products = list(self.products_collection.find(
+                    add_supermarket_filter(starts_with_filter)
+                ).sort(sort_order))
+                
+                for product in starts_products:
+                    if str(product["_id"]) not in seen_ids:
+                        product["_id"] = str(product["_id"])
+                        product["search_score"] = 90
+                        all_products.append(product)
+                        seen_ids.add(str(product["_id"]))
+            
+            # NIVEL 3: Palabra completa (score: 80)
+            if len(all_products) < limit:
+                word_products = list(self.products_collection.find(
+                    add_supermarket_filter(word_boundary_filter)
+                ).sort(sort_order))
+                
+                for product in word_products:
+                    if str(product["_id"]) not in seen_ids:
+                        product["_id"] = str(product["_id"])
+                        product["search_score"] = 80
+                        all_products.append(product)
+                        seen_ids.add(str(product["_id"]))
+            
+            # NIVEL 4: Todas las palabras (score: 70)
+            if len(all_products) < limit and all_words_filter:
+                all_words_products = list(self.products_collection.find(
+                    add_supermarket_filter(all_words_filter)
+                ).sort(sort_order))
+                
+                for product in all_words_products:
+                    if str(product["_id"]) not in seen_ids:
+                        product["_id"] = str(product["_id"])
+                        product["search_score"] = 70
+                        all_products.append(product)
+                        seen_ids.add(str(product["_id"]))
+            
+            # NIVEL 5: Coincidencia flexible solo si no hay suficientes resultados (score: 50)
+            if len(all_products) < limit // 2 and flexible_filter:
+                flexible_products = list(self.products_collection.find(
+                    add_supermarket_filter(flexible_filter)
+                ).sort(sort_order))
+                
+                for product in flexible_products:
+                    if str(product["_id"]) not in seen_ids:
+                        product["_id"] = str(product["_id"])
+                        product["search_score"] = 50
+                        all_products.append(product)
+                        seen_ids.add(str(product["_id"]))
+            
+            # 🔧 FILTRADO ADICIONAL: Eliminar falsos positivos
+            filtered_products = []
+            for product in all_products:
+                product_name = product.get("name", "").lower()
+                
+                # Verificar que el query esté realmente relacionado
+                if self._is_relevant_match(query_clean, product_name):
+                    filtered_products.append(product)
+            
+            # Ordenar por score y luego por criterio seleccionado
+            filtered_products.sort(key=lambda x: (-x.get("search_score", 0), x.get("price", 0)))
+            
+            # Limitar resultados
+            return filtered_products[:limit]
             
         except Exception as e:
             print(f"Error buscando productos: {e}")
             return []
+    
+    def _is_relevant_match(self, query, product_name):
+        """
+        Verifica si el producto es realmente relevante para la búsqueda
+        Previene falsos positivos como "papa" al buscar "papaya"
+        """
+        try:
+            query = query.lower().strip()
+            product_name = product_name.lower().strip()
+            
+            # Si el query está al inicio del nombre del producto, es relevante
+            if product_name.startswith(query):
+                return True
+            
+            # Si el query es una palabra completa dentro del nombre
+            if f" {query} " in f" {product_name} " or f" {query}" in f" {product_name}":
+                return True
+            
+            # Para queries multi-palabra, verificar que al menos el 60% de las palabras coincidan
+            query_words = [w for w in query.split() if len(w) >= 2]
+            if len(query_words) > 1:
+                matching_words = 0
+                for word in query_words:
+                    if f" {word}" in f" {product_name}" or f"{word} " in f"{product_name} ":
+                        matching_words += 1
+                
+                relevance_ratio = matching_words / len(query_words)
+                return relevance_ratio >= 0.6
+            
+            # Para queries cortos (< 4 caracteres), ser más estricto
+            if len(query) < 4:
+                # Solo permitir si está al inicio o es palabra completa
+                return (product_name.startswith(query) or 
+                       f" {query} " in f" {product_name} " or
+                       f" {query}" in f" {product_name}")
+            
+            # Para queries largos, permitir coincidencias parciales más flexibles
+            if len(query) >= 4:
+                # Verificar que al menos el 80% del query esté presente
+                common_chars = sum(1 for c in query if c in product_name)
+                return (common_chars / len(query)) >= 0.8
+            
+            return False
+            
+        except Exception as e:
+            print(f"Error verificando relevancia: {e}")
+            return True  # En caso de error, permitir la coincidencia
     
     def get_price_comparison(self, product_name, days_back=7):
         """

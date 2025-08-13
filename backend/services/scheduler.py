@@ -61,8 +61,8 @@ class DatabaseScheduler:
         if self.is_running:
             print("⚠️ El programador ya está ejecutándose")
             return
-        
-        # Programar actualización diaria a las 2:00 AM
+
+        # Programar actualización diaria a las 02:00
         schedule.every().day.at("02:00").do(self.daily_database_update)
         
         # Programar limpieza semanal los domingos a las 3:00 AM
@@ -114,7 +114,7 @@ class DatabaseScheduler:
                     # Buscar productos
                     products_data = supermarket_api.search_products(
                         query=term,
-                        limit=20
+                        limit=100
                     )
                     
                     # Guardar en base de datos
