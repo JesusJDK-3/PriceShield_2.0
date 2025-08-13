@@ -45,7 +45,7 @@ class SupermarketAPI:
         #Tiempo de espera entre peticiones (para no ser bloqueados)
         self.delay_between_requests = 2
     
-    def search_products(self, query, supermarket=None, limit=20):
+    def search_products(self, query, supermarket=None, limit=100):
         """
         Busca productos en uno o todos los supermercados
         
@@ -93,7 +93,12 @@ class SupermarketAPI:
             
             # Usar URL simple sin parámetros de paginación para evitar error 206
             response = requests.get(
-                f"{url}?q={query}", 
+                url, 
+                params={
+                    'fq': f'productName:{query}',  # Filtro específico por nombre
+                    'rows': limit,
+                    'start': 0
+                },
                 headers=self.headers, 
                 timeout=10
             )
@@ -153,23 +158,22 @@ class SupermarketAPI:
                 "message": str(e)
             }
     
-    def _process_products(self, raw_products, supermarket_key, supermarket_name):
-        """
-        Procesa y limpia los datos de productos obtenidos de la API
-        
-        Args:
-            raw_products (list): Productos sin procesar de la API
-            supermarket_key (str): Clave del supermercado
-            supermarket_name (str): Nombre del supermercado
-            
-        Returns:
-            list: Lista de productos procesados y limpios
-        """
-        processed_products = []
+    # Modifica temporalmente tu método _process_products para debuggear
 
-        for product in raw_products:
+    def _process_products(self, raw_products, supermarket_key, supermarket_name):
+        """Debug version - muestra por qué se rechazan productos"""
+        processed_products = []
+        
+        print(f"\n🔍 Procesando {len(raw_products)} productos de {supermarket_name}")
+        
+        rejected_no_name = 0
+        rejected_no_price = 0
+        rejected_zero_price = 0
+        processed_count = 0
+
+        for i, product in enumerate(raw_products):
             try:
-                # Extraer información básica del producto
+                # Extraer información básica
                 product_info = {
                     "id": product.get("productId", ""),
                     "name": self._clean_product_name(product.get("productName", "")),
@@ -179,34 +183,57 @@ class SupermarketAPI:
                     "supermarket_key": supermarket_key,
                 }
 
-                # Extraer precios (pueden estar en diferentes formatos)
+                # Extraer precios
                 prices = self._extract_prices(product)
                 product_info.update(prices)
                 
-                # Extraer imágenes
+                # Extraer otros datos...
                 images = self._extract_images(product)
                 product_info["images"] = images
-                
-                # Extraer categorías
                 categories = self._extract_categories(product)
                 product_info["categories"] = categories
-                
-                # URL del producto
                 product_info["url"] = self._build_product_url(product, supermarket_key)
-                
-                # Disponibilidad
                 product_info["available"] = self._check_availability(product)
-                
-                # Timestamp de cuando se obtuvo
                 product_info["scraped_at"] = datetime.now().isoformat()
                 
-                # Solo agregar si tiene información básica válida
-                if product_info["name"] and product_info.get("price", 0) > 0:
+                # DEBUGGING: Verificar por qué se rechaza
+                name_ok = bool(product_info["name"])
+                price_ok = product_info.get("price", 0) > 0
+                
+                if not name_ok:
+                    rejected_no_name += 1
+                    if i < 3:  # Solo mostrar primeros 3 ejemplos
+                        print(f"   ❌ Rechazado por nombre vacío: ID {product_info['id']}")
+                        
+                elif not price_ok:
+                    price_value = product_info.get("price", 0)
+                    if price_value == 0:
+                        rejected_zero_price += 1
+                    else:
+                        rejected_no_price += 1
+                        
+                    if i < 3:  # Solo mostrar primeros 3 ejemplos
+                        print(f"   ❌ Rechazado por precio: '{product_info['name']}' = S/ {price_value}")
+                        
+                else:
                     processed_products.append(product_info)
-                    
+                    processed_count += 1
+                    if i < 3:  # Mostrar primeros 3 productos válidos
+                        print(f"   ✅ Aceptado: '{product_info['name']}' = S/ {product_info.get('price', 0)}")
+                        
             except Exception as e:
-                print(f"❌ Error procesando producto: {e}")
+                if i < 3:
+                    print(f"   💥 Error procesando producto {i}: {e}")
                 continue
+        
+        # Resumen de lo que pasó
+        print(f"\n📊 Resumen {supermarket_name}:")
+        print(f"   - Recibidos: {len(raw_products)}")
+        print(f"   - Procesados exitosamente: {processed_count}")
+        print(f"   - Rechazados por nombre vacío: {rejected_no_name}")
+        print(f"   - Rechazados por precio = 0: {rejected_zero_price}")
+        print(f"   - Rechazados por precio inválido: {rejected_no_price}")
+        print(f"   - Ratio de éxito: {(processed_count/len(raw_products)*100):.1f}%")
         
         return processed_products
     
