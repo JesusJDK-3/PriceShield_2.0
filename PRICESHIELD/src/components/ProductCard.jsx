@@ -2,11 +2,16 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const ProductCard = ({ producto }) => {
+const ProductCard = ({ producto, listaProductos }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate('/detalle', { state: producto });
+    navigate('/detalle', {
+      state: {
+        producto,
+        listaProductos, 
+      },
+    });
   };
 
   return (

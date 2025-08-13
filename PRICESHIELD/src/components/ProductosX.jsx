@@ -26,27 +26,33 @@ const ProductosX = ({ productos = [], isLoading = false, searchQuery = "" }) => 
     );
   }
 
+  // Normalizar todos los productos para que tengan el mismo formato
+  const productosNormalizados = productos.map((producto, index) => ({
+    nombre: producto.name,
+    precio: `S/${producto.price}`,
+    supermercado: producto.supermarket,
+    imagen: producto.images && producto.images.length > 0 
+      ? producto.images[0] 
+      : '/placeholder-image.jpg',
+    // Datos adicionales para el detalle
+    id: producto.id || `temp-${index}`, // Asegurar que siempre tenga ID
+    brand: producto.brand,
+    description: producto.description,
+    url: producto.url,
+    available: producto.available,
+    original_price: producto.original_price,
+    discount_percentage: producto.discount_percentage,
+    // Datos originales por si los necesitas
+    supermarket_key: producto.supermarket_key
+  }));
+
   return (
     <>
-      {productos.map((producto, index) => (
+      {productosNormalizados.map((producto, index) => (
         <ProductCard 
           key={`${producto.supermarket_key || 'unknown'}-${producto.id || index}`} 
-          producto={{
-            nombre: producto.name,
-            precio: `S/${producto.price}`,
-            supermercado: producto.supermarket,
-            imagen: producto.images && producto.images.length > 0 
-              ? producto.images[0] 
-              : '/placeholder-image.jpg', // Imagen por defecto
-            // Pasar datos adicionales para el detalle
-            id: producto.id,
-            brand: producto.brand,
-            description: producto.description,
-            url: producto.url,
-            available: producto.available,
-            original_price: producto.original_price,
-            discount_percentage: producto.discount_percentage
-          }} 
+          producto={producto}
+          listaProductos={productosNormalizados} // ✅ SOLUCIÓN: Pasar la lista completa normalizada
         />
       ))}
     </>
