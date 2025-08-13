@@ -8,9 +8,44 @@
     text-align: center;
     margin-top: 20px;
 }
+.footerMercadosNoProducto{
+    display: flex
+;
+    flex-direction: column;
+    background-color: white;
+    border-radius: 15px;
+    padding: 1rem;
+    color: #081F63;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 1200px;
+    max-height: 970px;
+    height: 100%;
+    justify-content: space-around;
+}
+.detalleNoProducto{
+    height: 86%;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 10px;
+  padding-left: 0px;
+}
 @media (max-width: 867px) {
     .NotificacionSinProducto {
      height: 25vh;
+}
+.footerMercadosNoProducto{
+    width: 100%;
+        display: flex
+;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        max-height: 460px;
+        overflow-y: auto;
+        scrollbar-width: none;
 }
     
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import './styles/alerts.css';
 import TopBar from './components/TopBar.jsx';
 import Drop_DownM from './components/Drop_Down_Menu.jsx';
+import Alert from "./components/Alert.jsx";
 
 function alerts() {
     
@@ -73,26 +74,7 @@ function alerts() {
                         {/* FIN Cuadritos de informacion de alertas*/}
                         <div className="NotificacionSinProductoAlerta">
                             <div className="AlertasPs">
-                                <div className="Alerta">
-                                    <div className="DetallesAlerta">
-                                        <div className="AlertaDetallitos">
-                                            <i className="bi bi-patch-exclamation-fill"></i>
-                                            <div className="nombreYmas">
-                                                <h3>Leche Gloria 1L</h3>
-                                               <p>Metro</p>
-                                            </div>
-                                        </div>
-                                        <div className="AlertaOpciones">
-                                            <button className="DashAlerta">Ver en Panel</button>
-                                            <button className="IgnorarAlerta">Ignorar</button>
-                                            <button className="LeidoAlerta">Marcar como leído</button>
-                                        </div>
-                                    </div>
-                                    <div className="PrecioAlerta">
-                                        <h1 className="PrecioAlertaH1">S/ 4.50</h1>
-                                        <small className="mensaVPA">↑1.5%</small>
-                                    </div>
-                                </div>
+                                 <Alert/>
                                 {/* BORRARRRRRRRRRRRRRRR*/}
 
                                 <div className="Alerta">

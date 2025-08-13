@@ -144,6 +144,7 @@
 @media (max-width: 768px) {
   .CuadrosInformatiAlerta {
     grid-template-columns: 1fr; 
+    font-size: 10px;
   }
 
   .AlertaDetallitos {
@@ -167,7 +168,7 @@
     text-align: left;
   }
   .NotificacionSinProductoAlerta {
-        max-height: 339px;
+        max-height: 195px;
     }
 }
 
@@ -192,11 +193,5 @@
   
   .NotificacionSinProductoAlerta {
   max-height: 190px;
-}
-}
-@media (max-width: 541px) {
-  
-  .NotificacionSinProductoAlerta {
-  max-height: 170px;
 }
 }

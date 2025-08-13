@@ -28,7 +28,7 @@ const SinProducto = ( handleSearch,navigate) => {
                         <TopBar onSearch={handleSearch} openMenu={() => setIsOpenM(true)} />
                     </div>
                     {/* Fin Barra de busqueda superior */}
-                    <div className="detalleProducto">
+                    <div className="detalleNoProducto">
                         <div className="DPExtendido">
                             {/* Botón regresar superior */}
                             <div className="BotRP">
@@ -44,7 +44,7 @@ const SinProducto = ( handleSearch,navigate) => {
                         </div>
                         <div className="mercadosYprecios">
                             {/* Div de Supermercados y precios segùn el producto Seleccionado*/}
-                            <div className="footerMercados">
+                            <div className="footerMercadosNoProducto">
                                 <button className="PrecioMasBajo">
                                     <div className="datoPPT">
                                         <div className="MercadoLogo">
