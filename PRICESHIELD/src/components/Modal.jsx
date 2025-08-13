@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Importar useNavigate
 import log from "../assets/img/log.png";
 
-const Modal = ({ isOpen, closeModal, updateUser }) => {
+const Modal = ({ isOpen, closeModal, updateUser, redirectAfterAuth }) => {
+    const navigate = useNavigate(); // Hook para navegación
     const [showPassword, setShowPassword] = useState(false);
     const googleInitializedRef = useRef(false);
     
@@ -14,6 +16,28 @@ const Modal = ({ isOpen, closeModal, updateUser }) => {
     const [message, setMessage] = useState('');
     const [messageType, setMessageType] = useState(''); // 'success' o 'error'
     const [googleLoading, setGoogleLoading] = useState(false);
+
+    // Función para manejar redirección después del login exitoso
+    const handleSuccessfulAuth = (userData) => {
+        // Actualizar usuario global
+        if (updateUser) {
+            updateUser(userData);
+        }
+        
+        // Guardar en localStorage
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        // Cerrar modal después de éxito y redirigir
+        setTimeout(() => {
+            closeModal();
+            
+            // Redirigir si hay una ruta especificada
+            if (redirectAfterAuth) {
+                console.log('🔀 Redirigiendo a:', redirectAfterAuth);
+                navigate(redirectAfterAuth);
+            }
+        }, 1500);
+    };
 
     // Inicializar Google Sign-In cuando se abra el modal
     useEffect(() => {
@@ -61,7 +85,6 @@ const Modal = ({ isOpen, closeModal, updateUser }) => {
                     callback: handleGoogleResponse,
                     auto_select: false,
                     cancel_on_tap_outside: true,
-                    
                 });
                 googleInitializedRef.current = true;
                 console.log('✅ Google Sign-In inicializado correctamente');
@@ -110,18 +133,8 @@ const Modal = ({ isOpen, closeModal, updateUser }) => {
                 setMessage(data.message || 'Login con Google exitoso');
                 setMessageType('success');
                 
-                // Guardar información del usuario
-                localStorage.setItem('user', JSON.stringify(data.user));
-                
-                // Actualizar estado global si tienes la función
-                if (updateUser) {
-                    updateUser(data.user);
-                }
-                
-                // Cerrar modal después de éxito
-                setTimeout(() => {
-                    closeModal();
-                }, 1500);
+                // Usar la nueva función para manejar éxito
+                handleSuccessfulAuth(data.user);
                 
             } else {
                 setMessage(data.message || 'Error en autenticación con Google');
@@ -180,12 +193,6 @@ const Modal = ({ isOpen, closeModal, updateUser }) => {
         }
     };
 
-    // Manejar click del botón de Google - SIMPLIFICADO
-    const handleGoogleLogin = () => {
-        // Esta función ya no se necesita porque el botón se renderiza automáticamente
-        console.log('Botón de Google ya está renderizado');
-    };
-
     if (!isOpen) return null;
 
     // Manejar cambios en los inputs
@@ -227,21 +234,11 @@ const Modal = ({ isOpen, closeModal, updateUser }) => {
                 setMessage(data.message);
                 setMessageType('success');
                 
-                // Guardar información del usuario
-                localStorage.setItem('user', JSON.stringify(data.user));
-                
-                // Actualizar estado global si tienes la función
-                if (updateUser) {
-                    updateUser(data.user);
-                }
-                
                 console.log('✅ Usuario autenticado:', data.user);
                 console.log('📋 Acción realizada:', data.action); // 'login' o 'register'
                 
-                // Cerrar el modal después de 2 segundos si es exitoso
-                setTimeout(() => {
-                    closeModal();
-                }, 2000);
+                // Usar la nueva función para manejar éxito
+                handleSuccessfulAuth(data.user);
                 
             } else {
                 // Error - Mostrar mensaje de error

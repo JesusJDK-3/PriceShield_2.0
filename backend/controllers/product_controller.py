@@ -536,7 +536,7 @@ class ProductController:
         try:
             # Obtener parámetros de paginación
             page = int(request.args.get('page', 1))
-            limit = int(request.args.get('limit', 50))
+            limit = int(request.args.get('limit', 100))
             sort_by = request.args.get('sort_by', 'scraped_at')
             supermarket = request.args.get('supermarket')
             
@@ -661,7 +661,7 @@ class ProductController:
                     # Buscar productos para este término
                     products_data = supermarket_api.search_products(
                         query=term,
-                        limit=15  # Menos productos por término para ser más eficiente
+                        limit=100  # Menos productos por término para ser más eficiente
                     )
                     
                     # Guardar en base de datos
