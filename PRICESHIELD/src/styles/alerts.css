@@ -16,3 +16,182 @@
   flex-direction: column;
   max-height: 970px;
 }
+.Alerta{
+  display: grid;
+  grid-template-columns: 1fr auto;
+  background-color: #f0f4ff;
+  align-items: center;
+  padding: 8px;
+    border-radius: 10px;
+    border: 1px solid #cfd8e6; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.AlertaDetallitos{
+    display: flex;
+    gap: 1rem;
+}
+.NotificacionSinProductoAlerta{
+  margin: 10px;
+  overflow-y: auto;
+    scrollbar-width: none;
+    max-height: 390px
+}
+.AlertasPs {
+    gap: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    
+  }
+.AlertaOpciones{
+    display: flex;
+    gap: 10px;
+}
+.DashAlerta, .IgnorarAlerta, .LeidoAlerta {
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+
+.DashAlerta {
+    background-color: #007bff;
+    color: white;
+}
+.DashAlerta:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+}
+
+
+.IgnorarAlerta {
+    background-color: #e0e0e0;
+    color: #333;
+}
+.IgnorarAlerta:hover {
+    background-color: #bdbdbd;
+    transform: scale(1.05);
+}
+
+
+.LeidoAlerta {
+    background-color: #28a745;
+    color: white;
+}
+.LeidoAlerta:hover {
+    background-color: #1c7c31;
+    transform: scale(1.05);
+}
+.DivDAlerta {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 100%;
+    margin-top: 10px;
+     /* Azul claro suave */
+    border-radius: 10px;
+}
+.CuadrosInformatiAlerta {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    width: 100%;
+}
+.Alerta1, .Alerta2, .Alerta3, .Alerta4 {
+    background-color: #EFEFEF; /* Azul claro suave */
+    padding: 8px;
+    border-radius: 8px;
+   /* border: 1px solid #cfd8e6;*/
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Ligera sombra */
+}
+.Alerta1{
+  border: 1px solid #9befc0;
+}
+.Alerta2{
+  border: 1px solid #9bdefc;
+}
+.Alerta3{
+  border: 1px solid #fcbf9b;
+}
+.Alerta4{
+  border: 1px solid #fc9b9b;
+}
+
+@media (max-width: 1024px) {
+  .CuadrosInformatiAlerta {
+    grid-template-columns: repeat(2, 1fr); 
+  }
+
+  .Alerta {
+    grid-template-columns: 1fr; 
+    gap: 10px;
+  }
+
+  .AlertaOpciones {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+  
+  .NotificacionSinProductoAlerta {
+  max-height: 240px;
+}
+}
+
+@media (max-width: 768px) {
+  .CuadrosInformatiAlerta {
+    grid-template-columns: 1fr; 
+    font-size: 10px;
+  }
+
+  .AlertaDetallitos {
+    flex-direction: column; 
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .AlertaOpciones {
+    width: 100%;
+    flex-direction: column; 
+    gap: 6px;
+  }
+
+  .DashAlerta, .IgnorarAlerta, .LeidoAlerta {
+    width: 100%;
+    text-align: center;
+  }
+
+  .PrecioAlerta {
+    text-align: left;
+  }
+  .NotificacionSinProductoAlerta {
+        max-height: 195px;
+    }
+}
+
+@media (max-width: 480px) {
+  .PACT, .PPROM, .PMIN, .PMAX {
+    font-size: 1.2rem; 
+  }
+  .CuadrosInformatiAlerta {
+    gap: 6px;
+  }
+  .NotificacionSinProductoAlerta {
+  max-height: 408px;
+}
+}
+@media (max-width: 391px) {
+  
+  .NotificacionSinProductoAlerta {
+  max-height: 358px;
+}
+}
+@media (max-width: 376px) {
+  
+  .NotificacionSinProductoAlerta {
+  max-height: 190px;
+}
+}

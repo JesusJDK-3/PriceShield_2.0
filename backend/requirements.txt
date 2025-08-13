@@ -3,3 +3,21 @@ Flask-CORS==4.0.0
 pymongo==4.5.0
 python-dotenv==1.0.0
 bcrypt==4.0.1
+
+
+# Nuevas dependencias para productos
+requests==2.31.0           # Para hacer peticiones HTTP a APIs de supermercados
+beautifulsoup4==4.12.2     # Para parsing HTML si necesitamos scraping adicional
+lxml==4.9.3                # Parser XML/HTML más rápido
+urllib3==2.0.4             # Para manejo avanzado de URLs (viene con requests)
+
+# Dependencias opcionales pero recomendadas
+python-dateutil==2.8.2     # Para manejo avanzado de fechas
+pytz==2023.3               # Para manejo de zonas horarias
+redis==4.6.0               # Para caché y sesiones (opcional)
+
+# Dependencias de desarrollo (opcional)
+pytest==7.4.2             # Para testing
+pytest-flask==1.2.0       # Para testing con Flask
+black==23.7.0              # Para formateo de código
+flake8==6.0.0              # Para linting

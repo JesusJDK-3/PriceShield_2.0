@@ -6,7 +6,7 @@ import Modal from "./components/Modal.jsx";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 
-function Main() {
+function Main({ user, updateUser }) {
   const navigate = useNavigate(); // <-- Hook para navegación
 
   const handleSearch = (searchTerm) => {
@@ -102,7 +102,9 @@ function Main() {
           <p>Actualización</p>
         </div>
       </div>
-      <Modal isOpen={isModelOpen} closeModal={() => setIsModalOpen(false)} />
+      <Modal isOpen={isModelOpen}
+       closeModal={() => setIsModalOpen(false)} 
+       updateUser={updateUser}/>
     </div>
   );
 }

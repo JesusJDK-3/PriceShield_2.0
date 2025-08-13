@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import log from "../assets/img/log.png";
 
-const Modal = ({ isOpen, closeModal }) => {
+const Modal = ({ isOpen, closeModal, updateUser }) => {
     const [showPassword, setShowPassword] = useState(false);
+    const googleInitializedRef = useRef(false);
     
     // Estados para el formulario y la conexión con el backend
     const [formData, setFormData] = useState({
@@ -12,6 +13,178 @@ const Modal = ({ isOpen, closeModal }) => {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [messageType, setMessageType] = useState(''); // 'success' o 'error'
+    const [googleLoading, setGoogleLoading] = useState(false);
+
+    // Inicializar Google Sign-In cuando se abra el modal
+    useEffect(() => {
+        if (isOpen && window.google && !googleInitializedRef.current) {
+            initializeGoogleSignIn();
+            // Renderizar botón inmediatamente
+            setTimeout(() => {
+                renderGoogleButton();
+            }, 100);
+        }
+    }, [isOpen]);
+
+    // Cargar el script de Google OAuth si no está cargado
+    useEffect(() => {
+        if (!window.google) {
+            const script = document.createElement('script');
+            script.src = 'https://accounts.google.com/gsi/client';
+            script.async = true;
+            script.defer = true;
+            script.onload = () => {
+                if (isOpen && !googleInitializedRef.current) {
+                    initializeGoogleSignIn();
+                }
+            };
+            document.head.appendChild(script);
+        }
+    }, []);
+
+    // Resetear cuando se cierre el modal
+    useEffect(() => {
+        if (!isOpen) {
+            googleInitializedRef.current = false;
+            setMessage('');
+            setGoogleLoading(false);
+            setFormData({ correo: '', contraseña: '' });
+        }
+    }, [isOpen]);
+
+    // Inicializar Google Sign-In SIN FedCM
+    const initializeGoogleSignIn = () => {
+        if (window.google && !googleInitializedRef.current) {
+            try {
+                window.google.accounts.id.initialize({
+                    client_id: "1067229120323-noi7kjog1d5g6solnr6sqenr85k4c82h.apps.googleusercontent.com",
+                    callback: handleGoogleResponse,
+                    auto_select: false,
+                    cancel_on_tap_outside: true,
+                    
+                });
+                googleInitializedRef.current = true;
+                console.log('✅ Google Sign-In inicializado correctamente');
+            } catch (error) {
+                console.error('❌ Error inicializando Google Sign-In:', error);
+                setMessage('Error inicializando Google Sign-In');
+                setMessageType('error');
+            }
+        }
+    };
+
+    // Manejar respuesta de Google OAuth
+    const handleGoogleResponse = async (response) => {
+        setGoogleLoading(true);
+        setMessage('');
+
+        try {
+            // Decodificar el JWT token de Google para obtener la información del usuario
+            const userInfo = parseJwt(response.credential);
+            
+            if (!userInfo) {
+                throw new Error('No se pudo decodificar la información del usuario');
+            }
+
+            // Crear datos para enviar al backend
+            const googleAuthData = {
+                correo: userInfo.email,
+                nombre: userInfo.name,
+                google_id: userInfo.sub,
+                foto: userInfo.picture,
+                auth_method: 'google'
+            };
+
+            // Enviar al backend para crear/autenticar usuario con Google
+            const backendResponse = await fetch('http://localhost:5000/api/auth/google-auth', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(googleAuthData)
+            });
+
+            const data = await backendResponse.json();
+
+            if (data.success) {
+                setMessage(data.message || 'Login con Google exitoso');
+                setMessageType('success');
+                
+                // Guardar información del usuario
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                // Actualizar estado global si tienes la función
+                if (updateUser) {
+                    updateUser(data.user);
+                }
+                
+                // Cerrar modal después de éxito
+                setTimeout(() => {
+                    closeModal();
+                }, 1500);
+                
+            } else {
+                setMessage(data.message || 'Error en autenticación con Google');
+                setMessageType('error');
+            }
+
+        } catch (error) {
+            console.error('❌ Error procesando login de Google:', error);
+            setMessage('Error procesando login de Google. Intenta nuevamente.');
+            setMessageType('error');
+        } finally {
+            setGoogleLoading(false);
+        }
+    };
+
+    // Función para decodificar JWT token de Google
+    const parseJwt = (token) => {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(
+                atob(base64)
+                    .split('')
+                    .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                    .join('')
+            );
+            return JSON.parse(jsonPayload);
+        } catch (error) {
+            console.error('❌ Error parsing JWT:', error);
+            return null;
+        }
+    };
+
+    // Renderizar botón de Google automáticamente
+    const renderGoogleButton = () => {
+        const buttonContainer = document.getElementById('google-signin-container');
+        
+        if (buttonContainer && window.google && googleInitializedRef.current) {
+            // Limpiar contenedor previo
+            buttonContainer.innerHTML = '';
+            
+            try {
+                // Renderizar botón de Google
+                window.google.accounts.id.renderButton(buttonContainer, {
+                    theme: 'outline',
+                    size: 'large',
+                    text: 'signin_with',
+                    shape: 'rectangular',
+                    locale: 'es',
+                    width: '280'
+                });
+                
+            } catch (error) {
+                console.error('❌ Error renderizando botón:', error);
+            }
+        }
+    };
+
+    // Manejar click del botón de Google - SIMPLIFICADO
+    const handleGoogleLogin = () => {
+        // Esta función ya no se necesita porque el botón se renderiza automáticamente
+        console.log('Botón de Google ya está renderizado');
+    };
 
     if (!isOpen) return null;
 
@@ -28,7 +201,7 @@ const Modal = ({ isOpen, closeModal }) => {
         }
     };
 
-    // Función principal que envía datos al backend
+    // Función principal que envía datos al backend (formulario manual)
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -54,17 +227,20 @@ const Modal = ({ isOpen, closeModal }) => {
                 setMessage(data.message);
                 setMessageType('success');
                 
-                // Guardar información del usuario (opcional)
+                // Guardar información del usuario
                 localStorage.setItem('user', JSON.stringify(data.user));
                 
-                console.log('Usuario autenticado:', data.user);
-                console.log('Acción realizada:', data.action); // 'login' o 'register'
+                // Actualizar estado global si tienes la función
+                if (updateUser) {
+                    updateUser(data.user);
+                }
                 
-                // Opcional: Cerrar el modal después de 2 segundos si es exitoso
+                console.log('✅ Usuario autenticado:', data.user);
+                console.log('📋 Acción realizada:', data.action); // 'login' o 'register'
+                
+                // Cerrar el modal después de 2 segundos si es exitoso
                 setTimeout(() => {
                     closeModal();
-                    // Aquí puedes agregar redirección si usas React Router
-                    // navigate('/dashboard');
                 }, 2000);
                 
             } else {
@@ -74,7 +250,7 @@ const Modal = ({ isOpen, closeModal }) => {
             }
 
         } catch (error) {
-            console.error('Error conectando con el servidor:', error);
+            console.error('❌ Error conectando con el servidor:', error);
             setMessage('Error de conexión. Verifica que el servidor esté ejecutándose.');
             setMessageType('error');
         } finally {
@@ -97,7 +273,22 @@ const Modal = ({ isOpen, closeModal }) => {
                 <div className="FormJe">
                     <h1>Bienvenido</h1>
 
-                    <button className='Google'>Continuar con Google</button>
+                    {/* Contenedor donde se renderizará el botón de Google real */}
+                    <div 
+                        id="google-signin-container"
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            marginBottom: '15px'
+                        }}
+                    ></div>
+
+                    {googleLoading && (
+                        <div style={{ textAlign: 'center', margin: '10px 0' }}>
+                            <span>🔄 Procesando autenticación...</span>
+                        </div>
+                    )}
+
                     <hr className="separador" />
                     <h2>Iniciar Sesión o Registrarse</h2>
                     
@@ -111,7 +302,7 @@ const Modal = ({ isOpen, closeModal }) => {
                             value={formData.correo}
                             onChange={handleInputChange}
                             required
-                            disabled={loading}
+                            disabled={loading || googleLoading}
                         />
                         
                         <span className='con'>Contraseña:</span>
@@ -124,7 +315,7 @@ const Modal = ({ isOpen, closeModal }) => {
                                 value={formData.contraseña}
                                 onChange={handleInputChange}
                                 required
-                                disabled={loading}
+                                disabled={loading || googleLoading}
                             />
                             <i 
                                 className={`bi ${showPassword ? 'bi-eye-slash' : 'bi-eye'} ojito`}
@@ -137,7 +328,7 @@ const Modal = ({ isOpen, closeModal }) => {
                         <input 
                             type="submit" 
                             value={loading ? 'Procesando...' : 'Continuar'}
-                            disabled={loading}
+                            disabled={loading || googleLoading}
                         />
                     </form>
 
@@ -151,9 +342,6 @@ const Modal = ({ isOpen, closeModal }) => {
                     )}
                 </div>
             </div>
-
-            {/* Estilos para los mensajes del servidor - se integran con tus estilos existentes */}
-            
         </div>
     );
 };
