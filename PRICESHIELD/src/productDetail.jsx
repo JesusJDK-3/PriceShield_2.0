@@ -11,13 +11,158 @@ function ProductDetail() {
   const [isOpenM, setIsOpenM] = useState(true);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [listaProductos, setListaProductos] = useState([]);
+  const [productosFiltrados, setProductosFiltrados] = useState([]);
   const [productoMasBarato, setProductoMasBarato] = useState(null);
   
-  const { state } = useLocation(); // Obtiene los datos pasados desde ProductCard
+  const { state } = useLocation();
   const navigate = useNavigate();
 
+  // 🧠 FUNCIÓN: Extraer información clave del nombre del producto
+  const extraerInformacionClave = (nombre) => {
+    const palabrasIgnorar = [
+      'de', 'del', 'la', 'el', 'en', 'con', 'sin', 'para', 'por', 'y', '+', 
+      'bolsa', 'paquete', 'caja', 'lata', 'botella', 'frasco', 'envase',
+      'unidad', 'und', 'pack', 'x', ':', 'congelada', 'congelado'
+    ];
+    
+    const marcasConocidas = [
+      'gloria', 'nestle', 'laive', 'bonle', 'el frutero', 'wong', 'tottus',
+      'plaza vea', 'metro', 'vivanda', 'makro', 'sodimac', 'ripley', 'nike',
+      'adidas', 'puma', 'reebok', 'converse'
+    ];
+    
+    // Buscar marca
+    let marca = '';
+    for (const marcaConocida of marcasConocidas) {
+      if (nombre.includes(marcaConocida)) {
+        marca = marcaConocida;
+        break;
+      }
+    }
+    
+    // Buscar peso
+    const pesoMatch = nombre.match(/(\d+(?:\.\d+)?)\s*(kg|gr?|ml|lt?|oz|lb)/i);
+    const peso = pesoMatch ? `${pesoMatch[1]}${pesoMatch[2].toLowerCase()}` : '';
+    
+    // ✅ ARREGLO: Mejor filtrado de palabras clave
+    const palabrasClave = nombre
+      .replace(/[^\w\s]/g, ' ') // Reemplazar símbolos por espacios
+      .split(/\s+/)
+      .map(palabra => palabra.toLowerCase())
+      .filter(palabra => palabra.length > 2)
+      .filter(palabra => !palabrasIgnorar.includes(palabra))
+      // ✅ CAMBIO: Solo eliminar palabras EXACTAS de la marca, no parciales
+      .filter(palabra => {
+        if (!marca) return true;
+        const palabrasMarca = marca.split(' ');
+        return !palabrasMarca.includes(palabra);
+      })
+      // ✅ CAMBIO: Solo eliminar números exactos del peso
+      .filter(palabra => {
+        if (!peso) return true;
+        const numeroPeso = peso.match(/\d+/);
+        return numeroPeso ? palabra !== numeroPeso[0] : true;
+      })
+      .sort(); // Ordenar para comparar independiente del orden
+    
+    console.log('🧠 Extracción de información:', {
+      nombreOriginal: nombre,
+      marca,
+      peso,
+      palabrasClave,
+      palabrasOriginales: nombre.split(/\s+/).map(p => p.toLowerCase())
+    });
+    
+    return { marca, peso, palabrasClave, nombreOriginal: nombre };
+  };
+
+  // 🎯 FUNCIÓN: Determinar si dos productos son el mismo
+  const sonElMismoProducto = (info1, info2) => {
+    console.log('🔎 Comparando productos:', {
+      producto1: info1,
+      producto2: info2
+    });
+
+    // 1. Si tienen marcas diferentes, no son el mismo producto
+    if (info1.marca && info2.marca && info1.marca !== info2.marca) {
+      console.log('❌ Marcas diferentes:', info1.marca, 'vs', info2.marca);
+      return false;
+    }
+    
+    // 2. Si tienen pesos muy diferentes, no son el mismo producto
+    if (info1.peso && info2.peso && info1.peso !== info2.peso) {
+      const peso1Num = parseFloat(info1.peso);
+      const peso2Num = parseFloat(info2.peso);
+      if (Math.abs(peso1Num - peso2Num) > 0.1 && 
+          Math.abs(peso1Num - peso2Num * 1000) > 100 && 
+          Math.abs(peso1Num * 1000 - peso2Num) > 100) {
+        console.log('❌ Pesos diferentes:', info1.peso, 'vs', info2.peso);
+        return false;
+      }
+    }
+    
+    // 3. Calcular similitud de palabras clave
+    const palabrasComunes = info1.palabrasClave.filter(palabra1 => 
+      info2.palabrasClave.some(palabra2 => 
+        palabra1.includes(palabra2) || palabra2.includes(palabra1) || palabra1 === palabra2
+      )
+    );
+    
+    const totalPalabras = Math.max(info1.palabrasClave.length, info2.palabrasClave.length);
+    const similitud = palabrasComunes.length / totalPalabras;
+    
+    console.log('🎯 Análisis de similitud:', {
+      palabrasClave1: info1.palabrasClave,
+      palabrasClave2: info2.palabrasClave,
+      palabrasComunes,
+      totalPalabras,
+      similitud,
+      umbral: 0.7,
+      resultado: similitud >= 0.7 ? '✅ SON EL MISMO' : '❌ NO SON EL MISMO'
+    });
+    
+    // 4. Son el mismo producto si tienen alta similitud (70% o más)
+    return similitud >= 0.7;
+  };
+
+  // ✅ FUNCIÓN INTELIGENTE: Filtrar productos similares
+  const filtrarProductosSimilares = (productoSeleccionado, todosLosProductos) => {
+    if (!productoSeleccionado || !todosLosProductos) return [];
+
+    const nombreSeleccionado = productoSeleccionado.nombre.toLowerCase().trim();
+    const infoSeleccionada = extraerInformacionClave(nombreSeleccionado);
+    
+    const productosFiltrados = todosLosProductos.filter(producto => {
+      const nombreProducto = producto.nombre.toLowerCase().trim();
+      
+      if (nombreProducto === nombreSeleccionado) return true;
+      
+      const infoProducto = extraerInformacionClave(nombreProducto);
+      return sonElMismoProducto(infoSeleccionada, infoProducto);
+    });
+
+    console.log('🔍 DEBUGGING - Filtrado inteligente:', {
+      nombreSeleccionado,
+      infoSeleccionada,
+      totalProductos: todosLosProductos.length,
+      productosFiltrados: productosFiltrados.length,
+      todosLosProductosConInfo: todosLosProductos.map(p => ({
+        nombre: p.nombre,
+        supermercado: p.supermercado,
+        info: extraerInformacionClave(p.nombre.toLowerCase()),
+        esMismoProducto: sonElMismoProducto(infoSeleccionada, extraerInformacionClave(p.nombre.toLowerCase()))
+      })),
+      productos: productosFiltrados.map(p => ({ 
+        nombre: p.nombre, 
+        supermercado: p.supermercado,
+        info: extraerInformacionClave(p.nombre.toLowerCase())
+      }))
+    });
+
+    return productosFiltrados;
+  };
+
   useEffect(() => {
-    // Manejo de datos recibidos
     if (state) {
       const { producto, listaProductos: lista } = state;
       
@@ -26,16 +171,22 @@ function ProductDetail() {
       setProductoSeleccionado(producto);
       setListaProductos(lista || []);
       
-      // Encontrar el producto más barato de la lista
-      if (lista && lista.length > 0) {
-        const masBarato = encontrarProductoMasBarato(lista);
-        setProductoMasBarato(masBarato);
+      if (producto && lista && lista.length > 0) {
+        const productosFiltradosNuevos = filtrarProductosSimilares(producto, lista);
+        setProductosFiltrados(productosFiltradosNuevos);
+        
+        if (productosFiltradosNuevos.length > 0) {
+          const masBarato = encontrarProductoMasBarato(productosFiltradosNuevos);
+          setProductoMasBarato(masBarato);
+        }
+      } else {
+        setProductosFiltrados([]);
+        setProductoMasBarato(null);
       }
     }
   }, [state]);
 
   useEffect(() => { 
-    // Responsivo
     const handleResize = () => {
       if (window.innerWidth <= 768) {
         setIsOpenM(false);
@@ -48,7 +199,6 @@ function ProductDetail() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Función para encontrar el producto más barato
   const encontrarProductoMasBarato = (productos) => {
     if (!productos || productos.length === 0) return null;
 
@@ -60,45 +210,39 @@ function ProductDetail() {
     });
   };
 
-  // Función para extraer valor numérico del precio
   const extraerNumericoPrecio = (precio) => {
     if (!precio) return Infinity;
     
     const numeroLimpio = precio.toString()
-      .replace(/[S\/.,$]/g, '') // Remover símbolos de moneda
-      .replace(/,/g, '') // Remover comas
-      .replace(/[^\d.]/g, ''); // Mantener solo dígitos y puntos
+      .replace(/[S\/.,$]/g, '')
+      .replace(/,/g, '')
+      .replace(/[^\d.]/g, '');
     
     return parseFloat(numeroLimpio) || Infinity;
   };
 
-  // Función para manejar búsqueda (si se necesita)
   const handleSearch = (searchTerm) => {
     console.log('Buscando:', searchTerm);
-    // Aquí podrías implementar nueva búsqueda si es necesario
   };
 
-  // Función para ir al dashboard
   const handleClickD = () => {
     navigate('/dashboard', { 
       state: {
         producto: productoSeleccionado,
-        listaProductos
+        listaProductos: productosFiltrados
       }
     });
   };
 
-  // Función para cambiar de producto seleccionado
   const handleClick = (nuevoProducto) => {
     navigate('/detalle', { 
       state: {
         producto: nuevoProducto,
-        listaProductos // Mantener la lista original
+        listaProductos: listaProductos
       }
     });
   };
 
-  // Verificar si hay datos
   if (!productoSeleccionado) {
     return (
       <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
@@ -140,7 +284,6 @@ function ProductDetail() {
 
   return (
     <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
-      {/* Barra lateral de menú */}
       <div className="barraJex">
         <Drop_DownM 
           isOpenM={isOpenM} 
@@ -148,35 +291,29 @@ function ProductDetail() {
           producto={productoSeleccionado} 
         />
       </div>
-      {/* Fin Barra lateral de menú */}
       
       <div className="buProductos">
-        {/* Barra de búsqueda superior */}
         <div className='abrirDown'>
           <TopBar 
             onSearch={handleSearch} 
             openMenu={() => setIsOpenM(true)} 
           />
         </div>
-        {/* Fin Barra de búsqueda superior */}
         
         <div className="detalleProducto">
           <div className="DPExtendido">
-            {/* Botón regresar superior */}
             <div className="BotRP">
               <button className='BotonRegresar' onClick={() => navigate(-1)}>
                 <span className='flechita'>←</span> Volver
               </button>
             </div>
-            {/* Fin Botón regresar superior */}
             
-            {/* Producto Seleccionado */}
             <div className="DetallesProducto">
               <img 
                 src={productoSeleccionado.imagen} 
                 alt={productoSeleccionado.nombre}
                 onError={(e) => {
-                  e.target.src = '/placeholder-product.png'; // Imagen por defecto
+                  e.target.src = '/placeholder-product.png';
                 }}
               />
               <div className="DetallesMenoresP">
@@ -190,10 +327,10 @@ function ProductDetail() {
                 </button>
               </div>
             </div>
-            {/* FIN Producto Seleccionado */}
             
-            {/* Mostrar Precio más bajo */}
-            <h3 className='PrecioMasBajoT'>Encuentra el precio más bajo en:</h3>
+            <h3 className='PrecioMasBajoT'>
+              Encuentra el precio más bajo para: <em>"{productoSeleccionado.nombre}"</em>
+            </h3>
             
             {productoMasBarato && (
               <button 
@@ -211,82 +348,92 @@ function ProductDetail() {
               </button>
             )}
             
-            {!productoMasBarato && listaProductos.length === 0 && (
+            {!productoMasBarato && productosFiltrados.length === 0 && (
               <div style={{ 
                 textAlign: 'center', 
                 padding: '20px', 
                 color: '#666',
                 fontStyle: 'italic'
               }}>
-                No hay otros productos para comparar precios
+                No se encontraron otros supermercados que vendan exactamente: 
+                <br />
+                <strong>"{productoSeleccionado.nombre}"</strong>
               </div>
             )}
-            {/* FIN Precio más bajo */}
           </div>
           
           <div className="mercadosYprecios">
-            {/* Div de Supermercados y precios según el producto Seleccionado */}
             <div className="footerMercados">
-              {/* Mostrar todos los productos de la lista de búsqueda */}
-              {listaProductos.length > 0 ? (
-                listaProductos.map((producto, index) => (
-                  <button
-                    className="PrecioMasBajo"
-                    key={`${producto.supermercado}-${index}`}
-                    onClick={() => handleClick(producto)}
-                    style={{
-                      opacity: producto.id === productoSeleccionado.id ? 0.7 : 1,
-                      border: producto.id === productoSeleccionado.id ? '2px solid #007bff' : 'none'
-                    }}
-                  >
-                    <div className="datoPPT">
-                      <div className="MercadoLogo">
-                        <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
-                          <circle cx="10" cy="10" r="10" fill="#3498db" />
-                          <text
-                            x="10"
-                            y="10"
-                            textAnchor="middle"
-                            dominantBaseline="central"
-                            fill="white"
-                            fontSize="12"
-                          >
-                            {producto.supermercado.charAt(0)}
-                          </text>
-                        </svg>
-                        <b className='NombreDelMercado'>{producto.supermercado}</b>
+              {productosFiltrados.length > 0 ? (
+                <>
+                  <div style={{
+                    textAlign: 'center',
+                    marginBottom: '20px',
+                    padding: '10px',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '5px',
+                    color: '#495057'
+                  }}>
+                    <strong>"{productoSeleccionado.nombre}"</strong> disponible en {productosFiltrados.length} supermercado{productosFiltrados.length !== 1 ? 's' : ''}
+                  </div>
+                  
+                  {productosFiltrados.map((producto, index) => (
+                    <button
+                      className="PrecioMasBajo"
+                      key={`${producto.supermercado}-${index}`}
+                      onClick={() => handleClick(producto)}
+                      style={{
+                        opacity: producto.id === productoSeleccionado.id ? 0.7 : 1,
+                        border: producto.id === productoSeleccionado.id ? '2px solid #007bff' : 'none'
+                      }}
+                    >
+                      <div className="datoPPT">
+                        <div className="MercadoLogo">
+                          <svg className='LogoDelMerca' xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="10" cy="10" r="10" fill="#3498db" />
+                            <text
+                              x="10"
+                              y="10"
+                              textAnchor="middle"
+                              dominantBaseline="central"
+                              fill="white"
+                              fontSize="12"
+                            >
+                              {producto.supermercado.charAt(0)}
+                            </text>
+                          </svg>
+                          <b className='NombreDelMercado'>{producto.supermercado}</b>
+                        </div>
+                        <br />
+                        <p>{producto.precio}</p>
+                        
+                        {producto.id === productoSeleccionado.id && (
+                          <span style={{
+                            fontSize: '12px',
+                            color: '#007bff',
+                            fontWeight: 'bold',
+                            marginTop: '5px',
+                            display: 'block'
+                          }}>
+                            ACTUAL
+                          </span>
+                        )}
+                        
+                        {productoMasBarato && producto.id === productoMasBarato.id && (
+                          <span style={{
+                            fontSize: '12px',
+                            color: '#28a745',
+                            fontWeight: 'bold',
+                            marginTop: '5px',
+                            display: 'block'
+                          }}>
+                            MEJOR PRECIO
+                          </span>
+                        )}
                       </div>
-                      <br />
-                      <p>{producto.precio}</p>
-                      
-                      {/* Indicador si es el producto actual */}
-                      {producto.id === productoSeleccionado.id && (
-                        <span style={{
-                          fontSize: '12px',
-                          color: '#007bff',
-                          fontWeight: 'bold',
-                          marginTop: '5px',
-                          display: 'block'
-                        }}>
-                          ACTUAL
-                        </span>
-                      )}
-                      
-                      {/* Indicador si es el más barato */}
-                      {productoMasBarato && producto.id === productoMasBarato.id && (
-                        <span style={{
-                          fontSize: '12px',
-                          color: '#28a745',
-                          fontWeight: 'bold',
-                          marginTop: '5px',
-                          display: 'block'
-                        }}>
-                          MEJOR PRECIO
-                        </span>
-                      )}
-                    </div>
-                  </button>
-                ))
+                    </button>
+                  ))}
+                </>
               ) : (
                 <div style={{
                   textAlign: 'center',
@@ -294,16 +441,15 @@ function ProductDetail() {
                   color: '#666',
                   fontStyle: 'italic'
                 }}>
-                  <p>No se encontraron productos para comparar</p>
+                  <p>Este producto solo está disponible en <strong>{productoSeleccionado.supermercado}</strong></p>
                   <p style={{ fontSize: '14px', marginTop: '10px' }}>
-                    Intenta realizar una nueva búsqueda para ver más opciones
+                    No se encontraron otros supermercados que vendan exactamente: <br />
+                    <strong>"{productoSeleccionado.nombre}"</strong>
                   </p>
                 </div>
               )}
-              {/* Fin productos de la búsqueda */}
             </div>
           </div>
-          {/* FIN Div de Supermercados y precios según el producto Seleccionado */}
         </div>
       </div>
     </div>
