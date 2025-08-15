@@ -162,6 +162,88 @@ function ProductDetail() {
     return productosFiltrados;
   };
 
+  // ✅ FUNCIÓN PARA DETECTAR SI ES OFERTA O DUPLICADO
+  const analizarProductosSimilares = (productos) => {
+    if (productos.length < 2) return productos;
+
+    const grupos = new Map();
+    
+    productos.forEach(producto => {
+      // Crear clave base sin considerar precio
+      const claveBase = `${producto.supermercado}_${producto.nombre.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+      
+      if (!grupos.has(claveBase)) {
+        grupos.set(claveBase, []);
+      }
+      grupos.get(claveBase).push(producto);
+    });
+
+    const productosFinales = [];
+    
+    grupos.forEach((grupoProductos, clave) => {
+      if (grupoProductos.length === 1) {
+        // Un solo producto, mantenerlo
+        productosFinales.push(grupoProductos[0]);
+      } else {
+        // Múltiples productos "iguales" - analizar si son ofertas
+        grupoProductos.sort((a, b) => extraerNumericoPrecio(a.precio) - extraerNumericoPrecio(b.precio));
+        
+        const precioMenor = extraerNumericoPrecio(grupoProductos[0].precio);
+        const precioMayor = extraerNumericoPrecio(grupoProductos[grupoProductos.length - 1].precio);
+        const diferenciaPorcentaje = ((precioMayor - precioMenor) / precioMayor) * 100;
+        
+        if (diferenciaPorcentaje > 5) {
+          // Gran diferencia de precio = ofertas legítimas
+          console.log(`🏷️ OFERTAS detectadas para "${grupoProductos[0].nombre}":`, {
+            supermercado: grupoProductos[0].supermercado,
+            precioNormal: grupoProductos[grupoProductos.length - 1].precio,
+            precioOferta: grupoProductos[0].precio,
+            descuento: `${diferenciaPorcentaje.toFixed(1)}%`
+          });
+          
+          // Mantener solo el más barato (la oferta)
+          productosFinales.push(grupoProductos[0]);
+          
+        } else {
+          // Poca diferencia = posible duplicado, mantener solo uno
+          console.log(`🔍 DUPLICADO detectado para "${grupoProductos[0].nombre}":`, {
+            productos: grupoProductos.length,
+            diferencia: `${diferenciaPorcentaje.toFixed(1)}%`
+          });
+          
+          productosFinales.push(grupoProductos[0]);
+        }
+      }
+    });
+
+    return productosFinales;
+  };
+
+  useEffect(() => {
+    if (state) {
+      const { producto, listaProductos: lista } = state;
+      
+      setProductoSeleccionado(producto);
+      setListaProductos(lista || []);
+      
+      if (producto && lista && lista.length > 0) {
+        const productosFiltradosNuevos = filtrarProductosSimilares(producto, lista);
+        
+        // 🔧 NUEVO: Analizar ofertas vs duplicados
+        const productosSinDuplicados = analizarProductosSimilares(productosFiltradosNuevos);
+        
+        setProductosFiltrados(productosSinDuplicados);
+        
+        if (productosSinDuplicados.length > 0) {
+          const masBarato = encontrarProductoMasBarato(productosSinDuplicados);
+          setProductoMasBarato(masBarato);
+        }
+      } else {
+        setProductosFiltrados([]);
+        setProductoMasBarato(null);
+      }
+    }
+  }, [state]);
   useEffect(() => {
     if (state) {
       const { producto, listaProductos: lista } = state;
@@ -202,23 +284,75 @@ function ProductDetail() {
   const encontrarProductoMasBarato = (productos) => {
     if (!productos || productos.length === 0) return null;
 
-    return productos.reduce((masBarato, productoActual) => {
+    // Filtrar productos con precios válidos
+    const productosConPrecio = productos.filter(producto => {
+      const precio = extraerNumericoPrecio(producto.precio);
+      return precio !== Infinity && precio > 0;
+    });
+
+    if (productosConPrecio.length === 0) return null;
+
+    // Debug: Mostrar todos los precios
+    console.log('🏪 Comparando precios:', productosConPrecio.map(p => ({
+      supermercado: p.supermercado,
+      precioOriginal: p.precio,
+      precioNumerico: extraerNumericoPrecio(p.precio)
+    })));
+
+    const masBarato = productosConPrecio.reduce((masBarato, productoActual) => {
       const precioActual = extraerNumericoPrecio(productoActual.precio);
       const precioMasBarato = extraerNumericoPrecio(masBarato.precio);
       
       return precioActual < precioMasBarato ? productoActual : masBarato;
     });
+
+    console.log('🎯 Producto más barato encontrado:', {
+      supermercado: masBarato.supermercado,
+      precio: masBarato.precio,
+      precioNumerico: extraerNumericoPrecio(masBarato.precio)
+    });
+
+    return masBarato;
   };
 
   const extraerNumericoPrecio = (precio) => {
     if (!precio) return Infinity;
     
-    const numeroLimpio = precio.toString()
-      .replace(/[S\/.,$]/g, '')
-      .replace(/,/g, '')
-      .replace(/[^\d.]/g, '');
+    // Convertir a string y limpiar
+    let numeroLimpio = precio.toString()
+      .replace(/S\/?\s*/g, '') // Remover S/ y espacios
+      .replace(/PEN\s*/g, '')  // Remover PEN y espacios
+      .trim();
     
-    return parseFloat(numeroLimpio) || Infinity;
+    // 🔧 CAMBIO CRÍTICO: Manejar comas como separadores de miles
+    // Si tiene coma Y punto, la coma son miles: "1,234.50"
+    if (numeroLimpio.includes(',') && numeroLimpio.includes('.')) {
+      numeroLimpio = numeroLimpio.replace(/,/g, ''); // Eliminar comas de miles
+    }
+    // Si solo tiene coma, podría ser decimal: "12,50" 
+    else if (numeroLimpio.includes(',') && !numeroLimpio.includes('.')) {
+      // En Perú se usa punto para decimales, pero por si acaso
+      const parts = numeroLimpio.split(',');
+      if (parts.length === 2 && parts[1].length <= 2) {
+        numeroLimpio = numeroLimpio.replace(',', '.'); // Convertir coma decimal
+      } else {
+        numeroLimpio = numeroLimpio.replace(/,/g, ''); // Eliminar comas de miles
+      }
+    }
+    
+    // Limpiar cualquier carácter no numérico excepto el punto decimal
+    numeroLimpio = numeroLimpio.replace(/[^\d.]/g, '');
+    
+    const resultado = parseFloat(numeroLimpio);
+    
+    // Debug para ver qué está pasando
+    console.log('💰 Conversión precio:', {
+      precioOriginal: precio,
+      numeroLimpio,
+      resultado: isNaN(resultado) ? 'ERROR - No es número' : resultado
+    });
+    
+    return isNaN(resultado) ? Infinity : resultado;
   };
 
   const handleSearch = (searchTerm) => {
