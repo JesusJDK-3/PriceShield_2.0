@@ -132,12 +132,12 @@ function Main({ user, updateUser }) {
 
       <div className="footer">
         <div className="dato">
-          <b>1,247</b>
+          <b>4,690</b>
           <br />
           <p>Productos Monitoreados</p>
         </div>
         <div className="dato">
-          <b>8</b>
+          <b>4</b>
           <br />
           <p>Supermercados</p>
         </div>
@@ -147,9 +147,9 @@ function Main({ user, updateUser }) {
           <p>Alertas Activas</p>
         </div>
         <div className="dato">
-          <b>24</b>
+          <b>373</b>
           <br />
-          <p>Actualización</p>
+          <p>Actualizaciones</p>
         </div>
       </div>
       
