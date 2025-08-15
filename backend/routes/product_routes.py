@@ -579,6 +579,7 @@ def force_scheduler_update():
             "error": "Error forzando actualización",
             "message": str(e)
         }), 500
+        
 
 # =================== MIDDLEWARE Y MANEJO DE ERRORES ===================
 

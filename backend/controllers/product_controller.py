@@ -526,6 +526,8 @@ class ProductController:
                 "error": "Error interno del servidor",
                 "message": str(e)
             }), 500
+        
+    
     
     # Agregar estos métodos a tu clase ProductController en product_controller.py
 

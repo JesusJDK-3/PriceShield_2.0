@@ -348,6 +348,88 @@
   margin-bottom: 5px;
 }
 
+
+
+/* Añadir a tu archivo CSS principal */
+
+.producto {
+  position: relative; /* Para que la etiqueta de oferta se posicione correctamente */
+  overflow: visible; /* Para que la etiqueta no se corte */
+}
+
+.etiqueta-oferta {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: linear-gradient(45deg, #ff4757, #ff3838);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: bold;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  animation: pulse-offer 2s infinite;
+}
+
+/* Diferentes colores para diferentes tipos de oferta */
+.etiqueta-oferta.mejor-precio {
+  background: linear-gradient(45deg, #28a745, #20c997);
+}
+
+.etiqueta-oferta.descuento {
+  background: linear-gradient(45deg, #ff4757, #ff3838);
+}
+
+.etiqueta-oferta.promocional {
+  background: linear-gradient(45deg, #f39c12, #e67e22);
+}
+
+/* Animación sutil para llamar la atención */
+@keyframes pulse-offer {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Estilos para el precio con oferta */
+.precio-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.precio-oferta {
+  color: #e74c3c !important;
+  font-weight: bold !important;
+  font-size: 14px;
+}
+
+.precio-original {
+  text-decoration: line-through;
+  color: #999;
+  font-size: 12px;
+  margin: 0;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .etiqueta-oferta {
+    font-size: 9px;
+    padding: 3px 6px;
+    top: 6px;
+    right: 6px;
+  }
+}
+
+
+
 /* Responsive */
 @media (max-width: 768px) {
   .productos-container {
