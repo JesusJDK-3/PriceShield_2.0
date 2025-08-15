@@ -394,18 +394,73 @@ class Product:
     
     def _generate_product_id(self, product):
         """
-        Genera un ID único para el producto basado en nombre y supermercado
+        Genera un ID único MÁS ESTABLE basado solo en nombre y supermercado
+        Ignora el product_id de la API que puede cambiar
         """
         name = product.get("name", "").lower()
         supermarket = product.get("supermarket_key", "")
-        product_id = product.get("id", "")
         
-        # Limpiar nombre para crear ID consistente
+        # Limpiar nombre más agresivamente para evitar variaciones
         clean_name = re.sub(r'[^a-z0-9\s]', '', name)
         clean_name = re.sub(r'\s+', '_', clean_name.strip())
         
-        return f"{supermarket}_{clean_name}_{product_id}"
+        # 🔧 CAMBIO: No usar product_id, solo nombre + supermercado
+        # Esto hace el ID más estable entre diferentes scraping
+        return f"{supermarket}_{clean_name}"
+
+    def _is_duplicate_product(self, product1, product2):
+        """
+        Verifica si dos productos son realmente el mismo
+        Útil para detectar duplicados antes de guardar
+        """
+        # Normalizar nombres para comparación
+        name1 = re.sub(r'[^a-z0-9\s]', '', product1.get("name", "").lower())
+        name2 = re.sub(r'[^a-z0-9\s]', '', product2.get("name", "").lower())
+        
+        # Son duplicados si:
+        # 1. Mismo supermercado Y mismo nombre normalizado
+        same_supermarket = product1.get("supermarket_key") == product2.get("supermarket_key")
+        same_name = name1 == name2
+        
+        # 2. O si los nombres son 95% similares (para variaciones menores)
+        similarity_ratio = len(set(name1.split()) & set(name2.split())) / max(len(name1.split()), len(name2.split()))
+        very_similar = similarity_ratio >= 0.95
+        
+        return same_supermarket and (same_name or very_similar)
     
+    # Ejecutar ESTE código para limpiar duplicados existentes:
+    def clean_duplicate_products(self):
+        pipeline = [
+            {
+                "$group": {
+                    "_id": {
+                        "name": "$name",
+                        "supermarket_key": "$supermarket_key", 
+                        "price": "$price"
+                    },
+                    "duplicates": {"$push": "$_id"},
+                    "count": {"$sum": 1}
+                }
+            },
+            {
+                "$match": {"count": {"$gt": 1}}
+            }
+        ]
+        
+        duplicates = list(self.products_collection.aggregate(pipeline))
+        deleted_count = 0
+        
+        for group in duplicates:
+            # Mantener el más reciente, eliminar los demás
+            ids_to_delete = group["duplicates"][:-1]  
+            result = self.products_collection.delete_many({
+                "_id": {"$in": ids_to_delete}
+            })
+            deleted_count += result.deleted_count
+        
+        print(f"🧹 Eliminados {deleted_count} productos duplicados")
+        return deleted_count
+
     def _create_new_product(self, product, unique_id, search_query):
         """
         Crea un nuevo producto en la base de datos

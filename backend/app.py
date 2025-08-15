@@ -98,6 +98,70 @@ def cleanup():
     except Exception as e:
         print(f"⚠️ Error deteniendo programador: {e}")
 
+# app.py - AGREGAR ESTAS RUTAS antes de "if __name__ == '__main__':"
+
+# 🧹 NUEVA RUTA: Limpiar productos duplicados
+@app.route('/api/admin/clean-duplicates', methods=['GET', 'POST'])
+def clean_duplicates():
+    """
+    Limpia productos duplicados de la base de datos (UNA SOLA VEZ)
+    """
+    try:
+        from models.product_model import product_model
+        deleted_count = product_model.clean_duplicate_products()
+        
+        return {
+            'success': True, 
+            'deleted_count': deleted_count,
+            'message': f'✅ Eliminados {deleted_count} productos duplicados'
+        }
+    except Exception as e:
+        return {
+            'success': False, 
+            'error': str(e),
+            'message': f'❌ Error limpiando duplicados: {e}'
+        }, 500
+
+# 🔧 NUEVA RUTA: Ver estadísticas de duplicados (sin eliminar)
+@app.route('/api/admin/duplicates-stats', methods=['GET']) 
+def duplicates_stats():
+    """
+    Muestra cuántos duplicados hay SIN eliminarlos
+    """
+    try:
+        from models.product_model import product_model
+        
+        pipeline = [
+            {
+                "$group": {
+                    "_id": {
+                        "name": "$name",
+                        "supermarket_key": "$supermarket_key", 
+                        "price": "$price"
+                    },
+                    "count": {"$sum": 1}
+                }
+            },
+            {
+                "$match": {"count": {"$gt": 1}}
+            }
+        ]
+        
+        duplicates = list(product_model.products_collection.aggregate(pipeline))
+        total_duplicates = sum(group["count"] - 1 for group in duplicates)
+        
+        return {
+            'success': True,
+            'duplicate_groups': len(duplicates),
+            'total_duplicates': total_duplicates,
+            'message': f'📊 {total_duplicates} productos duplicados en {len(duplicates)} grupos'
+        }
+        
+    except Exception as e:
+        return {
+            'success': False,
+            'error': str(e)
+        }, 500
 # Registrar función de limpieza
 atexit.register(cleanup)
 
