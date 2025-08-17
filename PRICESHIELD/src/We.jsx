@@ -64,59 +64,61 @@ function We({ user }) {
       <div className="ContenedorNosotros">
         <div className="Nosotros">
           <div className="NosotrosYBoton">
-            <h1 className="tituloNosotros">Sobre PriceShield</h1>
+            <h1 className="tituloNosotros">PriceShield</h1>
           </div>
 
           <p className="descripcionNosotros">
-            PriceShield nació con una misión clara: detener la manipulación de precios en supermercados
-            y devolverle el control a quienes más importa: los consumidores.
-            No se trata solo de detectar números raros, sino de exponer la verdad detrás de cada precio.
+            PriceShield nació para ayudar a los consumidores a
+            encontrar los mejores precios de sus productos
+            favoritos en diferentes supermercados.
           </p>
 
           <div className="misionVision">
             <div className="cardInfo">
-              <h2>El Problema</h2>
+              <h2>Misión</h2>
               <p>
-                Todos hemos visto cómo algunos precios suben sin explicación.
-                PriceShield existe para destapar esos movimientos anómalos, proteger tu bolsillo
-                y fomentar una competencia justa entre supermercados.
+                Ayudar a los consumidores a encontrar
+                siempre los mejores precios de sus productos
+                favoritos, facilitando la comparación entre
+                diferentes supermercados de manera rápida, sencilla
+                y confiable.
               </p>
             </div>
             <div className="cardInfo">
-              <h2>Así lo Hacemos</h2>
-              <ul>
-                <li>Rastreamos precios reales desde tiendas como Plaza Vea o Wong.<br /></li>
-                <li>Guardamos la información en MongoDB Atlas para un historial seguro.<br /></li>
-                <li>Aplicamos algoritmos para detectar precios fuera de lo normal.<br /></li>
-                <li>Publicamos los resultados en una API para que cualquiera pueda acceder.</li>
-              </ul>
+              <h2>Visión</h2>
+              <p>Convertirnos en la página líder en análisis y
+                transparencia de precios de supermercados, siendo
+                la referencia principal para consumidores, negocios
+                y reguladores en la toma de decisiones inteligentes.
+              </p>
             </div>
           </div>
 
           <div className="valores">
-            <h2>Por Qué Importa</h2>
-            <p>
-              PriceShield no es solo un sistema; es una herramienta para devolver transparencia al mercado.
-              Si los consumidores, negocios y autoridades cuentan con datos claros,
-              podemos cambiar la forma en que se fijan y regulan los precios.
-            </p>
+            <h2>Valores</h2>
+            <ul>
+              <li>Transparencia: información clara y confiable.</li>
+              <li>Compromiso: proteger el bolsillo de los consumidores.</li>
+              <li>Confianza: datos precisos y seguros.</li>
+              </ul>
           </div>
-          <div className="Creadores">
-            <div className="CreadoresP"onClick={() => window.open("https://wa.me/51955768525?text=Hola%20quiero%20más%20información", "_blank")}>
-              <i class="bi bi-person-vcard-fill"></i>
+          <footer className="Creadores">
+            <div className="CreadoresP" onClick={() => window.open("https://wa.me/51955768525?text=Hola%20quiero%20más%20información", "_blank")}>
+              <i className="bi bi-person-vcard-fill"></i>
               <div className="DatosPersonales">
                 <h3>Jesús</h3>
                 <small>Desarrollador Backend</small>
               </div>
             </div>
             <div className="CreadoresP" onClick={() => window.open("https://wa.me/51941498813?text=Hola%20quiero%20más%20información", "_blank")}>
-              <i class="bi bi-person-vcard-fill"></i>
+              <i className="bi bi-person-vcard-fill"></i>
               <div className="DatosPersonales">
                 <h3>Dany</h3>
                 <small>Desarrollador Frontend</small>
               </div>
             </div>
-          </div>
+          </footer>
+
         </div>
       </div>
 

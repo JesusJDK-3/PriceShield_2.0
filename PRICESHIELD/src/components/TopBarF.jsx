@@ -1,6 +1,8 @@
 import React from "react";
 import SearchBox from './SearchBox.jsx';
 import '../styles/TopBarF.css';
+import { Link } from 'react-router-dom';
+import IconSelect from "./IconSelect.jsx";
 import logo from '../assets/img/logF.png';
 
 const TopBarF = ({ onSearch, onResults, user }) => {
@@ -49,6 +51,9 @@ const TopBarF = ({ onSearch, onResults, user }) => {
         // Fallback al ícono de Bootstrap (Manual Auth o sin login)
         return <i className="bi bi-person-circle caraU"></i>;
     };
+    const handleDashboardClick = () => {
+    navigate('/dashboard');
+  };
     return (
         <>
             <div className="BarraSuperior">
@@ -62,11 +67,23 @@ const TopBarF = ({ onSearch, onResults, user }) => {
                     />
                     <i className="bi bi-filter-square Filtros"></i>
                 </div>
+                <div className="IconSelect">
+                    <IconSelect/>
+                </div>
+                
                 <div className="IconosPestañas">
+                    <Link to="/products">
                     <i className="bi bi-bag-check-fill productoBF"></i>
+                    </Link>
+                    <a onClick={handleDashboardClick} style={{ cursor: 'pointer' }}>
                     <i className="bi bi-bar-chart-line-fill dashBF"></i>
+                    </a>
+                    <Link to="/alert">
                     <i className="bi bi-exclamation-triangle alertaBF"></i>
+                    </Link>
+                    <Link to="/we">
                     <i className="bi bi-person-badge nosotrosBF"></i>
+                    </Link>
                 </div>
                 <div className="UsuarioBF">
                     <span className="nombreUsuario">

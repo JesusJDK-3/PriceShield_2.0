@@ -42,3 +42,15 @@
     color: white;
     font-size: 1.2rem;
 }
+.IconSelect {
+    display: none;
+}
+@media (max-width: 510px) {
+    .IconSelect {
+        display: flex;
+        justify-content: center;
+    }
+    .IconosPestañas {
+        display: none;
+    }
+}
