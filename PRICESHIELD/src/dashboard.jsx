@@ -99,6 +99,7 @@ function ProductDetail() {
                         {/* Div dashboard*/}
                         <div className="DashboardContainer">
                             <DashboardChart />
+                            
                             </div>
                             {/* FIN Div dashboard*/}
                     </div>
