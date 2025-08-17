@@ -132,7 +132,7 @@ function Main({ user, updateUser }) {
 
       <div className="footer">
         <div className="dato">
-          <b>4,690</b>
+          <b>2,900</b>
           <br />
           <p>Productos Monitoreados</p>
         </div>
