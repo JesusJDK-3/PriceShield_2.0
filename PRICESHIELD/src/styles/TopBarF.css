@@ -1,0 +1,44 @@
+.BarraSuperior {
+    display: grid;
+    grid-template-columns: auto 2fr 2fr auto;
+    align-items: center;
+    background-color: #193a9d;
+}
+.BarraSuperior .LogoPriceBarra {
+    height: 80px;
+    width: 80px;
+    color: white;
+}
+.BuscadorFiltro {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    gap: 10px;
+}
+.BuscadorFiltro .Filtros {
+    color: white;
+    font-size: 2rem;
+    margin-top: 5px;
+    cursor: pointer;
+}
+.IconosPestañas {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+
+}
+.productoBF, .dashBF, .alertaBF, .nosotrosBF {
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+}
+.UsuarioBF {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.UsuarioBF .nombreUsuario {
+    color: white;
+    font-size: 1.2rem;
+}
