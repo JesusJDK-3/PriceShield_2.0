@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import './styles/alerts.css';
-import TopBar from './components/TopBar.jsx';
+import TopBarF from './components/TopBarF.jsx';
 import Drop_DownM from './components/Drop_Down_Menu.jsx';
 import Alert from "./components/Alert.jsx";
 
@@ -25,12 +25,10 @@ function alerts() {
 
     return (
         <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
-            <div className="barraJex">
-                <Drop_DownM isOpenM={isOpenM} closeDown={() => setIsOpenM(false)} />
-            </div>
-            <div className="buProductos">
-                <div className='abrirDown'>
-                    <TopBar onSearch={handleSearch} openMenu={() => setIsOpenM(true)} />
+            
+            <div className="buProductosA">
+                <div className="TopBarFALR">
+                    <TopBarF onSearch={handleSearch} openMenu={() => setIsOpenM(true)} />
                 </div>
                 {/* Fin Barra de busqueda superior */}
                 <div className="AlertaDProducto">

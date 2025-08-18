@@ -381,7 +381,7 @@ function ProductDetail() {
       <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
 
         <div className="buProductos">
-          <div className="TopBarFD">
+          <div className='productoBF'>
             <TopBarF onSearch={handleSearch} openMenu={() => setIsOpenM(true)} />
           </div>
           <div className="detalleProducto">
@@ -415,16 +415,13 @@ function ProductDetail() {
 
   return (
     <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
-
-
       <div className="buProductos">
-        <div >
+        <div className="TopBarFD">
           <TopBarF
             onSearch={handleSearch}
             openMenu={() => setIsOpenM(true)}
           />
         </div>
-
         <div className="detalleProducto">
           <div className="DPExtendido">
             <div className="BotRP">
@@ -470,7 +467,7 @@ function ProductDetail() {
             )}
             <div className="BotonDashboardContainer">
               <button className="BotonDashboard" onClick={handleClickD}>
-                📊 Panel
+                Ver en Panel
               </button>
             </div>
 
