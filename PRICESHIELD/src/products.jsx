@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom'; // Importar useLocation
 import './styles/products.css';
 import './styles/model.css';
-import TopBar from './components/TopBar.jsx';
+import TopBarF from './components/TopBarF.jsx';
 import ProductosX from './components/ProductosX.jsx';
 import Drop_DownM from './components/Drop_Down_Menu.jsx';
 
@@ -212,12 +212,9 @@ function Products({ user }) { // ✅ CAMBIO 1: Recibir user como prop
 
   return (
     <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
-      <div className="barraJex">
-        <Drop_DownM isOpenM={isOpenM} closeDown={() => setIsOpenM(false)} />
-      </div>
       <div className="buProductos">
-        <div className='abrirDown'>
-          <TopBar 
+        <div className="TopBarFDP">
+          <TopBarF 
             onSearch={handleSearch}
             onResults={handleResults}
             openMenu={() => setIsOpenM(true)}

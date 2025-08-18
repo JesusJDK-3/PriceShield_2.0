@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import './styles/products.css';
 import './styles/model.css';
 import './styles/productDetail.css';
-import TopBar from './components/TopBar.jsx';
+import TopBarF from './components/TopBarF.jsx';
 import Drop_DownM from './components/Drop_Down_Menu.jsx';
 
 function ProductDetail() {
@@ -13,24 +13,24 @@ function ProductDetail() {
   const [listaProductos, setListaProductos] = useState([]);
   const [productosFiltrados, setProductosFiltrados] = useState([]);
   const [productoMasBarato, setProductoMasBarato] = useState(null);
-  
+
   const { state } = useLocation();
   const navigate = useNavigate();
 
   // 🧠 FUNCIÓN: Extraer información clave del nombre del producto
   const extraerInformacionClave = (nombre) => {
     const palabrasIgnorar = [
-      'de', 'del', 'la', 'el', 'en', 'con', 'sin', 'para', 'por', 'y', '+', 
+      'de', 'del', 'la', 'el', 'en', 'con', 'sin', 'para', 'por', 'y', '+',
       'bolsa', 'paquete', 'caja', 'lata', 'botella', 'frasco', 'envase',
       'unidad', 'und', 'pack', 'x', ':', 'congelada', 'congelado'
     ];
-    
+
     const marcasConocidas = [
       'gloria', 'nestle', 'laive', 'bonle', 'el frutero', 'wong', 'tottus',
       'plaza vea', 'metro', 'vivanda', 'makro', 'sodimac', 'ripley', 'nike',
       'adidas', 'puma', 'reebok', 'converse'
     ];
-    
+
     // Buscar marca
     let marca = '';
     for (const marcaConocida of marcasConocidas) {
@@ -39,11 +39,11 @@ function ProductDetail() {
         break;
       }
     }
-    
+
     // Buscar peso
     const pesoMatch = nombre.match(/(\d+(?:\.\d+)?)\s*(kg|gr?|ml|lt?|oz|lb)/i);
     const peso = pesoMatch ? `${pesoMatch[1]}${pesoMatch[2].toLowerCase()}` : '';
-    
+
     // ✅ ARREGLO: Mejor filtrado de palabras clave
     const palabrasClave = nombre
       .replace(/[^\w\s]/g, ' ') // Reemplazar símbolos por espacios
@@ -64,7 +64,7 @@ function ProductDetail() {
         return numeroPeso ? palabra !== numeroPeso[0] : true;
       })
       .sort(); // Ordenar para comparar independiente del orden
-    
+
     console.log('🧠 Extracción de información:', {
       nombreOriginal: nombre,
       marca,
@@ -72,7 +72,7 @@ function ProductDetail() {
       palabrasClave,
       palabrasOriginales: nombre.split(/\s+/).map(p => p.toLowerCase())
     });
-    
+
     return { marca, peso, palabrasClave, nombreOriginal: nombre };
   };
 
@@ -88,29 +88,29 @@ function ProductDetail() {
       console.log('❌ Marcas diferentes:', info1.marca, 'vs', info2.marca);
       return false;
     }
-    
+
     // 2. Si tienen pesos muy diferentes, no son el mismo producto
     if (info1.peso && info2.peso && info1.peso !== info2.peso) {
       const peso1Num = parseFloat(info1.peso);
       const peso2Num = parseFloat(info2.peso);
-      if (Math.abs(peso1Num - peso2Num) > 0.1 && 
-          Math.abs(peso1Num - peso2Num * 1000) > 100 && 
-          Math.abs(peso1Num * 1000 - peso2Num) > 100) {
+      if (Math.abs(peso1Num - peso2Num) > 0.1 &&
+        Math.abs(peso1Num - peso2Num * 1000) > 100 &&
+        Math.abs(peso1Num * 1000 - peso2Num) > 100) {
         console.log('❌ Pesos diferentes:', info1.peso, 'vs', info2.peso);
         return false;
       }
     }
-    
+
     // 3. Calcular similitud de palabras clave
-    const palabrasComunes = info1.palabrasClave.filter(palabra1 => 
-      info2.palabrasClave.some(palabra2 => 
+    const palabrasComunes = info1.palabrasClave.filter(palabra1 =>
+      info2.palabrasClave.some(palabra2 =>
         palabra1.includes(palabra2) || palabra2.includes(palabra1) || palabra1 === palabra2
       )
     );
-    
+
     const totalPalabras = Math.max(info1.palabrasClave.length, info2.palabrasClave.length);
     const similitud = palabrasComunes.length / totalPalabras;
-    
+
     console.log('🎯 Análisis de similitud:', {
       palabrasClave1: info1.palabrasClave,
       palabrasClave2: info2.palabrasClave,
@@ -120,7 +120,7 @@ function ProductDetail() {
       umbral: 0.7,
       resultado: similitud >= 0.7 ? '✅ SON EL MISMO' : '❌ NO SON EL MISMO'
     });
-    
+
     // 4. Son el mismo producto si tienen alta similitud (70% o más)
     return similitud >= 0.7;
   };
@@ -131,12 +131,12 @@ function ProductDetail() {
 
     const nombreSeleccionado = productoSeleccionado.nombre.toLowerCase().trim();
     const infoSeleccionada = extraerInformacionClave(nombreSeleccionado);
-    
+
     const productosFiltrados = todosLosProductos.filter(producto => {
       const nombreProducto = producto.nombre.toLowerCase().trim();
-      
+
       if (nombreProducto === nombreSeleccionado) return true;
-      
+
       const infoProducto = extraerInformacionClave(nombreProducto);
       return sonElMismoProducto(infoSeleccionada, infoProducto);
     });
@@ -152,8 +152,8 @@ function ProductDetail() {
         info: extraerInformacionClave(p.nombre.toLowerCase()),
         esMismoProducto: sonElMismoProducto(infoSeleccionada, extraerInformacionClave(p.nombre.toLowerCase()))
       })),
-      productos: productosFiltrados.map(p => ({ 
-        nombre: p.nombre, 
+      productos: productosFiltrados.map(p => ({
+        nombre: p.nombre,
         supermercado: p.supermercado,
         info: extraerInformacionClave(p.nombre.toLowerCase())
       }))
@@ -167,11 +167,11 @@ function ProductDetail() {
     if (productos.length < 2) return productos;
 
     const grupos = new Map();
-    
+
     productos.forEach(producto => {
       // Crear clave base sin considerar precio
       const claveBase = `${producto.supermercado}_${producto.nombre.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
-      
+
       if (!grupos.has(claveBase)) {
         grupos.set(claveBase, []);
       }
@@ -179,7 +179,7 @@ function ProductDetail() {
     });
 
     const productosFinales = [];
-    
+
     grupos.forEach((grupoProductos, clave) => {
       if (grupoProductos.length === 1) {
         // Un solo producto, mantenerlo
@@ -187,11 +187,11 @@ function ProductDetail() {
       } else {
         // Múltiples productos "iguales" - analizar si son ofertas
         grupoProductos.sort((a, b) => extraerNumericoPrecio(a.precio) - extraerNumericoPrecio(b.precio));
-        
+
         const precioMenor = extraerNumericoPrecio(grupoProductos[0].precio);
         const precioMayor = extraerNumericoPrecio(grupoProductos[grupoProductos.length - 1].precio);
         const diferenciaPorcentaje = ((precioMayor - precioMenor) / precioMayor) * 100;
-        
+
         if (diferenciaPorcentaje > 5) {
           // Gran diferencia de precio = ofertas legítimas
           console.log(`🏷️ OFERTAS detectadas para "${grupoProductos[0].nombre}":`, {
@@ -200,17 +200,17 @@ function ProductDetail() {
             precioOferta: grupoProductos[0].precio,
             descuento: `${diferenciaPorcentaje.toFixed(1)}%`
           });
-          
+
           // Mantener solo el más barato (la oferta)
           productosFinales.push(grupoProductos[0]);
-          
+
         } else {
           // Poca diferencia = posible duplicado, mantener solo uno
           console.log(`🔍 DUPLICADO detectado para "${grupoProductos[0].nombre}":`, {
             productos: grupoProductos.length,
             diferencia: `${diferenciaPorcentaje.toFixed(1)}%`
           });
-          
+
           productosFinales.push(grupoProductos[0]);
         }
       }
@@ -222,18 +222,18 @@ function ProductDetail() {
   useEffect(() => {
     if (state) {
       const { producto, listaProductos: lista } = state;
-      
+
       setProductoSeleccionado(producto);
       setListaProductos(lista || []);
-      
+
       if (producto && lista && lista.length > 0) {
         const productosFiltradosNuevos = filtrarProductosSimilares(producto, lista);
-        
+
         // 🔧 NUEVO: Analizar ofertas vs duplicados
         const productosSinDuplicados = analizarProductosSimilares(productosFiltradosNuevos);
-        
+
         setProductosFiltrados(productosSinDuplicados);
-        
+
         if (productosSinDuplicados.length > 0) {
           const masBarato = encontrarProductoMasBarato(productosSinDuplicados);
           setProductoMasBarato(masBarato);
@@ -247,16 +247,16 @@ function ProductDetail() {
   useEffect(() => {
     if (state) {
       const { producto, listaProductos: lista } = state;
-      
+
       console.log('📦 Datos recibidos:', { producto, lista });
-      
+
       setProductoSeleccionado(producto);
       setListaProductos(lista || []);
-      
+
       if (producto && lista && lista.length > 0) {
         const productosFiltradosNuevos = filtrarProductosSimilares(producto, lista);
         setProductosFiltrados(productosFiltradosNuevos);
-        
+
         if (productosFiltradosNuevos.length > 0) {
           const masBarato = encontrarProductoMasBarato(productosFiltradosNuevos);
           setProductoMasBarato(masBarato);
@@ -268,7 +268,7 @@ function ProductDetail() {
     }
   }, [state]);
 
-  useEffect(() => { 
+  useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth <= 768) {
         setIsOpenM(false);
@@ -302,7 +302,7 @@ function ProductDetail() {
     const masBarato = productosConPrecio.reduce((masBarato, productoActual) => {
       const precioActual = extraerNumericoPrecio(productoActual.precio);
       const precioMasBarato = extraerNumericoPrecio(masBarato.precio);
-      
+
       return precioActual < precioMasBarato ? productoActual : masBarato;
     });
 
@@ -317,13 +317,12 @@ function ProductDetail() {
 
   const extraerNumericoPrecio = (precio) => {
     if (!precio) return Infinity;
-    
+
     // Convertir a string y limpiar
     let numeroLimpio = precio.toString()
       .replace(/S\/?\s*/g, '') // Remover S/ y espacios
       .replace(/PEN\s*/g, '')  // Remover PEN y espacios
       .trim();
-    
     // 🔧 CAMBIO CRÍTICO: Manejar comas como separadores de miles
     // Si tiene coma Y punto, la coma son miles: "1,234.50"
     if (numeroLimpio.includes(',') && numeroLimpio.includes('.')) {
@@ -339,19 +338,19 @@ function ProductDetail() {
         numeroLimpio = numeroLimpio.replace(/,/g, ''); // Eliminar comas de miles
       }
     }
-    
+
     // Limpiar cualquier carácter no numérico excepto el punto decimal
     numeroLimpio = numeroLimpio.replace(/[^\d.]/g, '');
-    
+
     const resultado = parseFloat(numeroLimpio);
-    
+
     // Debug para ver qué está pasando
     console.log('💰 Conversión precio:', {
       precioOriginal: precio,
       numeroLimpio,
       resultado: isNaN(resultado) ? 'ERROR - No es número' : resultado
     });
-    
+
     return isNaN(resultado) ? Infinity : resultado;
   };
 
@@ -360,7 +359,7 @@ function ProductDetail() {
   };
 
   const handleClickD = () => {
-    navigate('/dashboard', { 
+    navigate('/dashboard', {
       state: {
         producto: productoSeleccionado,
         listaProductos: productosFiltrados
@@ -369,7 +368,7 @@ function ProductDetail() {
   };
 
   const handleClick = (nuevoProducto) => {
-    navigate('/detalle', { 
+    navigate('/detalle', {
       state: {
         producto: nuevoProducto,
         listaProductos: listaProductos
@@ -380,12 +379,10 @@ function ProductDetail() {
   if (!productoSeleccionado) {
     return (
       <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
-        <div className="barraJex">
-          <Drop_DownM isOpenM={isOpenM} closeDown={() => setIsOpenM(false)} />
-        </div>
+
         <div className="buProductos">
-          <div className='abrirDown'>
-            <TopBar onSearch={handleSearch} openMenu={() => setIsOpenM(true)} />
+          <div className="TopBarFD">
+            <TopBarF onSearch={handleSearch} openMenu={() => setIsOpenM(true)} />
           </div>
           <div className="detalleProducto">
             <div className="error-message" style={{
@@ -395,7 +392,7 @@ function ProductDetail() {
               color: '#666'
             }}>
               <p>No se encontró información del producto.</p>
-              <button 
+              <button
                 onClick={() => navigate('/products')}
                 style={{
                   padding: '10px 20px',
@@ -418,22 +415,16 @@ function ProductDetail() {
 
   return (
     <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
-      <div className="barraJex">
-        <Drop_DownM 
-          isOpenM={isOpenM} 
-          closeDown={() => setIsOpenM(false)} 
-          producto={productoSeleccionado} 
-        />
-      </div>
-      
+
+
       <div className="buProductos">
-        <div className='abrirDown'>
-          <TopBar 
-            onSearch={handleSearch} 
-            openMenu={() => setIsOpenM(true)} 
+        <div >
+          <TopBarF
+            onSearch={handleSearch}
+            openMenu={() => setIsOpenM(true)}
           />
         </div>
-        
+
         <div className="detalleProducto">
           <div className="DPExtendido">
             <div className="BotRP">
@@ -441,10 +432,10 @@ function ProductDetail() {
                 <span className='flechita'>←</span> Volver
               </button>
             </div>
-            
+
             <div className="DetallesProducto">
-              <img 
-                src={productoSeleccionado.imagen} 
+              <img
+                src={productoSeleccionado.imagen}
                 alt={productoSeleccionado.nombre}
                 onError={(e) => {
                   e.target.src = '/placeholder-product.png';
@@ -455,20 +446,16 @@ function ProductDetail() {
                 <p><strong>Precio:</strong> {productoSeleccionado.precio}</p>
                 <p><strong>Supermercado:</strong> {productoSeleccionado.supermercado}</p>
               </div>
-              <div className="BotonDashboardContainer">
-                <button className="BotonDashboard" onClick={handleClickD}>
-                  📊 Panel
-                </button>
-              </div>
+
             </div>
-            
+
             <h3 className='PrecioMasBajoT'>
-              Encuentra el precio más bajo para: <em>"{productoSeleccionado.nombre}"</em>
+              Encuentra el precio más bajo en:
             </h3>
-            
+
             {productoMasBarato && (
-              <button 
-                className="PrecioMasBajoP" 
+              <button
+                className="PrecioMasBajoP"
                 onClick={() => handleClick(productoMasBarato)}
               >
                 <div className="PaProVer">
@@ -481,44 +468,42 @@ function ProductDetail() {
                 </div>
               </button>
             )}
-            
+            <div className="BotonDashboardContainer">
+              <button className="BotonDashboard" onClick={handleClickD}>
+                📊 Panel
+              </button>
+            </div>
+
             {!productoMasBarato && productosFiltrados.length === 0 && (
-              <div style={{ 
-                textAlign: 'center', 
-                padding: '20px', 
+              <div style={{
+                textAlign: 'center',
+                padding: '20px',
                 color: '#666',
                 fontStyle: 'italic'
               }}>
-                No se encontraron otros supermercados que vendan exactamente: 
+                No se encontraron otros supermercados que vendan exactamente:
                 <br />
                 <strong>"{productoSeleccionado.nombre}"</strong>
               </div>
             )}
           </div>
-          
+
           <div className="mercadosYprecios">
+            <p className='PDispoMensa'>Producto disonible en:</p>
             <div className="footerMercados">
+
               {productosFiltrados.length > 0 ? (
                 <>
-                  <div style={{
-                    textAlign: 'center',
-                    marginBottom: '20px',
-                    padding: '10px',
-                    backgroundColor: '#f8f9fa',
-                    borderRadius: '5px',
-                    color: '#495057'
-                  }}>
-                    <strong>"{productoSeleccionado.nombre}"</strong> disponible en {productosFiltrados.length} supermercado{productosFiltrados.length !== 1 ? 's' : ''}
-                  </div>
-                  
+
+
                   {productosFiltrados.map((producto, index) => (
-                    <button
+                    <div
                       className="PrecioMasBajo"
                       key={`${producto.supermercado}-${index}`}
                       onClick={() => handleClick(producto)}
                       style={{
                         opacity: producto.id === productoSeleccionado.id ? 0.7 : 1,
-                        border: producto.id === productoSeleccionado.id ? '2px solid #007bff' : 'none'
+                        
                       }}
                     >
                       <div className="datoPPT">
@@ -540,32 +525,37 @@ function ProductDetail() {
                         </div>
                         <br />
                         <p>{producto.precio}</p>
-                        
-                        {producto.id === productoSeleccionado.id && (
-                          <span style={{
-                            fontSize: '12px',
-                            color: '#007bff',
-                            fontWeight: 'bold',
-                            marginTop: '5px',
-                            display: 'block'
-                          }}>
-                            ACTUAL
-                          </span>
-                        )}
-                        
-                        {productoMasBarato && producto.id === productoMasBarato.id && (
-                          <span style={{
-                            fontSize: '12px',
-                            color: '#28a745',
-                            fontWeight: 'bold',
-                            marginTop: '5px',
-                            display: 'block'
-                          }}>
-                            MEJOR PRECIO
-                          </span>
-                        )}
+
+
                       </div>
-                    </button>
+                      <div className="ActualYMejor">
+                        {producto.id === productoSeleccionado.id && (
+                        <span style={{
+                          fontSize: '12px',
+                          color: '#007bff',
+                          fontWeight: 'bold',
+                          marginTop: '5px',
+                          display: 'block'
+                        }}>
+                          ACTUAL
+                        </span>
+                      )}
+
+                      {productoMasBarato && producto.id === productoMasBarato.id && (
+                        <span style={{
+                          fontSize: '12px',
+                          color: '#28a745',
+                          fontWeight: 'bold',
+                          marginTop: '5px',
+                          display: 'block'
+                        }}>
+                          MEJOR PRECIO
+                        </span>
+                      )}
+                      </div>
+                      
+                    </div>
+
                   ))}
                 </>
               ) : (

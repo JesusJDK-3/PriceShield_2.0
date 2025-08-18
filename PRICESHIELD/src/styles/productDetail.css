@@ -6,30 +6,31 @@
 }
 
 .detalleProducto {
-  height: 86%;
+  height: 100%;
   display: flex;
   justify-content: space-between;
   gap: 0.5rem;
   flex-wrap: wrap;
   padding: 10px;
-  padding-left: 0px;
+  background: white;
 }
 
 .BotRP {
   padding-bottom: 10px;
-  justify-content: flex-end;
   display: flex;
 }
 
 .BotonRegresar {
-  background-color: #081F63;
-  color: white;
+  background-color: #E6E9F8;
+  color: black;
   border: none;
   border-radius: 8px;
   padding: 6px 12px;
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  font-weight: bold;
+
 }
 
 .BotonRegresar:hover {
@@ -41,7 +42,7 @@
 .DPExtendido {
   padding: 10px;
   border-radius: 8px;
-  background-color: #F7F9FC;
+  background-color: #F6F6F6;
   display: flex;
   width: 70%;
   flex-direction: column;
@@ -59,13 +60,12 @@
   flex-direction: row;
   gap: 1.8rem;
   padding: 15px 15px 0 15px;
-  flex-wrap: wrap;
   max-width: 900px;
 }
 .PrecioMasBajoT{
   font-size: 20px;
-  margin: auto 0px;
   text-align: center;
+  margin-top: 10px;
 }
 
 .MercadoLogo {
@@ -82,28 +82,31 @@
  border: none;
 }
 
+.ActualYMejor{
+  display: flex;
+  justify-content: space-between;
+}
 
-.PrecioMasBajo {
-  width: 80%;
+
+.PrecioMasBajo:hover {
+  color: #081F63;
+  transition: 300ms;
+  transform: scale(1.05);
+}
+.TopBarFD .productoBF{
+color: #4CE251;
+}
+.datoPPT {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
   align-self: center;
   padding: 10% 10px;
   background-color: #F7F6FB;
   border-radius: 8px;
   border: 1px solid #6b6768;
   box-shadow: #081F63 0px 0px 5px;
-}
-
-.PrecioMasBajo:hover {
-  background-color: #E6E9F8;
-  color: #081F63;
-  transition: 300ms;
-  transform: scale(1.05);
-}
-
-.datoPPT {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
 .PaProVer {
@@ -113,7 +116,6 @@
   grid-template-rows: 1fr 2fr;
   border: 2px solid #D71038;
   border-radius: 8px;
-  margin-top: 15%;
   padding: 5px;
 }
 
@@ -156,16 +158,23 @@
   margin: 0 auto;
   border-radius: 8px;
 }
-
+.PDispoMensa{
+  font-size: 14px;
+  margin-top: 10px;
+  text-align: center;
+  font-weight: bold;
+}
 .mercadosYprecios {
   width: 27.5%;
   /*margin-right: 20px;*/
+  background-color: #F6F6F6;
+  border-radius: 8px;
 }
 .BotonDashboardContainer {
   display: flex;
-  justify-content: center;
+  justify-content: end;
   margin-top: 1rem;
-      width: 100%;
+      width: 89%;
 }
 
 .BotonDashboard {
@@ -191,8 +200,8 @@
 .footerMercados {
   display: flex;
   flex-direction: column;
-  background-color: white;
-  border-radius: 15px;
+ /* background-color: #F6F6F6;*/
+  border-radius: 8px;
   padding: 1rem;
   color: #081F63;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -206,7 +215,6 @@
 .DetallesMenoresP {
       /* align-items: center; */
     margin: 0 7vw;
-    margin-left: 0px;
     justify-content: space-around;
     display: flex;
     flex-direction: column;

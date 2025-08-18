@@ -3,6 +3,7 @@
     grid-template-columns: auto 2fr 2fr auto;
     align-items: center;
     background-color: #193a9d;
+    margin-top: 12px;
 }
 .BarraSuperior .LogoPriceBarra {
     height: 50px;

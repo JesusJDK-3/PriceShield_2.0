@@ -1,8 +1,6 @@
 .contenedor_general {
-    display: grid;
+    display: flex;
     width: 100%;
-    gap: 1.8rem;
-    grid-template-columns: 14rem auto;
 }
 
 .ContenedorProductosXReutilizable {
@@ -54,13 +52,13 @@
     overflow-y: auto;
     scrollbar-width: none;
     height: auto;
+    background-color: white;
 }
 
 .producto {
     align-items: center;
     align-content: center;
     margin: 15px;
-    margin-left: 0px;
     background-color: #F7F6FB;
     padding: 15px;
     padding-bottom: 5px;
@@ -150,7 +148,9 @@
   padding-bottom: 10px;
   border-bottom: 2px solid #f0f0f0;
 }
-
+.TopBarFDP .productoBF{
+  color: #4CE251;
+}
 .search-results-info h3,
 .all-products-info h3 {
   margin: 0 0 5px 0;
@@ -486,9 +486,9 @@
         padding-bottom: 0px;
     }
 
-    .buProductos {
+    /*.buProductos {
         padding: 0.5rem;
-    }
+    }*/
 
     .contenedor_general {
         grid-template-columns: 100% !important;
