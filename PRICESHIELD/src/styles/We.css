@@ -1,6 +1,6 @@
 body {
     
-    background: linear-gradient( #255BE4, #546DA6, #546DA6, #255BE4);
+    /*background: linear-gradient( #255BE4, #546DA6, #546DA6, #255BE4);*/
     height: 100%;}
 .Nosotros {
     display: flex;
@@ -10,9 +10,16 @@ body {
     color: white;
     text-align: center;
 border-radius: 8px;
+min-height: 750px;
     /*background-color: #F7F9FC;*/
 }
-
+.WeContainer {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+   
+    overflow: hidden;
+}
 .tituloNosotros {
     font-size: 2.8rem;
     margin-bottom: 10px;
@@ -106,6 +113,10 @@ border-radius: 8px;
     margin-top: 20px;
     width: 90%;
    
+}
+.ContenedorNosotros {
+    overflow-y: auto;
+    scrollbar-width: none;
 }
 .CreadoresP {
     display: flex;

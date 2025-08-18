@@ -1,8 +1,9 @@
-import React from "react";
-import SearchBox from './SearchBox.jsx';
+import React, { useEffect, useRef, useState } from "react";
+import SearchBoxBF from './SearchBoxBF.jsx';
 import '../styles/TopBarF.css';
 import { Link } from 'react-router-dom';
 import IconSelect from "./IconSelect.jsx";
+import ModalWe from "./ModalWe.jsx";
 import logo from '../assets/img/logF.png';
 
 const TopBarF = ({ onSearch, onResults, user }) => {
@@ -53,15 +54,36 @@ const TopBarF = ({ onSearch, onResults, user }) => {
     };
     const handleDashboardClick = () => {
     navigate('/dashboard');
+
   };
+  
+      const [isModelOpen, setIsModalOpen] = useState(false);
+    const [redirectAfterAuth, setRedirectAfterAuth] = useState(null); // Nueva variable
+  
+    // Función para abrir modal con redirección específica
+    const openModal = () => {
+      setIsModalOpen(true);
+    };
+  
+    // Función cuando se cierra el modal
+    const closeModal = () => {
+      setIsModalOpen(false);
+    };
     return (
         <>
             <div className="BarraSuperior">
                 <span className="LogoPriceShield">
-                    <img src={logo} alt="Logo PriceShield" className="LogoPriceBarra"/>
+                    <a href="/" className="logoPD">
+                              <span className="logIcon">
+                                <img src={logo} alt="PreciShield" />
+                              </span>
+                            </a>
                 </span>
+                <div className="BuscarModal">
+                    <i className="bi bi-search"  onClick={() => setIsModalOpen(true)} ></i>
+                </div>
                 <div className="BuscadorFiltro">
-                    <SearchBox
+                    <SearchBoxBF
                         onSearch={onSearch}
                         onResults={onResults}
                     />
@@ -94,6 +116,10 @@ const TopBarF = ({ onSearch, onResults, user }) => {
                     </span>
                 </div>
             </div>
+            <ModalWe 
+        isOpen={isModelOpen}
+        closeModal={closeModal} // Nueva prop
+      />
         </>
 
     );

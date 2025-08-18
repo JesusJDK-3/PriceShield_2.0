@@ -50,6 +50,7 @@ function We({ user }) {
       setProductos(results || []);
       setPagination(null); // No hay paginación en búsquedas filtradas
     }
+    
   };
   return (
     <div className="WeContainer">

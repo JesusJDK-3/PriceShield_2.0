@@ -5,8 +5,8 @@
     background-color: #193a9d;
 }
 .BarraSuperior .LogoPriceBarra {
-    height: 80px;
-    width: 80px;
+    height: 50px;
+    width: 50px;
     color: white;
 }
 .BuscadorFiltro {
@@ -45,6 +45,10 @@
 .IconSelect {
     display: none;
 }
+
+.BuscarModal {
+    display: none;
+}
 @media (max-width: 510px) {
     .IconSelect {
         display: flex;
@@ -52,5 +56,17 @@
     }
     .IconosPestañas {
         display: none;
+    }
+    .BuscadorFiltro{
+        display: none;
+    }
+    .BuscarModal
+    {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
     }
 }

@@ -1,0 +1,73 @@
+.search-boxBF {
+    align-items: center;
+    background: #193A9D;;
+    border: 2px solid #1E64DD;
+    border-radius: 8px;
+    padding: 0.5rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    max-width: none;
+     width: 80%;
+
+}
+
+
+.search-boxBF input[type="text"]::placeholder {
+    
+    color: white;
+}
+
+
+.formularioBuscar {
+    justify-content: space-between;
+    display: flex;
+}
+
+.search-boxBF input[type="text"] {
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    border: none;
+    outline: none;
+    width: 80%;
+    font-size: 14px;
+    background: transparent;
+    color: white;
+}
+
+.search-boxBF input[type="submit"] {
+    padding: 0.5rem 1rem;
+    background-color: #4A3FA3;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+@media (max-width: 768px) {
+    
+
+    
+    .search-boxBF input[type="text"] {
+        flex: 1 1 200px;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        border: none;
+        outline: none;
+        width: 85%;
+        font-size: 14px;
+    }
+
+    .search-boxBF input[type="submit"] {
+
+       
+        color: white;
+        border: none;
+        cursor: pointer;
+        flex-shrink: 0;
+        font-weight: bold;
+    }
+
+    #search-form {
+        justify-content: center;
+        align-items: center;
+    }
+}

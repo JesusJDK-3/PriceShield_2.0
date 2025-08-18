@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import '../styles/SearchBox.css';
-
+import '../styles/SearchBoxBF.css';
 const SearchBox = ({ onSearch, onResults }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -89,7 +88,7 @@ const SearchBox = ({ onSearch, onResults }) => {
   };
 
   return (
-    <div className="search-box">
+    <div className="search-boxBF">
       <form className='formularioBuscar' method="get" id="search-form" onSubmit={handleSubmit}>
         <input
           type="text"

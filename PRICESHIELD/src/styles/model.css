@@ -20,7 +20,9 @@
     flex-direction: row-reverse;
 
 }
-
+.Contenedorsearch-boxBF .search-boxBF{
+    width: 100%;
+}
 .cerrar button {
     background: none;
     border: none;
