@@ -52,10 +52,7 @@ const TopBarF = ({ onSearch, onResults, user }) => {
         // Fallback al ícono de Bootstrap (Manual Auth o sin login)
         return <i className="bi bi-person-circle caraU"></i>;
     };
-    const handleDashboardClick = () => {
-    navigate('/dashboard');
-
-  };
+    
   
       const [isModelOpen, setIsModalOpen] = useState(false);
     const [redirectAfterAuth, setRedirectAfterAuth] = useState(null); // Nueva variable
@@ -97,9 +94,9 @@ const TopBarF = ({ onSearch, onResults, user }) => {
                     <Link to="/products">
                     <i className="bi bi-bag-check-fill productoBF"></i>
                     </Link>
-                    <a onClick={handleDashboardClick} style={{ cursor: 'pointer' }}>
+                    <Link to="/dashboard">
                     <i className="bi bi-bar-chart-line-fill dashBF"></i>
-                    </a>
+                    </Link>
                     <Link to="/alert">
                     <i className="bi bi-exclamation-triangle alertaBF"></i>
                     </Link>
