@@ -7,7 +7,7 @@ import './styles/products.css';
 import './styles/model.css';
 import './styles/productDetail.css';
 import './styles/dash.css';
-import TopBar from './components/TopBar.jsx';
+import TopBarF from './components/TopBarF.jsx';
 import Drop_DownM from './components/Drop_Down_Menu.jsx';
 import SinProducto from './components/NoProduct.jsx';
 
@@ -38,15 +38,12 @@ function ProductDetail() {
     }
     return (
         <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
-            {/* Barra lateral de menú */}
-            <div className="barraJex">
-                <Drop_DownM isOpenM={isOpenM} closeDown={() => setIsOpenM(false)} />
-            </div>
+            
             {/* Fin Barra lateral de menú */}
             <div className="buProductos">
                 {/* Barra de busqueda superior */}
-                <div className='abrirDown'>
-                    <TopBar onSearch={handleSearch} openMenu={() => setIsOpenM(true)} />
+                <div className='TopBarFDSH'>
+                    <TopBarF onSearch={handleSearch} openMenu={() => setIsOpenM(true)} />
                 </div>
                 {/* Fin Barra de busqueda superior */}
                 <div className="detalleProducto">

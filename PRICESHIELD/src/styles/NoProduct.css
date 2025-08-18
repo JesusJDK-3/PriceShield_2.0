@@ -24,13 +24,13 @@
     justify-content: space-around;
 }
 .detalleNoProducto{
-    height: 86%;
+    height: 100%;
   display: flex;
   justify-content: space-between;
   gap: 0.5rem;
   flex-wrap: wrap;
   padding: 10px;
-  padding-left: 0px;
+  background: white;
 }
 @media (max-width: 867px) {
     .NotificacionSinProducto {

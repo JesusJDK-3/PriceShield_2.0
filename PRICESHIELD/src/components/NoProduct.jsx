@@ -1,7 +1,7 @@
 import React from "react";
 import '../styles/NoProduct.css';
 import '../styles/Drop_Down_Menu.css';
-import TopBar from './TopBar.jsx';
+import TopBarF from './TopBarF.jsx';
 import Drop_DownM from './Drop_Down_Menu.jsx';
 import { useState, useEffect } from 'react';
 const SinProducto = ( handleSearch,navigate) => {
@@ -20,12 +20,10 @@ const SinProducto = ( handleSearch,navigate) => {
         }, []);
     return (
         <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
-                <div className="barraJex">
-                    <Drop_DownM isOpenM={isOpenM} closeDown={() => setIsOpenM(false)} />
-                </div>
+                
                 <div className="buProductos">
-                    <div className='abrirDown'>
-                        <TopBar onSearch={handleSearch} openMenu={() => setIsOpenM(true)} />
+                    <div className='TopBarFDSH'>
+                        <TopBarF onSearch={handleSearch} openMenu={() => setIsOpenM(true)} />
                     </div>
                     {/* Fin Barra de busqueda superior */}
                     <div className="detalleNoProducto">
