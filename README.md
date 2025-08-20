@@ -19,3 +19,8 @@ pip install requests
 python -m pip install "pymongo[srv]"
 pip install schedule
 python app.py
+
+comandos:
+npm install react-router-dom
+npm install react-icons
+npm install chart.js react-chartjs-2
