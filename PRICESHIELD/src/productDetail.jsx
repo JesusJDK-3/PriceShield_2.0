@@ -1,5 +1,5 @@
 // ProductDetail.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './styles/products.css';
 import './styles/model.css';
@@ -13,12 +13,13 @@ function ProductDetail() {
   const [listaProductos, setListaProductos] = useState([]);
   const [productosFiltrados, setProductosFiltrados] = useState([]);
   const [productoMasBarato, setProductoMasBarato] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false); // ✅ Flag para evitar duplicación
   
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  // 🧠 FUNCIÓN: Extraer información clave del nombre del producto
-  const extraerInformacionClave = (nombre) => {
+  // 🧠 FUNCIÓN: Extraer información clave del nombre del producto (Memoizada)
+  const extraerInformacionClave = useCallback((nombre) => {
     const palabrasIgnorar = [
       'de', 'del', 'la', 'el', 'en', 'con', 'sin', 'para', 'por', 'y', '+', 
       'bolsa', 'paquete', 'caja', 'lata', 'botella', 'frasco', 'envase',
@@ -51,13 +52,11 @@ function ProductDetail() {
       .map(palabra => palabra.toLowerCase())
       .filter(palabra => palabra.length > 2)
       .filter(palabra => !palabrasIgnorar.includes(palabra))
-      // ✅ CAMBIO: Solo eliminar palabras EXACTAS de la marca, no parciales
       .filter(palabra => {
         if (!marca) return true;
         const palabrasMarca = marca.split(' ');
         return !palabrasMarca.includes(palabra);
       })
-      // ✅ CAMBIO: Solo eliminar números exactos del peso
       .filter(palabra => {
         if (!peso) return true;
         const numeroPeso = peso.match(/\d+/);
@@ -74,10 +73,10 @@ function ProductDetail() {
     });
     
     return { marca, peso, palabrasClave, nombreOriginal: nombre };
-  };
+  }, []);
 
-  // 🎯 FUNCIÓN: Determinar si dos productos son el mismo
-  const sonElMismoProducto = (info1, info2) => {
+  // 🎯 FUNCIÓN: Determinar si dos productos son el mismo (Memoizada)
+  const sonElMismoProducto = useCallback((info1, info2) => {
     console.log('🔎 Comparando productos:', {
       producto1: info1,
       producto2: info2
@@ -123,11 +122,13 @@ function ProductDetail() {
     
     // 4. Son el mismo producto si tienen alta similitud (70% o más)
     return similitud >= 0.7;
-  };
+  }, []);
 
-  // ✅ FUNCIÓN INTELIGENTE: Filtrar productos similares
-  const filtrarProductosSimilares = (productoSeleccionado, todosLosProductos) => {
+  // ✅ FUNCIÓN INTELIGENTE: Filtrar productos similares (Memoizada)
+  const filtrarProductosSimilares = useCallback((productoSeleccionado, todosLosProductos) => {
     if (!productoSeleccionado || !todosLosProductos) return [];
+
+    console.log('🔍 INICIANDO filtrado inteligente para:', productoSeleccionado.nombre);
 
     const nombreSeleccionado = productoSeleccionado.nombre.toLowerCase().trim();
     const infoSeleccionada = extraerInformacionClave(nombreSeleccionado);
@@ -159,13 +160,16 @@ function ProductDetail() {
       }))
     });
 
+    console.log('✅ Filtrado completado:', productosFiltrados.length, 'productos encontrados');
     return productosFiltrados;
-  };
+  }, [extraerInformacionClave, sonElMismoProducto]);
 
-  // ✅ FUNCIÓN PARA DETECTAR SI ES OFERTA O DUPLICADO
-  const analizarProductosSimilares = (productos) => {
+  // ✅ FUNCIÓN PARA DETECTAR SI ES OFERTA O DUPLICADO (Memoizada)
+  const analizarProductosSimilares = useCallback((productos) => {
     if (productos.length < 2) return productos;
 
+    console.log('🔍 Analizando ofertas vs duplicados...');
+    
     const grupos = new Map();
     
     productos.forEach(producto => {
@@ -216,73 +220,15 @@ function ProductDetail() {
       }
     });
 
+    console.log('✅ Análisis completado:', productosFinales.length, 'productos finales');
     return productosFinales;
-  };
-
-  useEffect(() => {
-    if (state) {
-      const { producto, listaProductos: lista } = state;
-      
-      setProductoSeleccionado(producto);
-      setListaProductos(lista || []);
-      
-      if (producto && lista && lista.length > 0) {
-        const productosFiltradosNuevos = filtrarProductosSimilares(producto, lista);
-        
-        // 🔧 NUEVO: Analizar ofertas vs duplicados
-        const productosSinDuplicados = analizarProductosSimilares(productosFiltradosNuevos);
-        
-        setProductosFiltrados(productosSinDuplicados);
-        
-        if (productosSinDuplicados.length > 0) {
-          const masBarato = encontrarProductoMasBarato(productosSinDuplicados);
-          setProductoMasBarato(masBarato);
-        }
-      } else {
-        setProductosFiltrados([]);
-        setProductoMasBarato(null);
-      }
-    }
-  }, [state]);
-  useEffect(() => {
-    if (state) {
-      const { producto, listaProductos: lista } = state;
-      
-      console.log('📦 Datos recibidos:', { producto, lista });
-      
-      setProductoSeleccionado(producto);
-      setListaProductos(lista || []);
-      
-      if (producto && lista && lista.length > 0) {
-        const productosFiltradosNuevos = filtrarProductosSimilares(producto, lista);
-        setProductosFiltrados(productosFiltradosNuevos);
-        
-        if (productosFiltradosNuevos.length > 0) {
-          const masBarato = encontrarProductoMasBarato(productosFiltradosNuevos);
-          setProductoMasBarato(masBarato);
-        }
-      } else {
-        setProductosFiltrados([]);
-        setProductoMasBarato(null);
-      }
-    }
-  }, [state]);
-
-  useEffect(() => { 
-    const handleResize = () => {
-      if (window.innerWidth <= 768) {
-        setIsOpenM(false);
-      } else {
-        setIsOpenM(true);
-      }
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const encontrarProductoMasBarato = (productos) => {
+  // ✅ FUNCIÓN PARA ENCONTRAR EL MÁS BARATO (Memoizada)
+  const encontrarProductoMasBarato = useCallback((productos) => {
     if (!productos || productos.length === 0) return null;
+
+    console.log('💰 Buscando producto más barato...');
 
     // Filtrar productos con precios válidos
     const productosConPrecio = productos.filter(producto => {
@@ -313,9 +259,10 @@ function ProductDetail() {
     });
 
     return masBarato;
-  };
+  }, []);
 
-  const extraerNumericoPrecio = (precio) => {
+  // ✅ FUNCIÓN PARA EXTRAER PRECIO NUMÉRICO (Memoizada)
+  const extraerNumericoPrecio = useCallback((precio) => {
     if (!precio) return Infinity;
     
     // Convertir a string y limpiar
@@ -353,30 +300,94 @@ function ProductDetail() {
     });
     
     return isNaN(resultado) ? Infinity : resultado;
-  };
+  }, []);
 
-  const handleSearch = (searchTerm) => {
+  // ✅ EFFECT PRINCIPAL (ÚNICO) - Maneja toda la lógica de estado
+  useEffect(() => {
+    // ✅ Evitar ejecución simultánea
+    if (isProcessing) {
+      console.log('⚠️ Procesamiento en curso, omitiendo...');
+      return;
+    }
+
+    if (state) {
+      const { producto, listaProductos: lista } = state;
+      
+      console.log('📦 Datos recibidos:', { producto, lista });
+      
+      setIsProcessing(true);
+      
+      setProductoSeleccionado(producto);
+      setListaProductos(lista || []);
+      
+      if (producto && lista && lista.length > 0) {
+        console.log('🔄 Iniciando procesamiento de productos...');
+        
+        // Paso 1: Filtrar productos similares
+        const productosFiltradosNuevos = filtrarProductosSimilares(producto, lista);
+        
+        // Paso 2: Analizar ofertas vs duplicados
+        const productosSinDuplicados = analizarProductosSimilares(productosFiltradosNuevos);
+        
+        // Paso 3: Actualizar estado
+        setProductosFiltrados(productosSinDuplicados);
+        
+        // Paso 4: Encontrar el más barato
+        if (productosSinDuplicados.length > 0) {
+          const masBarato = encontrarProductoMasBarato(productosSinDuplicados);
+          setProductoMasBarato(masBarato);
+        } else {
+          setProductoMasBarato(null);
+        }
+        
+        console.log('✅ Procesamiento completado');
+      } else {
+        setProductosFiltrados([]);
+        setProductoMasBarato(null);
+      }
+      
+      setIsProcessing(false);
+    }
+  }, [state, filtrarProductosSimilares, analizarProductosSimilares, encontrarProductoMasBarato, isProcessing]);
+
+  // ✅ EFFECT PARA RESPONSIVE (Separado)
+  useEffect(() => { 
+    const handleResize = () => {
+      if (window.innerWidth <= 768) {
+        setIsOpenM(false);
+      } else {
+        setIsOpenM(true);
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // ✅ HANDLERS MEMOIZADOS
+  const handleSearch = useCallback((searchTerm) => {
     console.log('Buscando:', searchTerm);
-  };
+  }, []);
 
-  const handleClickD = () => {
+  const handleClickD = useCallback(() => {
     navigate('/dashboard', { 
       state: {
         producto: productoSeleccionado,
         listaProductos: productosFiltrados
       }
     });
-  };
+  }, [navigate, productoSeleccionado, productosFiltrados]);
 
-  const handleClick = (nuevoProducto) => {
+  const handleClick = useCallback((nuevoProducto) => {
     navigate('/detalle', { 
       state: {
         producto: nuevoProducto,
         listaProductos: listaProductos
       }
     });
-  };
+  }, [navigate, listaProductos]);
 
+  // ✅ EARLY RETURN SI NO HAY PRODUCTO
   if (!productoSeleccionado) {
     return (
       <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
@@ -463,7 +474,7 @@ function ProductDetail() {
             </div>
             
             <h3 className='PrecioMasBajoT'>
-              Encuentra el precio más bajo para: <em>"{productoSeleccionado.nombre}"</em>
+              Encuentra el precio más bajo en:
             </h3>
             
             {productoMasBarato && (
@@ -508,7 +519,7 @@ function ProductDetail() {
                     borderRadius: '5px',
                     color: '#495057'
                   }}>
-                    <strong>"{productoSeleccionado.nombre}"</strong> disponible en {productosFiltrados.length} supermercado{productosFiltrados.length !== 1 ? 's' : ''}
+                    disponible en {productosFiltrados.length} supermercado{productosFiltrados.length !== 1 ? 's' : ''}
                   </div>
                   
                   {productosFiltrados.map((producto, index) => (
