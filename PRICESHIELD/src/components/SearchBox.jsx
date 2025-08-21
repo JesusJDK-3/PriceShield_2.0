@@ -5,62 +5,6 @@ const SearchBox = ({ onSearch, onResults }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Función simple: Por cada supermercado, si hay oferta, mostrar SOLO la oferta (ocultar precio normal)
-  const hideRegularPriceIfOfferExists = (products) => {
-    const productsByStore = {};
-    
-    // Agrupar por supermercado
-    products.forEach(product => {
-      const store = (product.store || product.source || 'unknown').trim();
-      if (!productsByStore[store]) {
-        productsByStore[store] = [];
-      }
-      productsByStore[store].push(product);
-    });
-    
-    const finalProducts = [];
-    
-    // Por cada supermercado, revisar si hay ofertas
-    Object.entries(productsByStore).forEach(([store, storeProducts]) => {
-      const productsWithOffers = storeProducts.filter(p => 
-        !!(p.offer_price || p.discount_price || p.original_price)
-      );
-      const productsWithoutOffers = storeProducts.filter(p => 
-        !(p.offer_price || p.discount_price || p.original_price)
-      );
-      
-      if (productsWithOffers.length > 0) {
-        // Este supermercado tiene ofertas
-        productsWithOffers.forEach(offerProduct => {
-          // Agregar la oferta
-          finalProducts.push(offerProduct);
-          
-          // Buscar si existe el mismo producto sin oferta y NO agregarlo
-          const productName = offerProduct.name.toLowerCase().trim();
-          // Ya no agregamos la versión sin oferta del mismo producto
-        });
-        
-        // Agregar productos sin oferta que NO tengan versión con oferta
-        productsWithoutOffers.forEach(regularProduct => {
-          const productName = regularProduct.name.toLowerCase().trim();
-          const hasOfferVersion = productsWithOffers.some(offerProduct => 
-            offerProduct.name.toLowerCase().trim() === productName
-          );
-          
-          if (!hasOfferVersion) {
-            finalProducts.push(regularProduct);
-          }
-        });
-        
-      } else {
-        // Este supermercado NO tiene ofertas, agregar todos sus productos
-        finalProducts.push(...productsWithoutOffers);
-      }
-    });
-    
-    return finalProducts;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     const searchValue = e.target.elements['search-input'].value.trim();
@@ -78,7 +22,7 @@ const SearchBox = ({ onSearch, onResults }) => {
 
     // Limpiar errores anteriores
     setError(null);
-    setIsLoading(true);
+    setIsLoading(true); // ✅ CORREGIDO: era setIsLoadingProducts(true)
 
     try {
       // Llamar callback onSearch si existe (para componentes padre)
@@ -101,13 +45,11 @@ const SearchBox = ({ onSearch, onResults }) => {
       const savedData = await savedResponse.json();
 
       if (savedData.success && savedData.products && savedData.products.length > 0) {
-        // Filtrar: ocultar precios normales si existe oferta del mismo producto en mismo supermercado
-        const filteredProducts = hideRegularPriceIfOfferExists(savedData.products);
-        
+        // Si encontramos productos guardados, mostrarlos
         if (onResults) {
-          onResults(filteredProducts, searchValue, 'search_saved');
+          onResults(savedData.products, searchValue, 'search_saved');
         }
-        console.log(`✅ Productos originales: ${savedData.products.length} → Productos filtrados: ${filteredProducts.length}`);
+        console.log(`✅ Encontrados ${savedData.products.length} productos guardados`);
       } else {
         // PASO 2: Si no hay productos guardados, buscar en APIs en tiempo real
         console.log('🌐 No hay productos guardados, buscando en APIs...');
@@ -127,11 +69,9 @@ const SearchBox = ({ onSearch, onResults }) => {
         const apiData = await apiResponse.json();
 
         if (apiData.success) {
-          // También filtrar resultados de APIs
-          const filteredResults = hideRegularPriceIfOfferExists(apiData.results);
-          
+          // Pasar los resultados de las APIs al componente padre
           if (onResults) {
-            onResults(filteredResults, searchValue, 'search_api');
+            onResults(apiData.results, searchValue, 'search_api');
           }
           console.log('✅ Búsqueda en APIs exitosa:', apiData);
         } else {
@@ -144,7 +84,7 @@ const SearchBox = ({ onSearch, onResults }) => {
       console.error('❌ Error conectando con la API:', error);
       setError('Error de conexión. Verifica que el backend esté funcionando.');
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // ✅ CORREGIDO: era setIsLoadingProducts(false)
     }
   };
 
@@ -193,9 +133,9 @@ const SearchBox = ({ onSearch, onResults }) => {
           color: '#1976d2'
         }}>
           <div className="loading-steps">
-            <div>🔍 Buscando ofertas y precios regulares...</div>
+            <div>🔍 Buscando en productos guardados...</div>
             <div style={{ fontSize: '12px', opacity: 0.7 }}>
-              Ocultando precios normales cuando hay ofertas
+              Si no se encuentran resultados, buscaremos en tiempo real
             </div>
           </div>
         </div>

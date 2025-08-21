@@ -16,7 +16,6 @@ class Product:
     def save_products(self, products_data, search_query):
         """
         Guarda productos obtenidos de las APIs en la base de datos
-        NUEVA FUNCIONALIDAD: Elimina duplicados antes de guardar, priorizando ofertas
         
         Args:
             products_data (dict): Datos de productos por supermercado
@@ -28,87 +27,27 @@ class Product:
         try:
             saved_count = 0
             updated_count = 0
-            duplicates_found = 0
             
             # Recorrer productos de cada supermercado
             for supermarket_key, supermarket_data in products_data.items():
                 if supermarket_data.get("success") and supermarket_data.get("products"):
                     
-                    # PASO 1: Agrupar productos por unique_id para eliminar duplicados del mismo scraping
-                    products_by_id = {}
-                    
-                    print(f"📦 Procesando {len(supermarket_data['products'])} productos de {supermarket_key}")
-                    
                     for product in supermarket_data["products"]:
                         # Crear identificador único del producto
                         unique_id = self._generate_product_id(product)
                         
-                        if unique_id not in products_by_id:
-                            # Primer producto con este ID
-                            products_by_id[unique_id] = product
-                        else:
-                            # Duplicado encontrado - decidir cuál mantener
-                            existing = products_by_id[unique_id]
-                            duplicates_found += 1
-                            
-                            print(f"🔍 Duplicado encontrado: {product.get('name')} en {supermarket_key}")
-                            print(f"   Existente: precio={existing.get('price')}, original_price={existing.get('original_price', 0)}")
-                            print(f"   Nuevo: precio={product.get('price')}, original_price={product.get('original_price', 0)}")
-                            
-                            # Determinar cuál tiene oferta
-                            current_has_offer = (
-                                product.get("original_price", 0) > 0 or 
-                                product.get("discount_percentage", 0) > 0
-                            )
-                            existing_has_offer = (
-                                existing.get("original_price", 0) > 0 or 
-                                existing.get("discount_percentage", 0) > 0
-                            )
-                            
-                            # PRIORIDAD: Mantener el que tiene oferta
-                            if current_has_offer and not existing_has_offer:
-                                print(f"   ✅ Reemplazando: Nuevo tiene oferta, existente no")
-                                products_by_id[unique_id] = product
-                            elif existing_has_offer and not current_has_offer:
-                                print(f"   ⏸️ Manteniendo: Existente tiene oferta, nuevo no")
-                                # No hacer nada, mantener el existente
-                            elif current_has_offer and existing_has_offer:
-                                # Ambos tienen oferta, mantener el de menor precio
-                                current_offer_price = product.get("price", 0)
-                                existing_offer_price = existing.get("price", 0)
-                                
-                                if current_offer_price < existing_offer_price and current_offer_price > 0:
-                                    print(f"   💰 Reemplazando: Mejor oferta ({current_offer_price} < {existing_offer_price})")
-                                    products_by_id[unique_id] = product
-                                else:
-                                    print(f"   💰 Manteniendo: Oferta existente es mejor o igual")
-                            else:
-                                # Ninguno tiene oferta, mantener el de menor precio regular
-                                if product.get("price", 0) < existing.get("price", 0) and product.get("price", 0) > 0:
-                                    print(f"   💵 Reemplazando: Mejor precio regular")
-                                    products_by_id[unique_id] = product
-                                else:
-                                    print(f"   💵 Manteniendo: Precio existente es mejor o igual")
-                    
-                    print(f"📊 Resultado: {len(supermarket_data['products'])} productos → {len(products_by_id)} únicos ({duplicates_found} duplicados eliminados)")
-                    
-                    # PASO 2: Procesar productos únicos (ya sin duplicados)
-                    for unique_id, product in products_by_id.items():
-                        
-                        # Buscar si el producto ya existe en la base de datos
+                        # Buscar si el producto ya existe
                         existing_product = self.products_collection.find_one({
                             "unique_id": unique_id
                         })
                         
                         if existing_product:
                             # Actualizar producto existente
-                            print(f"🔄 Actualizando: {product.get('name')}")
                             updated_product = self._update_existing_product(existing_product, product)
                             if updated_product:
                                 updated_count += 1
                         else:
                             # Guardar nuevo producto
-                            print(f"➕ Creando: {product.get('name')}")
                             new_product = self._create_new_product(product, unique_id, search_query)
                             if new_product:
                                 saved_count += 1
@@ -116,31 +55,110 @@ class Product:
             # Guardar en historial de búsquedas
             self._save_search_history(search_query, saved_count + updated_count)
             
-            result = {
+            return {
                 "success": True,
                 "saved_count": saved_count,
                 "updated_count": updated_count,
-                "duplicates_eliminated": duplicates_found,
                 "total_processed": saved_count + updated_count
             }
             
-            print(f"✅ Guardado completado: {saved_count} nuevos, {updated_count} actualizados, {duplicates_found} duplicados eliminados")
-            return result
-            
         except Exception as e:
-            print(f"❌ Error guardando productos: {e}")
+            print(f"Error guardando productos: {e}")
             return {
                 "success": False,
                 "error": str(e),
                 "saved_count": 0,
-                "updated_count": 0,
-                "duplicates_eliminated": 0
+                "updated_count": 0
             }
-    
+
+    def search_products_for_comparison(self, query, limit=100):
+        """
+        Búsqueda específica para comparación de precios
+        Encuentra productos similares sin filtro de supermercado
+        """
+        try:
+            pipeline = [
+                {
+                    "$search": {
+                        "index": "products_search_index",
+                        "compound": {
+                            "should": [
+                                {
+                                    "text": {
+                                        "query": query,
+                                        "path": "name",
+                                        "score": {"boost": {"value": 5}}
+                                    }
+                                },
+                                {
+                                    "text": {
+                                        "query": query,
+                                        "path": "brand",
+                                        "score": {"boost": {"value": 3}}
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "$addFields": {
+                        "search_score": {"$meta": "searchScore"}
+                    }
+                },
+                # Agrupar por supermercado para comparación
+                {
+                    "$sort": {"search_score": -1, "price": 1}
+                },
+                {"$limit": limit}
+            ]
+            
+            products = list(self.products_collection.aggregate(pipeline))
+            
+            # Procesar para comparación
+            comparison_data = {}
+            for product in products:
+                product["_id"] = str(product["_id"])
+                supermarket = product.get("supermarket_key", "unknown")
+                
+                if supermarket not in comparison_data:
+                    comparison_data[supermarket] = {
+                        "supermarket_name": product.get("supermarket", "Desconocido"),
+                        "products": [],
+                        "min_price": float('inf'),
+                        "avg_price": 0,
+                        "best_match": None
+                    }
+                
+                price = product.get("price", 0)
+                if price > 0:
+                    comparison_data[supermarket]["products"].append(product)
+                    
+                    # Actualizar precio mínimo
+                    if price < comparison_data[supermarket]["min_price"]:
+                        comparison_data[supermarket]["min_price"] = price
+                        comparison_data[supermarket]["best_match"] = product
+            
+            # Calcular promedios
+            for supermarket in comparison_data:
+                products_list = comparison_data[supermarket]["products"]
+                if products_list:
+                    total_price = sum(p["price"] for p in products_list)
+                    comparison_data[supermarket]["avg_price"] = round(total_price / len(products_list), 2)
+                    
+                    if comparison_data[supermarket]["min_price"] == float('inf'):
+                        comparison_data[supermarket]["min_price"] = 0
+            
+            return comparison_data
+            
+        except Exception as e:
+            print(f"Error en búsqueda para comparación: {e}")
+            return {}
+
+
     def search_saved_products(self, query, supermarket=None, limit=50, sort_by="price"):
         """
-        Busca productos guardados en la base de datos con búsqueda mejorada
-        FILTRA AUTOMÁTICAMENTE: Si hay oferta, oculta el precio normal del mismo producto en el mismo supermercado
+        Busca productos usando Atlas Search (reemplaza la búsqueda regex anterior)
         
         Args:
             query (str): Término de búsqueda
@@ -149,215 +167,106 @@ class Product:
             sort_by (str): Campo para ordenar (price, name, scraped_at)
             
         Returns:
-            list: Lista de productos encontrados SIN duplicados de ofertas
+            list: Lista de productos encontrados
         """
         try:
-            # Búsqueda básica (mantengo tu lógica original)
-            query_clean = query.strip().lower()
+            query_clean = query.strip()
             
-            # Filtros de búsqueda por niveles (mantengo tu lógica existente)
-            exact_filter = {
-                "name": {"$regex": f"^{re.escape(query_clean)}$", "$options": "i"}
-            }
-            
-            starts_with_filter = {
-                "name": {"$regex": f"^{re.escape(query_clean)}", "$options": "i"}
-            }
-            
-            word_boundary_filter = {
-                "$or": [
-                    {"name": {"$regex": f"\\b{re.escape(query_clean)}\\b", "$options": "i"}},
-                    {"brand": {"$regex": f"\\b{re.escape(query_clean)}\\b", "$options": "i"}}
-                ]
-            }
-            
-            query_words = [word for word in query_clean.split() if len(word) >= 2]
-            if len(query_words) > 1:
-                all_words_filter = {
-                    "$and": [
-                        {"name": {"$regex": f"\\b{re.escape(word)}", "$options": "i"}}
-                        for word in query_words
-                    ]
-                }
-            else:
-                all_words_filter = None
-            
-            flexible_filter = None
-            if len(query_clean) > 3:
-                flexible_filter = {
-                    "$or": [
-                        {"name": {"$regex": query_clean, "$options": "i"}},
-                        {"brand": {"$regex": query_clean, "$options": "i"}},
-                        {"description": {"$regex": query_clean, "$options": "i"}}
-                    ]
-                }
-            
-            # Aplicar filtro de supermercado
-            def add_supermarket_filter(base_filter):
-                if supermarket:
-                    return {"$and": [base_filter, {"supermarket_key": supermarket}]}
-                return base_filter
-            
-            # Definir orden
-            sort_options = {
-                "price": [("price", 1)],
-                "price_desc": [("price", -1)],
-                "name": [("name", 1)],
-                "scraped_at": [("scraped_at", -1)]
-            }
-            sort_order = sort_options.get(sort_by, [("price", 1)])
-            
-            # NUEVA LÓGICA: Usar aggregation pipeline para filtrar ofertas
-            def build_aggregation_pipeline(match_filter, search_score):
-                return [
-                    # 1. Buscar productos que coincidan con el filtro
-                    {"$match": add_supermarket_filter(match_filter)},
-                    
-                    # 2. Agregar campo para identificar si tiene oferta
-                    {
-                        "$addFields": {
-                            "has_offer": {
-                                "$cond": {
-                                    "if": {
-                                        "$or": [
-                                            {"$gt": ["$original_price", 0]},
-                                            {"$gt": ["$discount_percentage", 0]}
-                                        ]
-                                    },
-                                    "then": True,
-                                    "else": False
+            # Pipeline base con Atlas Search
+            pipeline = [
+                {
+                    "$search": {
+                        "index": "products_search_index",  # El índice que creaste
+                        "compound": {
+                            "should": [
+                                # Búsqueda principal en nombre (mayor peso)
+                                {
+                                    "text": {
+                                        "query": query_clean,
+                                        "path": "name",
+                                        "score": {"boost": {"value": 3}}
+                                    }
+                                },
+                                # Búsqueda en marca (peso medio)
+                                {
+                                    "text": {
+                                        "query": query_clean,
+                                        "path": "brand",
+                                        "score": {"boost": {"value": 2}}
+                                    }
+                                },
+                                # Búsqueda en categorías
+                                {
+                                    "text": {
+                                        "query": query_clean,
+                                        "path": "categories",
+                                        "score": {"boost": {"value": 1.5}}
+                                    }
+                                },
+                                # Búsqueda en descripción (menor peso)
+                                {
+                                    "text": {
+                                        "query": query_clean,
+                                        "path": "description",
+                                        "score": {"boost": {"value": 1}}
+                                    }
                                 }
-                            },
-                            "search_score": search_score
+                            ],
+                            "minimumShouldMatch": 1
                         }
-                    },
-                    
-                    # 3. Agrupar por nombre + supermercado
-                    {
-                        "$group": {
-                            "_id": {
-                                "name_normalized": {"$toLower": "$name"},
-                                "supermarket": "$supermarket_key"
-                            },
-                            "products": {"$push": "$$ROOT"},
-                            "has_any_offer": {"$max": "$has_offer"}
-                        }
-                    },
-                    
-                    # 4. Filtrar: Si hay oferta, solo mostrar ofertas; si no, mostrar todos
-                    {
-                        "$project": {
-                            "filtered_products": {
-                                "$cond": {
-                                    "if": "$has_any_offer",
-                                    "then": {
-                                        "$filter": {
-                                            "input": "$products",
-                                            "cond": {"$eq": ["$$this.has_offer", True]}
-                                        }
-                                    },
-                                    "else": "$products"
-                                }
-                            }
-                        }
-                    },
-                    
-                    # 5. Aplanar la estructura
-                    {"$unwind": "$filtered_products"},
-                    {"$replaceRoot": {"newRoot": "$filtered_products"}},
-                    
-                    # 6. Ordenar y limitar
-                    {"$sort": dict(sort_order)},
-                    {"$limit": limit}
-                ]
+                    }
+                }
+            ]
             
-            # Ejecutar búsquedas por niveles con la nueva lógica
-            all_products = []
-            seen_ids = set()
+            # Agregar filtro de supermercado si se especifica
+            if supermarket:
+                pipeline.append({
+                    "$match": {
+                        "supermarket_key": supermarket
+                    }
+                })
             
-            # NIVEL 1: Coincidencia exacta (score: 100)
-            exact_products = list(self.products_collection.aggregate(
-                build_aggregation_pipeline(exact_filter, 100)
-            ))
+            # Agregar score de búsqueda
+            pipeline.append({
+                "$addFields": {
+                    "search_score": {"$meta": "searchScore"}
+                }
+            })
             
-            for product in exact_products:
-                product_id = str(product["_id"])
-                if product_id not in seen_ids:
-                    product["_id"] = product_id
-                    all_products.append(product)
-                    seen_ids.add(product_id)
+            # Definir ordenamiento
+            if sort_by == "relevance":
+                # Ordenar solo por relevancia de búsqueda
+                sort_stage = {"$sort": {"search_score": -1}}
+            elif sort_by == "price":
+                # Ordenar por precio, luego por relevancia
+                sort_stage = {"$sort": {"price": 1, "search_score": -1}}
+            elif sort_by == "price_desc":
+                sort_stage = {"$sort": {"price": -1, "search_score": -1}}
+            elif sort_by == "name":
+                sort_stage = {"$sort": {"name": 1, "search_score": -1}}
+            else:  # scraped_at o default
+                sort_stage = {"$sort": {"scraped_at": -1, "search_score": -1}}
             
-            # NIVEL 2: Coincidencia al inicio (score: 90)
-            if len(all_products) < limit:
-                starts_products = list(self.products_collection.aggregate(
-                    build_aggregation_pipeline(starts_with_filter, 90)
-                ))
-                
-                for product in starts_products:
-                    product_id = str(product["_id"])
-                    if product_id not in seen_ids:
-                        product["_id"] = product_id
-                        all_products.append(product)
-                        seen_ids.add(product_id)
+            pipeline.append(sort_stage)
+            pipeline.append({"$limit": limit})
             
-            # NIVEL 3: Palabra completa (score: 80)
-            if len(all_products) < limit:
-                word_products = list(self.products_collection.aggregate(
-                    build_aggregation_pipeline(word_boundary_filter, 80)
-                ))
-                
-                for product in word_products:
-                    product_id = str(product["_id"])
-                    if product_id not in seen_ids:
-                        product["_id"] = product_id
-                        all_products.append(product)
-                        seen_ids.add(product_id)
+            # Ejecutar búsqueda
+            products = list(self.products_collection.aggregate(pipeline))
             
-            # NIVEL 4: Todas las palabras (score: 70)
-            if len(all_products) < limit and all_words_filter:
-                all_words_products = list(self.products_collection.aggregate(
-                    build_aggregation_pipeline(all_words_filter, 70)
-                ))
-                
-                for product in all_words_products:
-                    product_id = str(product["_id"])
-                    if product_id not in seen_ids:
-                        product["_id"] = product_id
-                        all_products.append(product)
-                        seen_ids.add(product_id)
+            # Limpiar resultados para JSON
+            for product in products:
+                product["_id"] = str(product["_id"])
+                # Redondear score para mejor legibilidad
+                if "search_score" in product:
+                    product["search_score"] = round(product["search_score"], 2)
             
-            # NIVEL 5: Coincidencia flexible (score: 50)
-            if len(all_products) < limit // 2 and flexible_filter:
-                flexible_products = list(self.products_collection.aggregate(
-                    build_aggregation_pipeline(flexible_filter, 50)
-                ))
-                
-                for product in flexible_products:
-                    product_id = str(product["_id"])
-                    if product_id not in seen_ids:
-                        product["_id"] = product_id
-                        all_products.append(product)
-                        seen_ids.add(product_id)
-            
-            # Filtrado adicional: Eliminar falsos positivos (mantengo tu lógica)
-            filtered_products = []
-            for product in all_products:
-                product_name = product.get("name", "").lower()
-                
-                if self._is_relevant_match(query_clean, product_name):
-                    # Limpiar campos agregados que no necesita el frontend
-                    product.pop("has_offer", None)
-                    filtered_products.append(product)
-            
-            # Ordenar por score y luego por criterio seleccionado
-            filtered_products.sort(key=lambda x: (-x.get("search_score", 0), x.get("price", 0)))
-            
-            return filtered_products[:limit]
+            return products
             
         except Exception as e:
-            print(f"Error buscando productos: {e}")
-            return []
-
+            print(f"Error en Atlas Search: {e}")
+            # Fallback al método anterior si Atlas Search falla
+            return self._search_with_regex_fallback(query, supermarket, limit, sort_by) 
+   
     def _is_relevant_match(self, query, product_name):
         """
         Verifica si el producto es realmente relevante para la búsqueda
@@ -519,13 +428,19 @@ class Product:
             return []
     
     def _generate_product_id(self, product):
+        """
+        Genera un ID único MÁS ESTABLE basado solo en nombre y supermercado
+        Ignora el product_id de la API que puede cambiar
+        """
         name = product.get("name", "").lower()
         supermarket = product.get("supermarket_key", "")
         
+        # Limpiar nombre más agresivamente para evitar variaciones
         clean_name = re.sub(r'[^a-z0-9\s]', '', name)
         clean_name = re.sub(r'\s+', '_', clean_name.strip())
         
-        # NO incluir si es oferta en el ID - un producto debe tener UN solo registro
+        # 🔧 CAMBIO: No usar product_id, solo nombre + supermercado
+        # Esto hace el ID más estable entre diferentes scraping
         return f"{supermarket}_{clean_name}"
 
     def _is_duplicate_product(self, product1, product2):
