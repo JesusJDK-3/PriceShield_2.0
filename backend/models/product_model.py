@@ -70,10 +70,95 @@ class Product:
                 "saved_count": 0,
                 "updated_count": 0
             }
-    
+
+    def search_products_for_comparison(self, query, limit=100):
+        """
+        Búsqueda específica para comparación de precios
+        Encuentra productos similares sin filtro de supermercado
+        """
+        try:
+            pipeline = [
+                {
+                    "$search": {
+                        "index": "products_search_index",
+                        "compound": {
+                            "should": [
+                                {
+                                    "text": {
+                                        "query": query,
+                                        "path": "name",
+                                        "score": {"boost": {"value": 5}}
+                                    }
+                                },
+                                {
+                                    "text": {
+                                        "query": query,
+                                        "path": "brand",
+                                        "score": {"boost": {"value": 3}}
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "$addFields": {
+                        "search_score": {"$meta": "searchScore"}
+                    }
+                },
+                # Agrupar por supermercado para comparación
+                {
+                    "$sort": {"search_score": -1, "price": 1}
+                },
+                {"$limit": limit}
+            ]
+            
+            products = list(self.products_collection.aggregate(pipeline))
+            
+            # Procesar para comparación
+            comparison_data = {}
+            for product in products:
+                product["_id"] = str(product["_id"])
+                supermarket = product.get("supermarket_key", "unknown")
+                
+                if supermarket not in comparison_data:
+                    comparison_data[supermarket] = {
+                        "supermarket_name": product.get("supermarket", "Desconocido"),
+                        "products": [],
+                        "min_price": float('inf'),
+                        "avg_price": 0,
+                        "best_match": None
+                    }
+                
+                price = product.get("price", 0)
+                if price > 0:
+                    comparison_data[supermarket]["products"].append(product)
+                    
+                    # Actualizar precio mínimo
+                    if price < comparison_data[supermarket]["min_price"]:
+                        comparison_data[supermarket]["min_price"] = price
+                        comparison_data[supermarket]["best_match"] = product
+            
+            # Calcular promedios
+            for supermarket in comparison_data:
+                products_list = comparison_data[supermarket]["products"]
+                if products_list:
+                    total_price = sum(p["price"] for p in products_list)
+                    comparison_data[supermarket]["avg_price"] = round(total_price / len(products_list), 2)
+                    
+                    if comparison_data[supermarket]["min_price"] == float('inf'):
+                        comparison_data[supermarket]["min_price"] = 0
+            
+            return comparison_data
+            
+        except Exception as e:
+            print(f"Error en búsqueda para comparación: {e}")
+            return {}
+
+
     def search_saved_products(self, query, supermarket=None, limit=50, sort_by="price"):
         """
-        Busca productos guardados en la base de datos con búsqueda mejorada
+        Busca productos usando Atlas Search (reemplaza la búsqueda regex anterior)
         
         Args:
             query (str): Término de búsqueda
@@ -85,153 +170,103 @@ class Product:
             list: Lista de productos encontrados
         """
         try:
-            # 🔧 BÚSQUEDA MEJORADA: Múltiples niveles de coincidencia
-            query_clean = query.strip().lower()
+            query_clean = query.strip()
             
-            # NIVEL 1: Coincidencia exacta (prioridad más alta)
-            exact_filter = {
-                "name": {"$regex": f"^{re.escape(query_clean)}$", "$options": "i"}
-            }
-            
-            # NIVEL 2: Coincidencia al inicio del nombre
-            starts_with_filter = {
-                "name": {"$regex": f"^{re.escape(query_clean)}", "$options": "i"}
-            }
-            
-            # NIVEL 3: Coincidencia de palabra completa
-            word_boundary_filter = {
-                "$or": [
-                    {"name": {"$regex": f"\\b{re.escape(query_clean)}\\b", "$options": "i"}},
-                    {"brand": {"$regex": f"\\b{re.escape(query_clean)}\\b", "$options": "i"}}
-                ]
-            }
-            
-            # NIVEL 4: Coincidencia con todas las palabras del query
-            query_words = [word for word in query_clean.split() if len(word) >= 2]
-            if len(query_words) > 1:
-                all_words_filter = {
-                    "$and": [
-                        {"name": {"$regex": f"\\b{re.escape(word)}", "$options": "i"}}
-                        for word in query_words
-                    ]
+            # Pipeline base con Atlas Search
+            pipeline = [
+                {
+                    "$search": {
+                        "index": "products_search_index",  # El índice que creaste
+                        "compound": {
+                            "should": [
+                                # Búsqueda principal en nombre (mayor peso)
+                                {
+                                    "text": {
+                                        "query": query_clean,
+                                        "path": "name",
+                                        "score": {"boost": {"value": 3}}
+                                    }
+                                },
+                                # Búsqueda en marca (peso medio)
+                                {
+                                    "text": {
+                                        "query": query_clean,
+                                        "path": "brand",
+                                        "score": {"boost": {"value": 2}}
+                                    }
+                                },
+                                # Búsqueda en categorías
+                                {
+                                    "text": {
+                                        "query": query_clean,
+                                        "path": "categories",
+                                        "score": {"boost": {"value": 1.5}}
+                                    }
+                                },
+                                # Búsqueda en descripción (menor peso)
+                                {
+                                    "text": {
+                                        "query": query_clean,
+                                        "path": "description",
+                                        "score": {"boost": {"value": 1}}
+                                    }
+                                }
+                            ],
+                            "minimumShouldMatch": 1
+                        }
+                    }
                 }
-            else:
-                all_words_filter = None
+            ]
             
-            # NIVEL 5: Coincidencia flexible (solo si query > 3 caracteres)
-            flexible_filter = None
-            if len(query_clean) > 3:
-                flexible_filter = {
-                    "$or": [
-                        {"name": {"$regex": query_clean, "$options": "i"}},
-                        {"brand": {"$regex": query_clean, "$options": "i"}},
-                        {"description": {"$regex": query_clean, "$options": "i"}}
-                    ]
+            # Agregar filtro de supermercado si se especifica
+            if supermarket:
+                pipeline.append({
+                    "$match": {
+                        "supermarket_key": supermarket
+                    }
+                })
+            
+            # Agregar score de búsqueda
+            pipeline.append({
+                "$addFields": {
+                    "search_score": {"$meta": "searchScore"}
                 }
+            })
             
-            # Aplicar filtro de supermercado si se especifica
-            def add_supermarket_filter(base_filter):
-                if supermarket:
-                    return {"$and": [base_filter, {"supermarket_key": supermarket}]}
-                return base_filter
+            # Definir ordenamiento
+            if sort_by == "relevance":
+                # Ordenar solo por relevancia de búsqueda
+                sort_stage = {"$sort": {"search_score": -1}}
+            elif sort_by == "price":
+                # Ordenar por precio, luego por relevancia
+                sort_stage = {"$sort": {"price": 1, "search_score": -1}}
+            elif sort_by == "price_desc":
+                sort_stage = {"$sort": {"price": -1, "search_score": -1}}
+            elif sort_by == "name":
+                sort_stage = {"$sort": {"name": 1, "search_score": -1}}
+            else:  # scraped_at o default
+                sort_stage = {"$sort": {"scraped_at": -1, "search_score": -1}}
             
-            # Definir orden
-            sort_options = {
-                "price": [("price", 1)],  # Precio ascendente
-                "price_desc": [("price", -1)],  # Precio descendente
-                "name": [("name", 1)],  # Nombre A-Z
-                "scraped_at": [("scraped_at", -1)]  # Más recientes primero
-            }
+            pipeline.append(sort_stage)
+            pipeline.append({"$limit": limit})
             
-            sort_order = sort_options.get(sort_by, [("price", 1)])
+            # Ejecutar búsqueda
+            products = list(self.products_collection.aggregate(pipeline))
             
-            # 🎯 BÚSQUEDA POR NIVELES CON PUNTUACIÓN
-            all_products = []
-            seen_ids = set()
+            # Limpiar resultados para JSON
+            for product in products:
+                product["_id"] = str(product["_id"])
+                # Redondear score para mejor legibilidad
+                if "search_score" in product:
+                    product["search_score"] = round(product["search_score"], 2)
             
-            # NIVEL 1: Coincidencia exacta (score: 100)
-            exact_products = list(self.products_collection.find(
-                add_supermarket_filter(exact_filter)
-            ).sort(sort_order))
-            
-            for product in exact_products:
-                if str(product["_id"]) not in seen_ids:
-                    product["_id"] = str(product["_id"])
-                    product["search_score"] = 100
-                    all_products.append(product)
-                    seen_ids.add(str(product["_id"]))
-            
-            # NIVEL 2: Coincidencia al inicio (score: 90)
-            if len(all_products) < limit:
-                starts_products = list(self.products_collection.find(
-                    add_supermarket_filter(starts_with_filter)
-                ).sort(sort_order))
-                
-                for product in starts_products:
-                    if str(product["_id"]) not in seen_ids:
-                        product["_id"] = str(product["_id"])
-                        product["search_score"] = 90
-                        all_products.append(product)
-                        seen_ids.add(str(product["_id"]))
-            
-            # NIVEL 3: Palabra completa (score: 80)
-            if len(all_products) < limit:
-                word_products = list(self.products_collection.find(
-                    add_supermarket_filter(word_boundary_filter)
-                ).sort(sort_order))
-                
-                for product in word_products:
-                    if str(product["_id"]) not in seen_ids:
-                        product["_id"] = str(product["_id"])
-                        product["search_score"] = 80
-                        all_products.append(product)
-                        seen_ids.add(str(product["_id"]))
-            
-            # NIVEL 4: Todas las palabras (score: 70)
-            if len(all_products) < limit and all_words_filter:
-                all_words_products = list(self.products_collection.find(
-                    add_supermarket_filter(all_words_filter)
-                ).sort(sort_order))
-                
-                for product in all_words_products:
-                    if str(product["_id"]) not in seen_ids:
-                        product["_id"] = str(product["_id"])
-                        product["search_score"] = 70
-                        all_products.append(product)
-                        seen_ids.add(str(product["_id"]))
-            
-            # NIVEL 5: Coincidencia flexible solo si no hay suficientes resultados (score: 50)
-            if len(all_products) < limit // 2 and flexible_filter:
-                flexible_products = list(self.products_collection.find(
-                    add_supermarket_filter(flexible_filter)
-                ).sort(sort_order))
-                
-                for product in flexible_products:
-                    if str(product["_id"]) not in seen_ids:
-                        product["_id"] = str(product["_id"])
-                        product["search_score"] = 50
-                        all_products.append(product)
-                        seen_ids.add(str(product["_id"]))
-            
-            # 🔧 FILTRADO ADICIONAL: Eliminar falsos positivos
-            filtered_products = []
-            for product in all_products:
-                product_name = product.get("name", "").lower()
-                
-                # Verificar que el query esté realmente relacionado
-                if self._is_relevant_match(query_clean, product_name):
-                    filtered_products.append(product)
-            
-            # Ordenar por score y luego por criterio seleccionado
-            filtered_products.sort(key=lambda x: (-x.get("search_score", 0), x.get("price", 0)))
-            
-            # Limitar resultados
-            return filtered_products[:limit]
+            return products
             
         except Exception as e:
-            print(f"Error buscando productos: {e}")
-            return []
-    
+            print(f"Error en Atlas Search: {e}")
+            # Fallback al método anterior si Atlas Search falla
+            return self._search_with_regex_fallback(query, supermarket, limit, sort_by) 
+   
     def _is_relevant_match(self, query, product_name):
         """
         Verifica si el producto es realmente relevante para la búsqueda
