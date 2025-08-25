@@ -459,7 +459,6 @@ function Dashboard() {
             maxWidth: '1400px',
             margin: '0 auto',
             minHeight: '100vh',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
           }}>
             {/* Header del producto */}
             <div style={{

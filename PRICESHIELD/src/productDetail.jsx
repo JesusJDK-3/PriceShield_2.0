@@ -463,9 +463,8 @@ function ProductDetail() {
             </div>
             
             <h3 className='PrecioMasBajoT'>
-              Encuentra el precio más bajo para: <em>"{productoSeleccionado.nombre}"</em>
+              Encuentra el precio más bajo en: 
             </h3>
-            
             {productoMasBarato && (
               <button 
                 className="PrecioMasBajoP" 
@@ -508,7 +507,7 @@ function ProductDetail() {
                     borderRadius: '5px',
                     color: '#495057'
                   }}>
-                    <strong>"{productoSeleccionado.nombre}"</strong> disponible en {productosFiltrados.length} supermercado{productosFiltrados.length !== 1 ? 's' : ''}
+                    Disponible en {productosFiltrados.length} supermercado{productosFiltrados.length !== 1 ? 's' : ''}
                   </div>
                   
                   {productosFiltrados.map((producto, index) => (
