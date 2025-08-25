@@ -1,26 +1,114 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import './styles/alerts.css';
 import TopBar from './components/TopBar.jsx';
 import Drop_DownM from './components/Drop_Down_Menu.jsx';
 import Alert from "./components/Alert.jsx";
 
-function alerts() {
-    
-      const [isOpenM, setIsOpenM] = useState(true);
-      useEffect(() => { // Responsivo
+function Alerts() {
+    const [isOpenM, setIsOpenM] = useState(true);
+    const [alerts, setAlerts] = useState([]);
+    const [summary, setSummary] = useState({});
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const navigate = useNavigate();
+
+    useEffect(() => {
         const handleResize = () => {
-          if (window.innerWidth <= 768) {
-            setIsOpenM(false);
-          } else {
-            setIsOpenM(true);
-          }
+            setIsOpenM(window.innerWidth > 768);
         };
         handleResize();
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-      }, []);
-    const handleSearch = (searchTerm) => {  // Maneja la búsqueda de productos
+    }, []);
+
+    useEffect(() => {
+        loadAlerts();
+    }, []);
+
+    const loadAlerts = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await fetch('/api/alerts?limit=50');
+            const data = await response.json();
+            
+            if (data.success) {
+                setAlerts(data.alerts);
+                setSummary(data.summary);
+            } else {
+                setError(data.message || 'Error cargando alertas');
+            }
+        } catch (error) {
+            console.error('Error cargando alertas:', error);
+            setError('Error de conexión al cargar alertas');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const markAsRead = async (alertId) => {
+        try {
+            const response = await fetch(`/api/alerts/${alertId}/read`, {
+                method: 'PUT'
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                loadAlerts(); // Recargar alertas
+            } else {
+                console.error('Error marcando como leída');
+            }
+        } catch (error) {
+            console.error('Error marcando como leída:', error);
+        }
+    };
+
+    const ignoreAlert = async (alertId) => {
+        try {
+            const response = await fetch(`/api/alerts/${alertId}/ignore`, {
+                method: 'PUT'
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                loadAlerts(); // Recargar alertas
+            } else {
+                console.error('Error ignorando alerta');
+            }
+        } catch (error) {
+            console.error('Error ignorando alerta:', error);
+        }
+    };
+
+    const goToDashboard = (alert) => {
+        // Navegar al dashboard con los datos del producto
+        const productData = {
+            nombre: alert.product_name,
+            name: alert.product_name,
+            precio: alert.new_price,
+            price: alert.new_price,
+            supermercado: alert.supermarket,
+            supermarket: alert.supermarket,
+            unique_id: alert.product_id,
+            url: alert.product_url
+        };
+        
+        navigate('/dashboard', { state: { producto: productData } });
+    };
+
+    const handleSearch = (searchTerm) => {
         console.log('Buscando:', searchTerm);
+    };
+
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleString('es-ES', {
+            day: '2-digit',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     };
 
     return (
@@ -37,218 +125,155 @@ function alerts() {
                     <div className="AlertaDPExtendido">
                         {/* Botón regresar superior */}
                         <div className="BotRP">
-                            <button className='BotonRegresar' onClick={() => navigate(-1)}> <span className='flechita'>←</span> Volver</button>
+                            <button className='BotonRegresar' onClick={() => navigate(-1)}> 
+                                <span className='flechita'>←</span> Volver
+                            </button>
                         </div>
                         {/* Fin Botón regresar superior */}
-                        {/* Cuadritos de informacion de alertas*/}
+                        
+                        {/* Cuadritos de información de alertas */}
                         <div className="DivDAlerta">
                             <div className="CuadrosInformatiAlerta">
                                 <div className="Alerta1">
-                                    <h1 className="PACT">45</h1>
-                                    <h5>Precio Actual</h5>
-                                    <small className='mensaVPA'>↑1.5%</small>
+                                    <h1 className="PACT">{summary.unread_alerts || 0}</h1>
+                                    <h5>Alertas Pendientes</h5>
+                                    <small className='mensaVPA'>Sin leer</small>
                                 </div>
                                 <div className="Alerta2">
-                                    <h1 className="PPROM">
-                                        50
-                                    </h1>
-                                    <h5>Precio Promedio</h5>
-                                    <small className="mensaVPPO"></small>
+                                    <h1 className="PPROM">{summary.total_alerts || 0}</h1>
+                                    <h5>Total Alertas</h5>
+                                    <small className="mensaVPPO">Históricas</small>
                                 </div>
                                 <div className="Alerta3">
-                                    <h1 className="PMIN">
-                                        45
-                                    </h1>
-                                    <h5>Precio Mínimo</h5>
-                                    <small className="mensaVPMI">En el mes gaa</small>
+                                    <h1 className="PMIN">{summary.price_increases || 0}</h1>
+                                    <h5>Subidas Precio</h5>
+                                    <small className="mensaVPMI">No leídas</small>
                                 </div>
                                 <div className="Alerta4">
-                                    <h1 className="PMAX">
-                                        100
-                                    </h1>
-                                    <h5>Precio Máximo</h5>
-                                    <small className="mensaVPMX">En el mes ma </small>
+                                    <h1 className="PMAX">{alerts.length}</h1>
+                                    <h5>Mostradas</h5>
+                                    <small className="mensaVPMX">En pantalla</small>
                                 </div>
                             </div>
                         </div>
-                        {/* FIN Cuadritos de informacion de alertas*/}
+                        {/* FIN Cuadritos de información de alertas */}
+                        
                         <div className="NotificacionSinProductoAlerta">
                             <div className="AlertasPs">
-                                 <Alert/>
-                                {/* BORRARRRRRRRRRRRRRRR*/}
-
-                                <div className="Alerta">
-                                    <div className="DetallesAlerta">
-                                        <div className="AlertaDetallitos">
-                                            <i className="bi bi-patch-exclamation-fill"></i>
-                                            <div className="nombreYmas">
-                                                <h3>Leche Gloria 1L</h3>
-                                               <p>Metro</p>
-                                            </div>
-                                        </div>
-                                        <div className="AlertaOpciones">
-                                            <button className="DashAlerta">Ver en Panel</button>
-                                            <button className="IgnorarAlerta">Ignorar</button>
-                                            <button className="LeidoAlerta">Marcar como leído</button>
-                                        </div>
-                                    </div>
-                                    <div className="PrecioAlerta">
-                                        <h1 className="PrecioAlertaH1">S/ 4.50</h1>
-                                        <small className="mensaVPA">↑1.5%</small>
-                                    </div>
-                                </div>
-                                <div className="Alerta">
-                                    <div className="DetallesAlerta">
-                                        <div className="AlertaDetallitos">
-                                            <i className="bi bi-patch-exclamation-fill"></i>
-                                            <div className="nombreYmas">
-                                                <h3>Leche Gloria 1L</h3>
-                                               <p>Metro</p>
-                                            </div>
-                                        </div>
-                                        <div className="AlertaOpciones">
-                                            <button className="DashAlerta">Ver en Panel</button>
-                                            <button className="IgnorarAlerta">Ignorar</button>
-                                            <button className="LeidoAlerta">Marcar como leído</button>
-                                        </div>
-                                    </div>
-                                    <div className="PrecioAlerta">
-                                        <h1 className="PrecioAlertaH1">S/ 4.50</h1>
-                                        <small className="mensaVPA">↑1.5%</small>
-                                    </div>
-                                </div><div className="Alerta">
-                                    <div className="DetallesAlerta">
-                                        <div className="AlertaDetallitos">
-                                            <i className="bi bi-patch-exclamation-fill"></i>
-                                            <div className="nombreYmas">
-                                                <h3>Leche Gloria 1L</h3>
-                                               <p>Metro</p>
-                                            </div>
-                                        </div>
-                                        <div className="AlertaOpciones">
-                                            <button className="DashAlerta">Ver en Panel</button>
-                                            <button className="IgnorarAlerta">Ignorar</button>
-                                            <button className="LeidoAlerta">Marcar como leído</button>
-                                        </div>
-                                    </div>
-                                    <div className="PrecioAlerta">
-                                        <h1 className="PrecioAlertaH1">S/ 4.50</h1>
-                                        <small className="mensaVPA">↑1.5%</small>
-                                    </div>
-                                </div>
-                                <div className="Alerta">
-                                    <div className="DetallesAlerta">
-                                        <div className="AlertaDetallitos">
-                                            <i className="bi bi-patch-exclamation-fill"></i>
-                                            <div className="nombreYmas">
-                                                <h3>Leche Gloria 1L</h3>
-                                               <p>Metro</p>
-                                            </div>
-                                        </div>
-                                        <div className="AlertaOpciones">
-                                            <button className="DashAlerta">Ver en Panel</button>
-                                            <button className="IgnorarAlerta">Ignorar</button>
-                                            <button className="LeidoAlerta">Marcar como leído</button>
-                                        </div>
-                                    </div>
-                                    <div className="PrecioAlerta">
-                                        <h1 className="PrecioAlertaH1">S/ 4.50</h1>
-                                        <small className="mensaVPA">↑1.5%</small>
-                                    </div>
-                                </div><div className="Alerta">
-                                    <div className="DetallesAlerta">
-                                        <div className="AlertaDetallitos">
-                                            <i className="bi bi-patch-exclamation-fill"></i>
-                                            <div className="nombreYmas">
-                                                <h3>Leche Gloria 1L</h3>
-                                               <p>Metro</p>
-                                            </div>
-                                        </div>
-                                        <div className="AlertaOpciones">
-                                            <button className="DashAlerta">Ver en Panel</button>
-                                            <button className="IgnorarAlerta">Ignorar</button>
-                                            <button className="LeidoAlerta">Marcar como leído</button>
-                                        </div>
-                                    </div>
-                                    <div className="PrecioAlerta">
-                                        <h1 className="PrecioAlertaH1">S/ 4.50</h1>
-                                        <small className="mensaVPA">↑1.5%</small>
-                                    </div>
-                                </div>
-                                <div className="Alerta">
-                                    <div className="DetallesAlerta">
-                                        <div className="AlertaDetallitos">
-                                            <i className="bi bi-patch-exclamation-fill"></i>
-                                            <div className="nombreYmas">
-                                                <h3>Leche Gloria 1L</h3>
-                                               <p>Metro</p>
-                                            </div>
-                                        </div>
-                                        <div className="AlertaOpciones">
-                                            <button className="DashAlerta">Ver en Panel</button>
-                                            <button className="IgnorarAlerta">Ignorar</button>
-                                            <button className="LeidoAlerta">Marcar como leído</button>
-                                        </div>
-                                    </div>
-                                    <div className="PrecioAlerta">
-                                        <h1 className="PrecioAlertaH1">S/ 4.50</h1>
-                                        <small className="mensaVPA">↑1.5%</small>
-                                    </div>
-                                </div>
-
-                                <div className="Alerta">
-                                    <div className="DetallesAlerta">
-                                        <div className="AlertaDetallitos">
-                                            <i className="bi bi-patch-exclamation-fill"></i>
-                                            <div className="nombreYmas">
-                                                <h3>Leche Gloria 1L</h3>
-                                               <p>Metro</p>
-                                            </div>
-                                        </div>
-                                        <div className="AlertaOpciones">
-                                            <button className="DashAlerta">Ver en Panel</button>
-                                            <button className="IgnorarAlerta">Ignorar</button>
-                                            <button className="LeidoAlerta">Marcar como leído</button>
-                                        </div>
-                                    </div>
-                                    <div className="PrecioAlerta">
-                                        <h1 className="PrecioAlertaH1">S/ 4.50</h1>
-                                        <small className="mensaVPA">↑1.5%</small>
-                                    </div>
-                                </div>
-                                <div className="Alerta">
-                                    <div className="DetallesAlerta">
-                                        <div className="AlertaDetallitos">
-                                            <i className="bi bi-patch-exclamation-fill"></i>
-                                            <div className="nombreYmas">
-                                                <h3>Leche Gloria 1L</h3>
-                                               <p>Metro</p>
-                                            </div>
-                                        </div>
-                                        <div className="AlertaOpciones">
-                                            <button className="DashAlerta">Ver en Panel</button>
-                                            <button className="IgnorarAlerta">Ignorar</button>
-                                            <button className="LeidoAlerta">Marcar como leído</button>
-                                        </div>
-                                    </div>
-                                    <div className="PrecioAlerta">
-                                        <h1 className="PrecioAlertaH1">S/ 4.50</h1>
-                                        <small className="mensaVPA">↑1.5%</small>
-                                    </div>
-                                </div>
-                               
-                                    
+                                <Alert/>
                                 
+                                {/* Mostrar estado de carga */}
+                                {loading && (
+                                    <div style={{ 
+                                        textAlign: 'center', 
+                                        padding: '20px',
+                                        color: '#666'
+                                    }}>
+                                        Cargando alertas...
+                                    </div>
+                                )}
                                 
+                                {/* Mostrar errores */}
+                                {error && (
+                                    <div style={{ 
+                                        textAlign: 'center', 
+                                        padding: '20px',
+                                        color: '#e74c3c',
+                                        backgroundColor: '#fdf2f2',
+                                        borderRadius: '8px',
+                                        margin: '10px',
+                                        border: '1px solid #fadbd8'
+                                    }}>
+                                        {error}
+                                        <button 
+                                            onClick={loadAlerts}
+                                            style={{
+                                                marginLeft: '10px',
+                                                padding: '5px 10px',
+                                                backgroundColor: '#3498db',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            Reintentar
+                                        </button>
+                                    </div>
+                                )}
                                 
-                                {/* BORRARRRRRRRRRRRRRRR*/}
+                                {/* Mostrar mensaje si no hay alertas */}
+                                {!loading && !error && alerts.length === 0 && (
+                                    <div style={{ 
+                                        textAlign: 'center', 
+                                        padding: '40px',
+                                        color: '#666'
+                                    }}>
+                                        <i className="bi bi-bell" style={{ fontSize: '48px', marginBottom: '16px' }}></i>
+                                        <h3>No hay alertas</h3>
+                                        <p>Cuando haya cambios de precio en los productos, aparecerán aquí.</p>
+                                    </div>
+                                )}
+                                
+                                {/* Renderizar alertas dinámicamente */}
+                                {!loading && alerts.map((alert) => (
+                                    <div key={alert._id} className={`Alerta ${alert.is_read ? 'leida' : ''}`}>
+                                        <div className="DetallesAlerta">
+                                            <div className="AlertaDetallitos">
+                                                <i className={`bi ${alert.is_price_increase ? 'bi-arrow-up-circle-fill' : 'bi-arrow-down-circle-fill'}`}
+                                                   style={{ 
+                                                       color: alert.is_price_increase ? '#e74c3c' : '#27ae60',
+                                                       fontSize: '24px'
+                                                   }}></i>
+                                                <div className="nombreYmas">
+                                                    <h3>{alert.product_name}</h3>
+                                                    <p>{alert.supermarket}</p>
+                                                    <small style={{ color: '#888' }}>
+                                                        {formatDate(alert.created_at)}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div className="AlertaOpciones">
+                                                <button 
+                                                    className="DashAlerta"
+                                                    onClick={() => goToDashboard(alert)}
+                                                >
+                                                    Ver en Panel
+                                                </button>
+                                                <button 
+                                                    className="IgnorarAlerta" 
+                                                    onClick={() => ignoreAlert(alert._id)}
+                                                >
+                                                    Ignorar
+                                                </button>
+                                                <button 
+                                                    className="LeidoAlerta" 
+                                                    onClick={() => markAsRead(alert._id)}
+                                                    disabled={alert.is_read}
+                                                >
+                                                    {alert.is_read ? 'Leída' : 'Marcar como leído'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="PrecioAlerta">
+                                            <h1 className="PrecioAlertaH1">S/ {alert.new_price.toFixed(2)}</h1>
+                                            <small className={`mensaVPA ${alert.is_price_increase ? 'aumento' : 'descenso'}`}>
+                                                {alert.is_price_increase ? '↑' : '↓'}{Math.abs(alert.percentage_change).toFixed(1)}%
+                                            </small>
+                                            <div style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
+                                                Antes: S/ {alert.old_price.toFixed(2)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
-                        {/* FIN  Producto Seleccionado*/}
+                        {/* FIN Producto Seleccionado */}
                     </div>
                 </div>
             </div>
         </div>
     );
 }
-export default alerts;
+
+export default Alerts;

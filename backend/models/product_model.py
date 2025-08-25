@@ -428,20 +428,107 @@ class Product:
             return []
     
     def _generate_product_id(self, product):
-        """
-        Genera un ID único MÁS ESTABLE basado solo en nombre y supermercado
-        Ignora el product_id de la API que puede cambiar
-        """
         name = product.get("name", "").lower()
         supermarket = product.get("supermarket_key", "")
         
-        # Limpiar nombre más agresivamente para evitar variaciones
-        clean_name = re.sub(r'[^a-z0-9\s]', '', name)
-        clean_name = re.sub(r'\s+', '_', clean_name.strip())
+        # Normalización MÁS AGRESIVA
+        clean_name = re.sub(r'[^a-z0-9]', '', name)  # Solo letras y números
+        clean_name = re.sub(r'\b(kg|gr|lt|ml|und|pack|x)\b', '', clean_name)  # Quitar unidades
+        clean_name = re.sub(r'\d+', '', clean_name)  # Quitar números (tamaños)
         
-        # 🔧 CAMBIO: No usar product_id, solo nombre + supermercado
-        # Esto hace el ID más estable entre diferentes scraping
-        return f"{supermarket}_{clean_name}"
+        return f"{supermarket}_{clean_name[:20]}"  # Limitar longitud
+    
+    def get_product_unified_history(self, product_name, days_back=30):
+        """
+        Busca historial usando similitud de nombres más flexible
+        """
+        try:
+            from datetime import datetime, timedelta
+            
+            # Normalizar nombre de búsqueda
+            normalized_search = re.sub(r'[^a-z0-9]', '', product_name.lower())
+            normalized_search = normalized_search[:15]  # Primeros 15 caracteres
+            
+            date_limit = datetime.now() - timedelta(days=days_back)
+            
+            # Pipeline con regex más flexible
+            # Pipeline mejorado para obtener TODAS las actualizaciones del mismo producto
+            pipeline = [
+                {
+                    "$match": {
+                        "name": {"$regex": f".*{re.escape(product_name)}.*", "$options": "i"},
+                        "scraped_at": {"$gte": date_limit.isoformat()},
+                        "price": {"$gt": 0}
+                    }
+                },
+                {
+                    "$addFields": {
+                        "product_similarity": {
+                            "$cond": {
+                                "if": {"$regexMatch": {"input": "$name", "regex": f"^{re.escape(product_name)}", "options": "i"}},
+                                "then": 3,  # Coincidencia exacta al inicio
+                                "else": {
+                                    "$cond": {
+                                        "if": {"$regexMatch": {"input": "$name", "regex": f"{re.escape(product_name)}", "options": "i"}},
+                                        "then": 2,  # Contiene el término
+                                        "else": 1   # Coincidencia parcial
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                # Agrupar por producto similar para obtener TODAS las actualizaciones
+                {
+                    "$group": {
+                        "_id": {
+                            "name": "$name",
+                            "supermarket": "$supermarket_key"
+                        },
+                        "price_updates": {
+                            "$push": {
+                                "price": "$price",
+                                "scraped_at": "$scraped_at",
+                                "updated_at": "$updated_at",
+                                "supermarket": "$supermarket",
+                                "url": "$url"
+                            }
+                        },
+                        "similarity": {"$first": "$product_similarity"},
+                        "latest_price": {"$last": "$price"}
+                    }
+                },
+                # Desenrollar para mostrar cada actualización como registro separado
+                {
+                    "$unwind": "$price_updates"
+                },
+                {
+                    "$project": {
+                        "name": "$_id.name",
+                        "supermarket_key": "$_id.supermarket", 
+                        "supermarket": "$price_updates.supermarket",
+                        "price": "$price_updates.price",
+                        "scraped_at": "$price_updates.scraped_at",
+                        "updated_at": "$price_updates.updated_at",
+                        "url": "$price_updates.url",
+                        "similarity": 1,
+                        "_id": 0
+                    }
+                },
+                {"$sort": {"similarity": -1, "scraped_at": 1}},
+                {"$limit": 200}  # Incrementar límite para ver más actualizaciones
+            ]
+            
+            products = list(self.products_collection.aggregate(pipeline))
+            
+            for product in products:
+                product["_id"] = str(product["_id"])
+                
+            return products
+            
+        except Exception as e:
+            print(f"❌ Error en historial unificado: {e}")
+            return []
 
     def _is_duplicate_product(self, product1, product2):
         """
@@ -545,15 +632,18 @@ class Product:
             # Actualizar campos
             update_doc = {
                 "$set": {
+                    "name": new_product.get("name", existing_product.get("name")),
+                    "brand": new_product.get("brand", existing_product.get("brand")),
+                    "description": new_product.get("description", existing_product.get("description")),
                     "price": new_price,
                     "original_price": new_product.get("original_price", 0),
                     "discount_percentage": new_product.get("discount_percentage", 0),
                     "available": new_product.get("available", False),
+                    "images": new_product.get("images", existing_product.get("images", [])),
+                    "categories": new_product.get("categories", existing_product.get("categories", [])),
+                    "url": new_product.get("url", existing_product.get("url")),
                     "scraped_at": new_product.get("scraped_at"),
                     "updated_at": datetime.now().isoformat()
-                },
-                "$addToSet": {
-                    "search_queries": {"$each": []}  # Se puede agregar query específico
                 }
             }
             
@@ -562,16 +652,44 @@ class Product:
                 update_doc
             )
             
-            # Si el precio cambió, guardar en historial
+            # Si el precio cambió significativamente, procesar alerta e historial
             if old_price != new_price and new_price > 0:
+                # Guardar en historial de precios
                 self._save_price_history(unique_id, new_price)
+                
+                # Crear alerta de cambio de precio
+                try:
+                    # Importación tardía para evitar problemas circulares
+                    from models.alert_model import alert_model
+                    
+                    # Preparar datos del producto para la alerta
+                    product_data_for_alert = {
+                        "unique_id": unique_id,
+                        "name": existing_product.get("name"),
+                        "brand": existing_product.get("brand"),
+                        "supermarket": existing_product.get("supermarket"),
+                        "supermarket_key": existing_product.get("supermarket_key"),
+                        "url": existing_product.get("url"),
+                        "categories": existing_product.get("categories", [])
+                    }
+                    
+                    alert_model.create_price_change_alert(
+                        product_data=product_data_for_alert,
+                        old_price=old_price,
+                        new_price=new_price
+                    )
+                    
+                except ImportError as e:
+                    print(f"Warning: No se pudo importar alert_model: {e}")
+                except Exception as e:
+                    print(f"Error creando alerta de precio: {e}")
             
             return result.modified_count > 0
             
         except Exception as e:
             print(f"Error actualizando producto: {e}")
             return False
-    
+
     def _save_search_history(self, search_query, results_count):
         """
         Guarda el historial de búsquedas
@@ -728,6 +846,149 @@ class Product:
         except Exception as e:
             print(f"Error actualizando timestamp: {e}")
             return False
+
+    # Agregar este método en product_model.py
+
+    def get_product_price_history(self, product_name, supermarket_key=None, days_back=30):
+        """
+        Obtiene el historial de precios de un producto específico
+        Busca el MISMO producto a través del tiempo, no productos similares
+        
+        Args:
+            product_name (str): Nombre exacto del producto
+            supermarket_key (str): Filtrar por supermercado específico (opcional)
+            days_back (int): Días hacia atrás para buscar
+            
+        Returns:
+            list: Lista de precios ordenados por fecha
+        """
+        try:
+            from datetime import datetime, timedelta
+            
+            # Fecha límite
+            date_limit = datetime.now() - timedelta(days=days_back)
+            
+            # Construir query para buscar el MISMO producto
+            match_query = {
+                "name": {"$regex": f"^{re.escape(product_name)}", "$options": "i"},  # Nombre exacto
+                "scraped_at": {"$gte": date_limit.isoformat()},
+                "price": {"$gt": 0}  # Solo precios válidos
+            }
+            
+            # Agregar filtro de supermercado si se especifica
+            if supermarket_key:
+                match_query["supermarket_key"] = supermarket_key
+            
+            # Pipeline de agregación para obtener historial
+            pipeline = [
+                {"$match": match_query},
+                {
+                    "$addFields": {
+                        "scraped_date": {
+                            "$dateFromString": {
+                                "dateString": "$scraped_at",
+                                "onError": None
+                            }
+                        }
+                    }
+                },
+                {
+                    "$match": {
+                        "scraped_date": {"$ne": None}  # Filtrar fechas inválidas
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": {
+                            "date": {"$dateToString": {"format": "%Y-%m-%d", "date": "$scraped_date"}},
+                            "supermarket": "$supermarket_key"
+                        },
+                        "price": {"$avg": "$price"},  # Promedio si hay múltiples precios el mismo día
+                        "supermarket_name": {"$first": "$supermarket"},
+                        "product_name": {"$first": "$name"},
+                        "count": {"$sum": 1}
+                    }
+                },
+                {
+                    "$sort": {
+                        "_id.date": 1  # Ordenar por fecha ascendente
+                    }
+                },
+                {
+                    "$project": {
+                        "date": "$_id.date",
+                        "supermarket_key": "$_id.supermarket", 
+                        "supermarket_name": 1,
+                        "product_name": 1,
+                        "price": {"$round": ["$price", 2]},
+                        "count": 1,
+                        "_id": 0
+                    }
+                }
+            ]
+            
+            # Ejecutar agregación
+            history_data = list(self.products_collection.aggregate(pipeline))
+            
+            print(f"📊 Historial encontrado para '{product_name}': {len(history_data)} registros")
+            
+            return history_data
+            
+        except Exception as e:
+            print(f"❌ Error obteniendo historial de precios: {e}")
+            return []
+
+    def get_product_price_trend(self, product_name, days_back=30):
+        """
+        Obtiene la tendencia de precios agregada por fecha (todos los supermercados)
+        Útil para gráficos de tendencia general
+        
+        Args:
+            product_name (str): Nombre del producto
+            days_back (int): Días hacia atrás
+            
+        Returns:
+            dict: Datos formateados para gráficos
+        """
+        try:
+            # Obtener historial completo
+            history_data = self.get_product_price_history(product_name, days_back=days_back)
+            
+            if not history_data:
+                return {"labels": [], "prices": [], "dates": []}
+            
+            # Agrupar por fecha (combinar todos los supermercados)
+            grouped_by_date = {}
+            for record in history_data:
+                date = record["date"]
+                if date not in grouped_by_date:
+                    grouped_by_date[date] = []
+                grouped_by_date[date].append(record["price"])
+            
+            # Calcular promedio por día
+            dates = sorted(grouped_by_date.keys())
+            prices = []
+            labels = []
+            
+            for date in dates:
+                daily_prices = grouped_by_date[date]
+                avg_price = sum(daily_prices) / len(daily_prices)
+                prices.append(round(avg_price, 2))
+                
+                # Formatear fecha para mostrar
+                date_obj = datetime.strptime(date, "%Y-%m-%d")
+                labels.append(date_obj.strftime("%d %b"))
+            
+            return {
+                "labels": labels,
+                "prices": prices,
+                "dates": dates,
+                "data_points": len(history_data)
+            }
+            
+        except Exception as e:
+            print(f"❌ Error calculando tendencia: {e}")
+            return {"labels": [], "prices": [], "dates": []}
 
     def get_products_by_category(self, category, limit=20):
         """
