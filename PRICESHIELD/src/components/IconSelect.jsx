@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import '../styles/IconSelect.css'; 
+import '../styles/IconSelect.css';
 function IconSelect() {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(null);
@@ -29,9 +29,9 @@ function IconSelect() {
           <Link to="/products" onClick={() => handleSelect("bi-bag-check-fill")}>
             <i className="bi bi-bag-check-fill"></i>
           </Link>
-          <a onClick={() => handleSelect("bi-bar-chart-line-fill")}>
-            <i className="bi bi-bar-chart-line-fill"></i>
-          </a>
+          <Link to="/dashboard">
+            <i className="bi bi-bar-chart-line-fill dashBF"></i>
+          </Link>
           <Link to="/alert" onClick={() => handleSelect("bi-exclamation-triangle")}>
             <i className="bi bi-exclamation-triangle"></i>
           </Link>

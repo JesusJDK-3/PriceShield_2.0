@@ -5,29 +5,23 @@ import { Link } from 'react-router-dom';
 import IconSelect from "./IconSelect.jsx";
 import ModalWe from "./ModalWe.jsx";
 import logo from '../assets/img/logF.png';
-
 const TopBarF = ({ onSearch, onResults, user }) => {
     const getUserDisplayName = () => {
         if (!user) return 'Invitado';
-
         // Si hay nombre completo (Google Auth), usar solo el primer nombre
         if (user.nombre && user.nombre.trim()) {
             return user.nombre.split(' ')[0];
         }
-
         // Si no hay nombre, usar la parte antes del @ del correo (Manual Auth)
         if (user.email) {
             return user.email.split('@')[0];
         }
-
         // Fallback con correo si existe
         if (user.correo) {
             return user.correo.split('@')[0];
         }
-
         return 'Usuario';
     };
-
     // Función para obtener la imagen de perfil
     const getUserAvatar = () => {
         // Si el usuario tiene foto (Google Auth)
@@ -48,15 +42,11 @@ const TopBarF = ({ onSearch, onResults, user }) => {
                 />
             );
         }
-
         // Fallback al ícono de Bootstrap (Manual Auth o sin login)
         return <i className="bi bi-person-circle caraU"></i>;
     };
-    
-  
       const [isModelOpen, setIsModalOpen] = useState(false);
     const [redirectAfterAuth, setRedirectAfterAuth] = useState(null); // Nueva variable
-  
     // Función para abrir modal con redirección específica
     const openModal = () => {
       setIsModalOpen(true);

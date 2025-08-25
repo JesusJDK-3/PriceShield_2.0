@@ -4,10 +4,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import './styles/products.css';
 import './styles/model.css';
 import './styles/productDetail.css';
-import TopBar from './components/TopBar.jsx';
+import TopBarF from './components/TopBarF.jsx';
 import Drop_DownM from './components/Drop_Down_Menu.jsx';
 
-function ProductDetail() {
+function ProductDetail({user}) {
   const [isOpenM, setIsOpenM] = useState(true);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [listaProductos, setListaProductos] = useState([]);
@@ -380,12 +380,10 @@ function ProductDetail() {
   if (!productoSeleccionado) {
     return (
       <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
-        <div className="barraJex">
-          <Drop_DownM isOpenM={isOpenM} closeDown={() => setIsOpenM(false)} />
-        </div>
+        
         <div className="buProductos">
-          <div className='abrirDown'>
-            <TopBar onSearch={handleSearch} openMenu={() => setIsOpenM(true)} />
+          <div>
+            <TopBarF onSearch={handleSearch} openMenu={() => setIsOpenM(true)} user={user} />
           </div>
           <div className="detalleProducto">
             <div className="error-message" style={{
@@ -418,19 +416,12 @@ function ProductDetail() {
 
   return (
     <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
-      <div className="barraJex">
-        <Drop_DownM 
-          isOpenM={isOpenM} 
-          closeDown={() => setIsOpenM(false)} 
-          producto={productoSeleccionado} 
-        />
-      </div>
-      
       <div className="buProductos">
-        <div className='abrirDown'>
-          <TopBar 
+        <div className='TopBarFDP'>
+          <TopBarF 
             onSearch={handleSearch} 
             openMenu={() => setIsOpenM(true)} 
+            user={user} 
           />
         </div>
         
@@ -455,14 +446,10 @@ function ProductDetail() {
                 <p><strong>Precio:</strong> {productoSeleccionado.precio}</p>
                 <p><strong>Supermercado:</strong> {productoSeleccionado.supermercado}</p>
               </div>
-              <div className="BotonDashboardContainer">
-                <button className="BotonDashboard" onClick={handleClickD}>
-                  📊 Panel
-                </button>
-              </div>
+              
             </div>
-            
-            <h3 className='PrecioMasBajoT'>
+            <div className="PrecioBajoYPanel">
+              <h3 className='PrecioMasBajoT'>
               Encuentra el precio más bajo en: 
             </h3>
             {productoMasBarato && (
@@ -480,6 +467,13 @@ function ProductDetail() {
                 </div>
               </button>
             )}
+            <div className="BotonDashboardContainer">
+                <button className="BotonDashboard" onClick={handleClickD}>
+                  Panel
+                </button>
+              </div>
+            </div>
+            
             
             {!productoMasBarato && productosFiltrados.length === 0 && (
               <div style={{ 

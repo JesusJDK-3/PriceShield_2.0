@@ -214,6 +214,7 @@ function Products({ user }) { // ✅ CAMBIO 1: Recibir user como prop
     <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
       <div className="buProductos">
         <div className="TopBarFDP">
+          
           <TopBarF 
             onSearch={handleSearch}
             onResults={handleResults}

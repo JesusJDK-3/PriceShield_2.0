@@ -151,6 +151,9 @@
 .TopBarFDP .productoBF{
   color: #4CE251;
 }
+.TopBarFDNPR .dashBF{
+  color: rgb(231, 243, 1);
+}
 .search-results-info h3,
 .all-products-info h3 {
   margin: 0 0 5px 0;

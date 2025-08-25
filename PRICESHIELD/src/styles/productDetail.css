@@ -1,4 +1,4 @@
-/* Reset básico */
+
 * {
   margin: 0;
   padding: 0;
@@ -14,7 +14,12 @@
   padding: 10px;
   background: white;
 }
-
+.PrecioBajoYPanel{
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 .BotRP {
   padding-bottom: 10px;
   display: flex;
@@ -176,7 +181,7 @@ color: #4CE251;
   display: flex;
   justify-content: end;
   margin-top: 1rem;
-      width: 78%;
+      width: 89%;
 }
 
 .BotonDashboard {

@@ -13,9 +13,8 @@ import {
   Legend,
   Filler
 } from 'chart.js';
-import TopBar from './components/TopBar.jsx';
+import TopBarF from './components/TopBarF.jsx';
 import Drop_DownM from './components/Drop_Down_Menu.jsx';
-
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -41,8 +40,8 @@ function StatCard({ title, value, color, bgColor, textColor }) {
       transition: 'transform 0.2s ease',
       cursor: 'pointer'
     }}
-    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+      onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+      onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
     >
       <div style={{
         fontSize: window.innerWidth <= 768 ? '24px' : '28px',
@@ -63,7 +62,7 @@ function StatCard({ title, value, color, bgColor, textColor }) {
   );
 }
 
-function Dashboard() {
+function Dashboard({ user }) {
   const [isOpenM, setIsOpenM] = useState(true);
   const [productoActual, setProductoActual] = useState(null);
   const [datosComparacion, setDatosComparacion] = useState(null);
@@ -71,7 +70,7 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [chartType, setChartType] = useState('bar');
-  
+
   const { state } = useLocation();
   const navigate = useNavigate();
 
@@ -86,7 +85,7 @@ function Dashboard() {
     try {
       const response = await fetch(`/api/products/compare?product_name=${encodeURIComponent(nombreProducto)}&days_back=30`);
       const data = await response.json();
-      
+
       if (data.success) {
         return data.comparison;
       }
@@ -99,59 +98,59 @@ function Dashboard() {
 
   // Función para buscar productos similares (para historial)
   const buscarProductosSimilares = async (nombreProducto) => {
-        try {
-            console.log('Buscando historial unificado para:', nombreProducto);
-            
-            // USAR LA NUEVA RUTA
-            const response = await fetch(`/api/products/product-history-unified?product_name=${encodeURIComponent(nombreProducto)}&days_back=30`);
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                console.log('Productos históricos encontrados:', data.products?.length || 0);
-                return data.products || [];
-            }
-            throw new Error(data.message || 'Error buscando productos');
-        } catch (error) {
-            console.error('Error en búsqueda:', error);
-            return [];
-        }
-    };
+    try {
+      console.log('Buscando historial unificado para:', nombreProducto);
+
+      // USAR LA NUEVA RUTA
+      const response = await fetch(`/api/products/product-history-unified?product_name=${encodeURIComponent(nombreProducto)}&days_back=30`);
+
+      const data = await response.json();
+
+      if (data.success) {
+        console.log('Productos históricos encontrados:', data.products?.length || 0);
+        return data.products || [];
+      }
+      throw new Error(data.message || 'Error buscando productos');
+    } catch (error) {
+      console.error('Error en búsqueda:', error);
+      return [];
+    }
+  };
 
   // Función para generar datos del historial
   const generarDatosHistorial = (productos) => {
     if (!productos || productos.length === 0) {
-        return { labels: ['Sin datos'], precios: [0] };
+      return { labels: ['Sin datos'], precios: [0] };
     }
 
     // Filtrar y ordenar TODAS las actualizaciones por fecha
     const productosOrdenados = productos
-        .filter(p => p.scraped_at && p.price > 0)
-        .sort((a, b) => new Date(a.scraped_at) - new Date(b.scraped_at));
+      .filter(p => p.scraped_at && p.price > 0)
+      .sort((a, b) => new Date(a.scraped_at) - new Date(b.scraped_at));
 
     if (productosOrdenados.length === 0) {
-        return { labels: ['Sin datos'], precios: [0] };
+      return { labels: ['Sin datos'], precios: [0] };
     }
 
     // Mostrar TODAS las actualizaciones (sin límite de 10)
     const labels = productosOrdenados.map((producto, index) => {
-        const fecha = new Date(producto.scraped_at);
-        return fecha.toLocaleDateString('es-ES', { 
-            day: '2-digit', 
-            month: 'short',
-            hour: '2-digit',
-            minute: '2-digit'
-        }) + ` (#${index + 1})`;  // Agregar número de actualización
+      const fecha = new Date(producto.scraped_at);
+      return fecha.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+      }) + ` (#${index + 1})`;  // Agregar número de actualización
     });
 
-    const precios = productosOrdenados.map(producto => 
-        parseFloat(extraerNumericoPrecio(producto.price))
+    const precios = productosOrdenados.map(producto =>
+      parseFloat(extraerNumericoPrecio(producto.price))
     );
 
     console.log(`📊 Mostrando ${precios.length} actualizaciones de precio para: ${productosOrdenados[0]?.name}`);
 
     return { labels, precios };
-};
+  };
 
   // Cargar datos al montar el componente
   useEffect(() => {
@@ -170,7 +169,7 @@ function Dashboard() {
         setDatosComparacion(comparacion);
 
         const productosSimilares = await buscarProductosSimilares(state.producto.nombre || state.producto.name);
-        
+
         if (productosSimilares.length > 0) {
           const datosHistorial = generarDatosHistorial(productosSimilares);
           setHistorialPrecios(datosHistorial);
@@ -212,21 +211,19 @@ function Dashboard() {
   if (!state?.producto) {
     return (
       <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
-        <div className="barraJex">
-          <Drop_DownM isOpenM={isOpenM} closeDown={() => setIsOpenM(false)} />
-        </div>
+
         <div className="buProductos">
-          <div className='abrirDown'>
-            <TopBar onSearch={handleSearch} openMenu={() => setIsOpenM(true)} />
+          <div className="TopBarFDNPR">
+            <TopBarF onSearch={handleSearch} openMenu={() => setIsOpenM(true)} user={user} />
           </div>
-          <div style={{ 
-            padding: '50px', 
+          <div style={{
+            padding: '50px',
             textAlign: 'center',
             fontSize: '18px',
             color: '#666'
           }}>
             <p>No se encontró información del producto para mostrar en el dashboard.</p>
-            <button 
+            <button
               onClick={() => navigate('/products')}
               style={{
                 padding: '10px 20px',
@@ -256,7 +253,7 @@ function Dashboard() {
   const precioMaximo = precios.length > 0 ? Math.max(...precios) : precioActual;
 
   // Obtener mejores precios por supermercado
-  const mejoresPrecios = datosComparacion ? 
+  const mejoresPrecios = datosComparacion ?
     Object.entries(datosComparacion)
       .map(([key, data]) => ({
         supermercado: data.supermarket_name || key,
@@ -308,7 +305,7 @@ function Dashboard() {
         cornerRadius: 8,
         displayColors: false,
         callbacks: {
-          label: function(context) {
+          label: function (context) {
             return `Precio: S/ ${context.parsed.y.toFixed(2)}`;
           }
         }
@@ -345,7 +342,7 @@ function Dashboard() {
             weight: '500'
           },
           color: '#6b7280',
-          callback: function(value) {
+          callback: function (value) {
             return 'S/ ' + value.toFixed(2);
           }
         },
@@ -420,29 +417,27 @@ function Dashboard() {
 
   return (
     <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
-      <div className="barraJex">
-        <Drop_DownM isOpenM={isOpenM} closeDown={() => setIsOpenM(false)} />
-      </div>
-      
+
+
       <div className="buProductos">
-        <div className='abrirDown'>
-          <TopBar onSearch={handleSearch} openMenu={() => setIsOpenM(true)} />
+        <div className="TopBarFDNPR">
+          <TopBarF onSearch={handleSearch} openMenu={() => setIsOpenM(true)} user={user} />
         </div>
 
         {loading && (
-          <div style={{ 
-            padding: '50px', 
-            textAlign: 'center', 
-            fontSize: '18px' 
+          <div style={{
+            padding: '50px',
+            textAlign: 'center',
+            fontSize: '18px'
           }}>
             Cargando datos del producto...
           </div>
         )}
 
         {error && (
-          <div style={{ 
-            padding: '30px', 
-            textAlign: 'center', 
+          <div style={{
+            padding: '30px',
+            textAlign: 'center',
             color: '#e74c3c',
             backgroundColor: '#fdf2f2',
             margin: '20px',
@@ -455,7 +450,7 @@ function Dashboard() {
 
         {!loading && !error && (
           <div style={{
-            padding: isCompact ? '20px' : '30px',
+            padding: isCompact ? '15px' : '20px',
             maxWidth: '1400px',
             margin: '0 auto',
             minHeight: '100vh',
@@ -476,6 +471,11 @@ function Dashboard() {
                 alignItems: 'flex-start',
                 flexWrap: 'wrap'
               }}>
+                <div className="BotRP">
+                  <button className='BotonRegresar' onClick={() => navigate(-1)}>
+                    <span className='flechita'>←</span> Volver
+                  </button>
+                </div>
                 <img
                   src={productData.imagen}
                   alt={productData.nombre}
@@ -502,7 +502,7 @@ function Dashboard() {
                   }}>
                     {productData.nombre}
                   </h1>
-                  
+
                   <div style={{
                     display: 'flex',
                     gap: '20px',
@@ -511,10 +511,10 @@ function Dashboard() {
                   }}>
                     <div>
                       <span style={{ color: '#6b7280', fontSize: '14px' }}>Precio actual: </span>
-                      <span style={{ 
-                        fontSize: '18px', 
-                        fontWeight: 'bold', 
-                        color: '#059669' 
+                      <span style={{
+                        fontSize: '18px',
+                        fontWeight: 'bold',
+                        color: '#059669'
                       }}>
                         S/ {productData.precioActual}
                       </span>
@@ -527,7 +527,7 @@ function Dashboard() {
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Controles de gráfico */}
                 <div style={{
                   display: 'flex',
@@ -604,7 +604,7 @@ function Dashboard() {
                     Actualizado hoy
                   </div>
                 </div>
-                
+
                 <div style={{
                   height: isCompact ? '280px' : '350px',
                   position: 'relative'
@@ -655,7 +655,7 @@ function Dashboard() {
                   bgColor="rgba(240, 253, 250, 0.8)"
                   textColor="#059669"
                 />
-                
+
                 <StatCard
                   title="Precio Promedio"
                   value={stats.precioPromedio.toFixed(2)}
@@ -663,7 +663,7 @@ function Dashboard() {
                   bgColor="rgba(239, 246, 255, 0.8)"
                   textColor="#3b82f6"
                 />
-                
+
                 <StatCard
                   title="Precio Mínimo"
                   value={stats.precioMinimo.toFixed(2)}
@@ -671,7 +671,7 @@ function Dashboard() {
                   bgColor="rgba(255, 251, 235, 0.8)"
                   textColor="#f59e0b"
                 />
-                
+
                 <StatCard
                   title="Precio Máximo"
                   value={stats.precioMaximo.toFixed(2)}
@@ -680,9 +680,9 @@ function Dashboard() {
                   textColor="#ef4444"
                 />
 
-                
-                  
-                
+
+
+
               </div>
             </div>
           </div>
