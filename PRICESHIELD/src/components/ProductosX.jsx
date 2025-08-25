@@ -124,19 +124,7 @@ const ProductosX = ({ productos = [], isLoading = false, searchQuery = "" }) => 
 
   return (
     <>
-      {/* 🔧 AÑADIR: Información de deduplicación para debugging */}
-      {productos.length !== productosSinDuplicados.length && (
-        <div className="deduplication-info" style={{
-          background: '#e3f2fd', 
-          padding: '8px', 
-          margin: '10px 0', 
-          borderRadius: '4px',
-          fontSize: '12px',
-          color: '#1565c0'
-        }}>
-          Se encontraron y eliminaron {productos.length - productosSinDuplicados.length} productos duplicados
-        </div>
-      )}
+      
       
       {productosNormalizados.map((producto, index) => {
         const productosRelacionados = obtenerProductosRelacionados(producto);

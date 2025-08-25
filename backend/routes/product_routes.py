@@ -376,6 +376,41 @@ def get_products_by_category(category):
             "message": str(e)
         }), 500
 
+@product_routes.route('/product-history-unified', methods=['GET'])
+@optional_auth
+@handle_route_errors
+def get_product_history_unified():
+    """
+    GET /api/products/product-history-unified?product_name=arroz&days_back=30
+    """
+    try:
+        product_name = request.args.get('product_name', '').strip()
+        days_back = int(request.args.get('days_back', 30))
+        
+        if not product_name:
+            return jsonify({
+                "success": False,
+                "error": "Parámetro 'product_name' es requerido"
+            }), 400
+        
+        # Usar el nuevo método
+        products = product_controller.product_model.get_product_unified_history(
+            product_name, days_back
+        )
+        
+        return jsonify({
+            "success": True,
+            "products": products,
+            "count": len(products)
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": "Error interno del servidor",
+            "message": str(e)
+        }), 500
+
 @product_routes.route('/health', methods=['GET'])
 @handle_route_errors
 def health_check():
@@ -522,6 +557,202 @@ def get_brands():
             "message": str(e)
         }), 500
 
+# Agregar estas rutas en product_routes.py
+
+@product_routes.route('/price-history', methods=['GET'])
+@optional_auth
+@handle_route_errors
+def get_product_price_history():
+    """
+    GET /api/products/price-history?product_name=arroz&supermarket=plazavea&days_back=30
+    
+    Obtiene el historial de precios específico de un producto
+    
+    Query Parameters:
+    - product_name (requerido): Nombre exacto del producto
+    - supermarket (opcional): Filtrar por supermercado específico
+    - days_back (opcional): Días hacia atrás para buscar (por defecto 30)
+    
+    Respuesta:
+    {
+        "success": true,
+        "product_name": "arroz",
+        "history": [...],
+        "summary": {...}
+    }
+    """
+    try:
+        # Obtener parámetros
+        product_name = request.args.get('product_name', '').strip()
+        supermarket_key = request.args.get('supermarket')
+        days_back = int(request.args.get('days_back', 30))
+        
+        if not product_name:
+            return jsonify({
+                "success": False,
+                "error": "Parámetro 'product_name' es requerido",
+                "message": "Debe proporcionar el nombre exacto del producto"
+            }), 400
+        
+        if len(product_name) < 2:
+            return jsonify({
+                "success": False,
+                "error": "Nombre muy corto",
+                "message": "El nombre del producto debe tener al menos 2 caracteres"
+            }), 400
+        
+        if days_back < 1 or days_back > 365:
+            return jsonify({
+                "success": False,
+                "error": "Rango de días inválido",
+                "message": "days_back debe estar entre 1 y 365 días"
+            }), 400
+        
+        # Obtener historial de precios
+        history_data = product_controller.product_model.get_product_price_history(
+            product_name=product_name,
+            supermarket_key=supermarket_key,
+            days_back=days_back
+        )
+        
+        if not history_data:
+            return jsonify({
+                "success": True,
+                "product_name": product_name,
+                "history": [],
+                "summary": {
+                    "total_records": 0,
+                    "date_range": "Sin datos",
+                    "price_range": {"min": 0, "max": 0},
+                    "supermarkets": []
+                },
+                "message": "No se encontró historial para este producto"
+            }), 200
+        
+        # Calcular resumen
+        prices = [record["price"] for record in history_data]
+        supermarkets = list(set([record["supermarket_name"] for record in history_data]))
+        dates = [record["date"] for record in history_data]
+        
+        summary = {
+            "total_records": len(history_data),
+            "date_range": {
+                "from": min(dates),
+                "to": max(dates)
+            },
+            "price_range": {
+                "min": min(prices),
+                "max": max(prices),
+                "avg": round(sum(prices) / len(prices), 2)
+            },
+            "supermarkets": supermarkets,
+            "days_with_data": len(set(dates))
+        }
+        
+        return jsonify({
+            "success": True,
+            "product_name": product_name,
+            "supermarket_filter": supermarket_key,
+            "days_back": days_back,
+            "history": history_data,
+            "summary": summary
+        }), 200
+        
+    except ValueError as e:
+        return jsonify({
+            "success": False,
+            "error": "Parámetro inválido",
+            "message": str(e)
+        }), 400
+    
+    except Exception as e:
+        print(f"❌ Error obteniendo historial de precios: {e}")
+        return jsonify({
+            "success": False,
+            "error": "Error interno del servidor",
+            "message": str(e)
+        }), 500
+
+@product_routes.route('/price-trend', methods=['GET'])
+@optional_auth
+@handle_route_errors
+def get_product_price_trend():
+    """
+    GET /api/products/price-trend?product_name=arroz&days_back=30
+    
+    Obtiene la tendencia de precios de un producto (datos agregados para gráficos)
+    
+    Query Parameters:
+    - product_name (requerido): Nombre del producto
+    - days_back (opcional): Días hacia atrás (por defecto 30)
+    
+    Respuesta:
+    {
+        "success": true,
+        "product_name": "arroz",
+        "chart_data": {
+            "labels": ["01 Dec", "02 Dec", ...],
+            "prices": [2.50, 2.45, ...],
+            "dates": ["2024-12-01", "2024-12-02", ...]
+        }
+    }
+    """
+    try:
+        # Obtener parámetros
+        product_name = request.args.get('product_name', '').strip()
+        days_back = int(request.args.get('days_back', 30))
+        
+        if not product_name:
+            return jsonify({
+                "success": False,
+                "error": "Parámetro 'product_name' es requerido"
+            }), 400
+        
+        if days_back < 1 or days_back > 365:
+            days_back = 30
+        
+        # Obtener datos de tendencia
+        trend_data = product_controller.product_model.get_product_price_trend(
+            product_name=product_name,
+            days_back=days_back
+        )
+        
+        if not trend_data["labels"]:
+            # Si no hay datos, devolver estructura vacía pero válida
+            return jsonify({
+                "success": True,
+                "product_name": product_name,
+                "chart_data": {
+                    "labels": ["Sin historial"],
+                    "prices": [0],
+                    "dates": [],
+                    "data_points": 0
+                },
+                "message": "No se encontraron datos de tendencia para este producto"
+            }), 200
+        
+        return jsonify({
+            "success": True,
+            "product_name": product_name,
+            "days_back": days_back,
+            "chart_data": trend_data,
+            "message": f"Tendencia con {trend_data['data_points']} puntos de datos"
+        }), 200
+        
+    except ValueError as e:
+        return jsonify({
+            "success": False,
+            "error": "Parámetro inválido",
+            "message": str(e)
+        }), 400
+    
+    except Exception as e:
+        print(f"❌ Error obteniendo tendencia de precios: {e}")
+        return jsonify({
+            "success": False,
+            "error": "Error interno del servidor",
+            "message": str(e)
+        }), 500
 # =================== RUTAS DE CONTROL DEL SCHEDULER ===================
 
 @product_routes.route('/scheduler/status', methods=['GET'])

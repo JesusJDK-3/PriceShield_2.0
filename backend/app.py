@@ -7,6 +7,7 @@ import atexit
 # Importar las rutas
 from routes.auth_routes import auth_bp
 from routes.product_routes import product_routes
+from routes.alert_routes import alert_routes  # NUEVA IMPORTACIÓN
 
 # Importar el scheduler
 from services.scheduler import database_scheduler
@@ -29,6 +30,9 @@ app.register_blueprint(auth_bp, url_prefix='/api/auth')
 # Registrar las rutas de productos con el prefijo /api/products
 app.register_blueprint(product_routes, url_prefix='/api/products')
 
+# Registrar las rutas de alertas con el prefijo /api/alerts
+app.register_blueprint(alert_routes)  # NUEVO REGISTRO
+
 # Ruta de prueba para verificar que el servidor funciona
 @app.route('/')
 def home():
@@ -47,7 +51,8 @@ def api_health():
         'scheduler_active': database_scheduler.is_running,
         'endpoints': {
             'auth': '/api/auth/*',
-            'products': '/api/products/*'
+            'products': '/api/products/*',
+            'alerts': '/api/alerts/*'  # ACTUALIZAR DOCUMENTACIÓN
         }
     }
 
@@ -97,8 +102,6 @@ def cleanup():
         print("✅ Programador de tareas detenido")
     except Exception as e:
         print(f"⚠️ Error deteniendo programador: {e}")
-
-# app.py - AGREGAR ESTAS RUTAS antes de "if __name__ == '__main__':"
 
 # 🧹 NUEVA RUTA: Limpiar productos duplicados
 @app.route('/api/admin/clean-duplicates', methods=['GET', 'POST'])
@@ -162,6 +165,56 @@ def duplicates_stats():
             'success': False,
             'error': str(e)
         }, 500
+
+# NUEVA RUTA: Endpoint de prueba para crear alertas manuales
+@app.route('/api/test/create-alert', methods=['POST'])
+def test_create_alert():
+    """
+    Endpoint de prueba para crear alertas (útil para testing)
+    """
+    try:
+        from models.alert_model import alert_model
+        
+        # Datos de prueba
+        product_data = {
+            "unique_id": "test_product_001",
+            "name": "Producto de Prueba - Arroz Superior",
+            "supermarket": "Plaza Vea",
+            "supermarket_key": "plaza_vea",
+            "url": "https://www.plazavea.com.pe/arroz-superior",
+            "brand": "Costeño",
+            "categories": ["abarrotes", "arroz"]
+        }
+        
+        old_price = 8.50
+        new_price = 12.90
+        
+        alert_id = alert_model.create_price_change_alert(
+            product_data=product_data,
+            old_price=old_price,
+            new_price=new_price
+        )
+        
+        if alert_id:
+            return {
+                'success': True,
+                'alert_id': str(alert_id),
+                'message': 'Alerta de prueba creada exitosamente',
+                'product': product_data['name'],
+                'price_change': f'{old_price} → {new_price}'
+            }
+        else:
+            return {
+                'success': False,
+                'error': 'No se pudo crear la alerta'
+            }, 400
+        
+    except Exception as e:
+        return {
+            'success': False,
+            'error': str(e)
+        }, 500
+
 # Registrar función de limpieza
 atexit.register(cleanup)
 
