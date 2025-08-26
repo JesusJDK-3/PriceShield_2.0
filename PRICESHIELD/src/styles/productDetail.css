@@ -69,10 +69,14 @@
   padding: 15px 15px 0 15px;
   max-width: 800px;
 }
+.PrecioMasBajo{
+  width: 100%;
+}
 .PrecioMasBajoT{
   font-size: 20px;
   text-align: center;
   margin-top: 10px;
+  width:100%
 }
 
 .MercadoLogo {
@@ -170,6 +174,14 @@ color: #4CE251;
   margin-top: 10px;
   text-align: center;
   font-weight: bold;
+}
+.PrecioBajoACMJ{
+  width: 100%;
+}
+.ACYMJ{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 .mercadosYprecios {
   width: 27.5%;

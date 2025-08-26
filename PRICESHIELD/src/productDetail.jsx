@@ -505,13 +505,15 @@ function ProductDetail({user}) {
                   </div>
                   
                   {productosFiltrados.map((producto, index) => (
+                    <div className="PrecioBajoACMJ">
                     <button
                       className="PrecioMasBajo"
                       key={`${producto.supermercado}-${index}`}
                       onClick={() => handleClick(producto)}
                       style={{
                         opacity: producto.id === productoSeleccionado.id ? 0.7 : 1,
-                        border: producto.id === productoSeleccionado.id ? '2px solid #007bff' : 'none'
+                        border: producto.id === productoSeleccionado.id ? '2px solid #007bff' : 'none',
+                        
                       }}
                     >
                       <div className="datoPPT">
@@ -534,7 +536,11 @@ function ProductDetail({user}) {
                         <br />
                         <p>{producto.precio}</p>
                         
-                        {producto.id === productoSeleccionado.id && (
+                        
+                      </div>
+                    </button>
+                          <div className="ACYMJ">
+                            {producto.id === productoSeleccionado.id && (
                           <span style={{
                             fontSize: '12px',
                             color: '#007bff',
@@ -557,8 +563,8 @@ function ProductDetail({user}) {
                             MEJOR PRECIO
                           </span>
                         )}
-                      </div>
-                    </button>
+                          </div>
+                    </div>
                   ))}
                 </>
               ) : (

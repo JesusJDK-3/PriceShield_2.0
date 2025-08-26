@@ -1,0 +1,267 @@
+/* DashBoardPP.css */
+
+/* Contenedores principales */
+.contenedor_general {
+  display: flex;
+  min-height: 100vh;
+}
+
+.contenedor_general.soloContenido {
+  margin-left: 0;
+}
+
+.buProductos {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.TopBarFDNPR {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Tarjeta de estadísticas */
+.stat-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+  cursor: pointer;
+  border: 2px solid;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+
+.stat-value {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.stat-title {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Header del producto */
+.product-header {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 25px;
+  margin-bottom: 25px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.product-header-content {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.product-image {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.product-info {
+  flex: 1;
+  min-width: 200px;
+}
+
+.product-name {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 15px;
+  line-height: 1.3;
+  margin: 0 0 15px 0;
+}
+
+.product-details {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Controles del gráfico */
+.chart-controls {
+  display: flex;
+  gap: 8px;
+  background: #f3f4f6;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.chart-button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chart-button.active {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.chart-button.inactive {
+  background: transparent;
+  color: #374151;
+}
+
+/* Panel principal del gráfico */
+.chart-panel {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.chart-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #1f2937;
+  margin: 0;
+}
+
+.update-badge {
+  font-size: 12px;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* Panel de estadísticas */
+.stats-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Estados de carga y error */
+.loading-state {
+  padding: 50px;
+  text-align: center;
+  font-size: 18px;
+}
+
+.error-state {
+  padding: 30px;
+  text-align: center;
+  color: #e74c3c;
+  background-color: #fdf2f2;
+  margin: 20px;
+  border-radius: 8px;
+  border: 1px solid #fadbd8;
+}
+
+/* Botón de regresar */
+
+
+.BotonRegresar:hover {
+  background-color: #f3f4f6;
+}
+
+.flechita {
+  font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .product-header {
+    padding: 20px;
+  }
+  
+  .product-image {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .product-name {
+    font-size: 18px;
+  }
+  
+  .chart-panel {
+    padding: 20px;
+  }
+  
+  .chart-title {
+    font-size: 16px;
+  }
+  
+  .stat-value {
+    font-size: 24px;
+  }
+}
+
+/* Layout responsive */
+.dashboard-content {
+  padding: 20px;
+  width: 100%;
+  min-height: 100vh;
+  background-color: #ffffff;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 25px;
+}
+
+@media (max-width: 768px) {
+  .dashboard-content {
+    padding: 15px;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Estado cuando no hay producto */
+.no-product-state {
+  padding: 50px;
+  text-align: center;
+  font-size: 18px;
+  color: #666;
+}
+
+.back-button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 20px;
+}

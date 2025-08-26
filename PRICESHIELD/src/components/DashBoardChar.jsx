@@ -1,11 +1,18 @@
-// Importa React y hooks useState, useEffect
-import React, { useState, useEffect } from 'react';
-// Importa los módulos necesarios de Chart.js para gráficos de barras y líneas
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend } from 'chart.js';
-// Importa el componente Chart de react-chartjs-2
-import { Chart } from 'react-chartjs-2';
+import React from 'react';
+import { Bar, Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from 'chart.js';
 
-// Registra los componentes de Chart.js que se van a usar
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -14,74 +21,186 @@ ChartJS.register(
   PointElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 );
 
-// Componente principal del gráfico del dashboard
-const DashboardChart = () => {
-  // Estado para saber si la vista es compacta (pantallas pequeñas)
-  const [isCompact, setIsCompact] = useState(false);
+function DashboardChart({ chartType, historialPrecios, isCompact }) {
+  // Calcular estadísticas para el gráfico
+  const precios = historialPrecios.precios || [];
+  const minPrice = precios.length > 0 ? Math.min(...precios) : 0;
+  const maxPrice = precios.length > 0 ? Math.max(...precios) : 0;
 
-  // Efecto para escuchar el cambio de tamaño de la ventana y ajustar el modo compacto
-  useEffect(() => {
-    const handleResize = () => {
-      setIsCompact(window.innerWidth <= 768); // Activa modo compacto si el ancho es menor o igual a 768px
-    };
-    handleResize(); // Llama una vez al montar el componente
-    window.addEventListener('resize', handleResize); // Escucha cambios de tamaño
-    return () => window.removeEventListener('resize', handleResize); // Limpia el listener al desmontar
-  }, []);
-
-  // Datos del gráfico, cambian según si está en modo compacto o no
-  const data = {
-    labels: isCompact
-      ? ['Ene', 'Feb', 'Mar', 'Abr'] // Menos etiquetas en modo compacto
-      : ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul'], // Todas las etiquetas en modo normal
-   
-      datasets: [
-      {
-        type: 'bar', // Tipo barra
-        label: 'Precio mensual (S/)', // Etiqueta de la barra
-        data: isCompact ? [25, 27, 24, 26] : [25, 27, 24, 26, 28, 29, 27], // Datos según modo
-        backgroundColor: 'rgba(54, 162, 235, 0.6)', // Color de las barras
-        borderRadius: 5 // Bordes redondeados
+  // Configuración del gráfico mejorada
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      mode: 'index',
+      intersect: false,
+    },
+    plugins: {
+      legend: {
+        display: false // Ocultamos la leyenda para un diseño más limpio
       },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleColor: '#fff',
+        bodyColor: '#fff',
+        borderColor: 'rgba(255, 255, 255, 0.1)',
+        borderWidth: 1,
+        cornerRadius: 8,
+        displayColors: false,
+        callbacks: {
+          label: function (context) {
+            return `Precio: S/ ${context.parsed.y.toFixed(2)}`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+        border: {
+          display: false,
+        },
+        ticks: {
+          font: {
+            size: 12,
+            weight: '500'
+          },
+          color: '#6b7280',
+          maxRotation: window.innerWidth <= 768 ? 45 : 0
+        }
+      },
+      y: {
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)',
+          borderDash: [2, 2],
+        },
+        border: {
+          display: false,
+        },
+        ticks: {
+          font: {
+            size: 12,
+            weight: '500'
+          },
+          color: '#6b7280',
+          callback: function (value) {
+            return 'S/ ' + value.toFixed(2);
+          }
+        },
+        beginAtZero: false,
+        min: precios.length > 0 ? Math.min(...precios) * 0.98 : undefined,
+        max: precios.length > 0 ? Math.max(...precios) * 1.02 : undefined
+      }
+    },
+    elements: {
+      bar: {
+        borderRadius: {
+          topLeft: 6,
+          topRight: 6,
+          bottomLeft: 0,
+          bottomRight: 0
+        }
+      },
+      point: {
+        radius: 4,
+        hoverRadius: 6,
+        borderWidth: 2,
+        backgroundColor: '#fff'
+      }
+    }
+  };
+
+  // Datos para gráfico de barras
+  const barData = {
+    labels: historialPrecios.labels || ['Sin datos'],
+    datasets: [
       {
-        type: 'line', // Tipo línea
-        label: 'Tendencia', // Etiqueta de la línea
-        data: isCompact ? [24, 25, 25, 26] : [24, 25, 25, 26, 27, 28, 27], // Datos según modo
-        borderColor: 'rgba(255, 99, 132, 1)', // Color de la línea
-        backgroundColor: 'rgba(255, 99, 132, 0.3)', // Color de fondo de la línea
-        fill: false, // No rellenar bajo la línea
-        tension: 0.3, // Curvatura de la línea
-        pointRadius: 4 // Tamaño de los puntos
+        data: precios.length > 0 ? precios : [0],
+        backgroundColor: precios.map((precio, index) => {
+          if (precio === minPrice) return 'rgba(34, 197, 94, 0.8)'; // Verde para precio mínimo
+          if (precio === maxPrice) return 'rgba(239, 68, 68, 0.8)'; // Rojo para precio máximo
+          return 'rgba(59, 130, 246, 0.6)'; // Azul para precios normales
+        }),
+        borderColor: precios.map((precio, index) => {
+          if (precio === minPrice) return 'rgba(34, 197, 94, 1)';
+          if (precio === maxPrice) return 'rgba(239, 68, 68, 1)';
+          return 'rgba(59, 130, 246, 1)';
+        }),
+        borderWidth: 2,
+        barThickness: window.innerWidth <= 768 ? 20 : 35,
+        maxBarThickness: 40
       }
     ]
   };
 
-  // Opciones de configuración del gráfico
-  const options = {
-    responsive: true, // Se adapta al tamaño del contenedor
-    maintainAspectRatio: false, // Permite definir la altura manualmente
-    plugins: {
-      legend: { position: isCompact ? 'bottom' : 'top' }, // Posición de la leyenda según modo
-      title: { display: true, text: 'Evolución de precios y tendencia' } // Título del gráfico
-    },
-    scales: {
-      x: {
-        ticks: { maxRotation: isCompact ? 0 : 45, minRotation: 0 } // Rotación de etiquetas en eje X
-      },
-      y: { beginAtZero: true } // El eje Y empieza en cero
-    }
+  // Datos para gráfico de líneas
+  const lineData = {
+    labels: historialPrecios.labels || ['Sin datos'],
+    datasets: [
+      {
+        data: precios.length > 0 ? precios : [0],
+        borderColor: 'rgba(99, 102, 241, 1)',
+        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: precios.map((precio) => {
+          if (precio === minPrice) return 'rgba(34, 197, 94, 1)';
+          if (precio === maxPrice) return 'rgba(239, 68, 68, 1)';
+          return 'rgba(99, 102, 241, 1)';
+        }),
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 5,
+        pointHoverRadius: 7
+      }
+    ]
   };
 
-  // Renderiza el gráfico dentro de un div con altura variable según modo
   return (
-    <div style={{ height: isCompact ? '250px' : '300px', width: '100%' }}>
-      <Chart type='bar' data={data} options={options} />
-    </div>
-  );
-};
+    <>
+      <div style={{
+        height: isCompact ? '200px' : '250px',
+        position: 'relative'
+      }}>
+        {chartType === 'bar' && <Bar data={barData} options={chartOptions} />}
+        {chartType === 'line' && <Line data={lineData} options={chartOptions} />}
+      </div>
 
-// Exporta el componente para usarlo en otras partes de la app
+      {/* Leyenda personalizada */}
+      <div style={{
+        marginTop: '15px',
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '20px',
+        flexWrap: 'wrap'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{
+            width: '12px',
+            height: '12px',
+            background: 'rgba(34, 197, 94, 0.8)',
+            borderRadius: '2px'
+          }}></div>
+          <span style={{ fontSize: '12px', color: '#6b7280' }}>Precio mínimo</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{
+            width: '12px',
+            height: '12px',
+            background: 'rgba(239, 68, 68, 0.8)',
+            borderRadius: '2px'
+          }}></div>
+          <span style={{ fontSize: '12px', color: '#6b7280' }}>Precio máximo</span>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export default DashboardChart;
