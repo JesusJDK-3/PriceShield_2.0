@@ -5,7 +5,11 @@
   display: flex;
   min-height: 100vh;
 }
-
+.BotRPD{
+  display: flex
+;
+    width: 100%;
+}
 .contenedor_general.soloContenido {
   margin-left: 0;
 }
@@ -241,13 +245,25 @@
 @media (max-width: 768px) {
   .dashboard-content {
     padding: 15px;
+    scrollbar-width: none;
+    overflow-y: auto;
+    min-height: auto;
   }
   
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
 }
-
+@media (max-width: 1024px) {
+  @media (max-height: 601px) {
+    .dashboard-content {
+    padding: 15px;
+    scrollbar-width: none;
+    overflow-y: auto;
+    min-height: auto;
+  }
+  }
+  }
 /* Estado cuando no hay producto */
 .no-product-state {
   padding: 50px;

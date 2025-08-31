@@ -8,14 +8,14 @@ import './styles/DashBoardPP.css'; // Importar el archivo CSS
 // Componente StatCard mejorado
 function StatCard({ title, value, color, bgColor, textColor }) {
   return (
-    <div 
+    <div
       className="stat-card"
       style={{
         borderColor: color,
         background: bgColor || '#fff',
       }}
     >
-      <div 
+      <div
         className="stat-value"
         style={{
           color: textColor || color,
@@ -236,11 +236,7 @@ function Dashboard({ user }) {
             {/* Header del producto */}
             <div className="product-header">
               <div className="product-header-content">
-                <div className="BotRP">
-                  <button className='BotonRegresar' onClick={() => navigate(-1)}>
-                    <span className='flechita'>←</span> Volver
-                  </button>
-                </div>
+
                 <img
                   src={productData.imagen}
                   alt={productData.nombre}
@@ -257,13 +253,13 @@ function Dashboard({ user }) {
                   <div className="product-details">
                     <div>
                       <span>Precio actual: </span>
-                      <span style={{color: '#059669'}}>
+                      <span style={{ color: '#059669' }}>
                         S/ {productData.precioActual}
                       </span>
                     </div>
                     <div>
                       <span>Supermercado: </span>
-                      <span style={{fontWeight: '600'}}>
+                      <span style={{ fontWeight: '600' }}>
                         {productData.supermercado}
                       </span>
                     </div>
@@ -285,6 +281,11 @@ function Dashboard({ user }) {
                       {label}
                     </button>
                   ))}
+                  <div className="BotRPD">
+                    <button className='BotonRegresar' onClick={() => navigate(-1)}>
+                      <span className='flechita'>←</span> Volver
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -301,9 +302,9 @@ function Dashboard({ user }) {
                   </div>
                 </div>
 
-                <DashboardChart 
-                  chartType={chartType} 
-                  historialPrecios={historialPrecios} 
+                <DashboardChart
+                  chartType={chartType}
+                  historialPrecios={historialPrecios}
                 />
               </div>
 
