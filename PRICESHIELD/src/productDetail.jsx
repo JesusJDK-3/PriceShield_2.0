@@ -505,10 +505,11 @@ function ProductDetail({user}) {
                   </div>
                   
                   {productosFiltrados.map((producto, index) => (
-                    <div className="PrecioBajoACMJ">
+                    <div className="PrecioBajoACMJ"
+                    key={`${producto.supermercado}-${index}`}>
                     <button
                       className="PrecioMasBajo"
-                      key={`${producto.supermercado}-${index}`}
+                      
                       onClick={() => handleClick(producto)}
                       style={{
                         opacity: producto.id === productoSeleccionado.id ? 0.7 : 1,
