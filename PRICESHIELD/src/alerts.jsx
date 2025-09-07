@@ -30,15 +30,15 @@ function Alerts({user}) {
         try {
             setLoading(true);
             setError(null);
-            const response = await fetch('/api/alerts?limit=50');
+            const response = await fetch('http://127.0.0.1:5000/api/alerts/active');
             const data = await response.json();
-            
-            if (data.success) {
-                setAlerts(data.alerts);
-                setSummary(data.summary);
-            } else {
-                setError(data.message || 'Error cargando alertas');
-            }
+
+            setAlerts(data); // data es el array de alertas
+            setSummary({
+                unread_alerts: data.filter(a => !a.leido).length,
+                total_alerts: data.length,
+                price_increases: data.filter(a => a.change_type === 'subida' && !a.leido).length
+            });
         } catch (error) {
             console.error('Error cargando alertas:', error);
             setError('Error de conexión al cargar alertas');

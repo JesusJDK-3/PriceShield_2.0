@@ -1046,5 +1046,15 @@ class Product:
             print(f"Error limpiando productos antiguos: {e}")
             return 0
 
+    def get_total_products(self):
+        return self.products_collection.count_documents({})
+
+    def get_total_supermarkets(self):
+        return len(self.products_collection.distinct("supermarket_key"))
+
+    def get_total_updates(self):
+        return self.products_collection.count_documents({"updated_at": {"$exists": True}})
+
+    
 # Crear instancia global
 product_model = Product()

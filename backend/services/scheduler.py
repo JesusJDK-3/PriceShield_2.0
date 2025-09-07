@@ -62,8 +62,8 @@ class DatabaseScheduler:
             print("⚠️ El programador ya está ejecutándose")
             return
 
-        # Programar actualización diaria a las 02:00
-        schedule.every().day.at("02:00").do(self.daily_database_update)
+        # Programar actualización diaria a las 16:43
+        schedule.every().day.at("16:43").do(self.daily_database_update)
         
         # Programar limpieza semanal los domingos a las 3:00 AM
         schedule.every().sunday.at("03:00").do(self.weekly_cleanup)
