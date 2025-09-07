@@ -5,6 +5,7 @@ const SearchBox = ({ onSearch, onResults }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     const searchValue = e.target.elements['search-input'].value.trim();

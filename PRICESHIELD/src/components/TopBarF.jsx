@@ -74,7 +74,7 @@ const TopBarF = ({ onSearch, onResults, user }) => {
                         onSearch={onSearch}
                         onResults={onResults}
                     />
-                    <i className="bi bi-filter-square Filtros"></i>
+                    
                 </div>
                 <div className="IconSelect">
                     <IconSelect/>

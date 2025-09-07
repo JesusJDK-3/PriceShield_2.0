@@ -646,6 +646,7 @@ class ProductController:
                 "error": "Error interno del servidor",
                 "message": str(e)
             }), 500
+        
 
     def _update_database_background(self, terms_list):
         """
@@ -693,6 +694,10 @@ class ProductController:
             
         except Exception as e:
             print(f"❌ Error en actualización de base de datos: {e}")
+    
+    def get_product_unified_history(self, product_name, days_back=30): 
+        """ Llama al modelo para obtener el historial unificado de un producto """ 
+        return product_model.get_product_unified_history(product_name, days_back)
 
 # También necesitas agregar la importación del supermarket_api al inicio del archivo
 # from services.api_scraper import supermarket_api

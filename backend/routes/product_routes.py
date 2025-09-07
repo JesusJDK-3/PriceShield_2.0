@@ -394,7 +394,7 @@ def get_product_history_unified():
             }), 400
         
         # Usar el nuevo método
-        products = product_controller.product_model.get_product_unified_history(
+        products = product_controller.get_product_unified_history(
             product_name, days_back
         )
         

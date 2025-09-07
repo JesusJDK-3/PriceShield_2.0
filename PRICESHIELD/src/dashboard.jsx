@@ -51,7 +51,7 @@ function Dashboard({ user }) {
   // Función para obtener comparación de precios
   const obtenerComparacionPrecios = async (nombreProducto) => {
     try {
-      const response = await fetch(`/api/products/compare?product_name=${encodeURIComponent(nombreProducto)}&days_back=30`);
+      const response = await fetch(`http://localhost:5000/api/products/compare?product_name=${encodeURIComponent(nombreProducto)}&days_back=30`);
       const data = await response.json();
 
       if (data.success) {
@@ -70,7 +70,7 @@ function Dashboard({ user }) {
       console.log('Buscando historial unificado para:', nombreProducto);
 
       // USAR LA NUEVA RUTA
-      const response = await fetch(`/api/products/product-history-unified?product_name=${encodeURIComponent(nombreProducto)}&days_back=30`);
+      const response = await fetch(`http://localhost:5000/api/products/product-history-unified?product_name=${encodeURIComponent(nombreProducto)}&days_back=30`);
 
       const data = await response.json();
 
