@@ -3,7 +3,7 @@ import './styles/model.css';
 import logo from './assets/img/log.png';
 import SearchBox from './components/SearchBox.jsx';
 import Modal from "./components/Modal.jsx";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 
 function Main({ user, updateUser }) {
@@ -11,7 +11,57 @@ function Main({ user, updateUser }) {
 
   // Estados para el modal
   const [isModelOpen, setIsModalOpen] = useState(false);
-  const [redirectAfterAuth, setRedirectAfterAuth] = useState(null); // Nueva variable
+  const [redirectAfterAuth, setRedirectAfterAuth] = useState(null);
+
+  // Estados para las estadísticas del footer
+  const [footerStats, setFooterStats] = useState({
+    totalProducts: null,
+    totalSupermarkets: null,
+    activeAlerts: null,
+    totalUpdates: null,
+    loading: true,
+    error: false
+  });
+
+  // Cargar estadísticas al montar el componente
+  useEffect(() => {
+    loadFooterStats();
+  }, []);
+
+  const loadFooterStats = async () => {
+    setFooterStats(prev => ({ ...prev, loading: true, error: false }));
+    try {
+      const response = await fetch('http://127.0.0.1:5000/api/dashboard/stats');
+      if (!response.ok) throw new Error('API error');
+      const data = await response.json();
+      setFooterStats({
+        totalProducts: formatNumber(data.total_products),
+        totalSupermarkets: data.total_supermarkets,
+        activeAlerts: data.active_alerts,
+        totalUpdates: formatNumber(data.total_updates),
+        loading: false,
+        error: false
+      });
+    } catch (error) {
+      console.error('Error cargando estadísticas:', error);
+      setFooterStats({
+        totalProducts: null,
+        totalSupermarkets: null,
+        activeAlerts: null,
+        totalUpdates: null,
+        loading: false,
+        error: true
+      });
+    }
+  };
+
+  // Función para formatear números grandes
+  const formatNumber = (number) => {
+    if (typeof number === 'number' && number >= 1000) {
+      return number.toLocaleString('es-PE');
+    }
+    return number?.toString() ?? '';
+  };
 
   // Función para abrir modal con redirección específica
   const openModalWithRedirect = (redirectTo) => {
@@ -22,13 +72,11 @@ function Main({ user, updateUser }) {
   // Función cuando se cierra el modal
   const closeModal = () => {
     setIsModalOpen(false);
-    setRedirectAfterAuth(null); // Limpiar redirección
+    setRedirectAfterAuth(null);
   };
 
   // Función para manejar búsqueda desde SearchBox
   const handleSearch = (searchTerm) => {
-    console.log('🔍 Búsqueda iniciada:', searchTerm);
-    // Redirigir a productos con el término de búsqueda
     navigate('/products', { 
       state: { 
         searchQuery: searchTerm,
@@ -39,8 +87,6 @@ function Main({ user, updateUser }) {
 
   // Función para manejar resultados de búsqueda
   const handleSearchResults = (results, query, type) => {
-    console.log('📦 Resultados recibidos:', results.length, 'productos');
-    // Redirigir a productos con los resultados
     navigate('/products', { 
       state: { 
         searchResults: results,
@@ -130,24 +176,49 @@ function Main({ user, updateUser }) {
         </div>
       </div>
 
+      {/* Footer con estadísticas dinámicas */}
       <div className="footer">
         <div className="dato">
-          <b>2,900</b>
+          <b>
+            {footerStats.loading
+              ? '...'
+              : footerStats.error
+                ? 'Error'
+                : footerStats.totalProducts}
+          </b>
           <br />
           <p>Productos Monitoreados</p>
         </div>
         <div className="dato">
-          <b>4</b>
+          <b>
+            {footerStats.loading
+              ? '...'
+              : footerStats.error
+                ? 'Error'
+                : footerStats.totalSupermarkets}
+          </b>
           <br />
           <p>Supermercados</p>
         </div>
         <div className="dato">
-          <b>23</b>
+          <b>
+            {footerStats.loading
+              ? '...'
+              : footerStats.error
+                ? 'Error'
+                : footerStats.activeAlerts}
+          </b>
           <br />
           <p>Alertas Activas</p>
         </div>
         <div className="dato">
-          <b>373</b>
+          <b>
+            {footerStats.loading
+              ? '...'
+              : footerStats.error
+                ? 'Error'
+                : footerStats.totalUpdates}
+          </b>
           <br />
           <p>Actualizaciones</p>
         </div>
@@ -157,7 +228,7 @@ function Main({ user, updateUser }) {
         isOpen={isModelOpen}
         closeModal={closeModal}
         updateUser={updateUser}
-        redirectAfterAuth={redirectAfterAuth} // Nueva prop
+        redirectAfterAuth={redirectAfterAuth}
       />
     </div>
   );

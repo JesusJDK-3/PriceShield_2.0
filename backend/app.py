@@ -7,7 +7,13 @@ import atexit
 # Importar las rutas
 from routes.auth_routes import auth_bp
 from routes.product_routes import product_routes
-from routes.alert_routes import alert_routes  # NUEVA IMPORTACIÓN
+from routes.dashboard_routes import dashboard_routes  # NUEVA IMPORTACIÓN
+try:
+    from routes.alert_routes import alert_routes
+    ALERTS_AVAILABLE = True
+except ImportError:
+    ALERTS_AVAILABLE = False
+    print("⚠️ Alert routes no disponibles")
 
 # Importar el scheduler
 from services.scheduler import database_scheduler
@@ -24,14 +30,18 @@ CORS(app, origins=['http://localhost:5173'])
 # Configurar la clave secreta para sesiones
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
-# Registrar las rutas de autenticación con el prefijo /api/auth
+# Registrar las rutas de autenticación
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
 
-# Registrar las rutas de productos con el prefijo /api/products
+# Registrar las rutas de productos
 app.register_blueprint(product_routes, url_prefix='/api/products')
 
-# Registrar las rutas de alertas con el prefijo /api/alerts
-app.register_blueprint(alert_routes)  # NUEVO REGISTRO
+# Registrar las rutas del dashboard
+app.register_blueprint(dashboard_routes)  # Ya incluye el prefijo /api/dashboard
+
+# Registrar las rutas de alertas si están disponibles
+if ALERTS_AVAILABLE:
+    app.register_blueprint(alert_routes)
 
 # Ruta de prueba para verificar que el servidor funciona
 @app.route('/')
@@ -44,16 +54,21 @@ def api_health():
     """
     Endpoint para verificar el estado general de la API
     """
+    endpoints = {
+        'auth': '/api/auth/*',
+        'products': '/api/products/*',
+        'dashboard': '/api/dashboard/*'  # NUEVO ENDPOINT
+    }
+    
+    if ALERTS_AVAILABLE:
+        endpoints['alerts'] = '/api/alerts/*'
+    
     return {
         'status': 'healthy',
         'service': 'PriceShield Backend',
         'version': '1.0.0',
         'scheduler_active': database_scheduler.is_running,
-        'endpoints': {
-            'auth': '/api/auth/*',
-            'products': '/api/products/*',
-            'alerts': '/api/alerts/*'  # ACTUALIZAR DOCUMENTACIÓN
-        }
+        'endpoints': endpoints
     }
 
 # Nueva ruta para controlar el scheduler manualmente
@@ -103,7 +118,7 @@ def cleanup():
     except Exception as e:
         print(f"⚠️ Error deteniendo programador: {e}")
 
-# 🧹 NUEVA RUTA: Limpiar productos duplicados
+# NUEVA RUTA: Limpiar productos duplicados
 @app.route('/api/admin/clean-duplicates', methods=['GET', 'POST'])
 def clean_duplicates():
     """
@@ -125,7 +140,7 @@ def clean_duplicates():
             'message': f'❌ Error limpiando duplicados: {e}'
         }, 500
 
-# 🔧 NUEVA RUTA: Ver estadísticas de duplicados (sin eliminar)
+# NUEVA RUTA: Ver estadísticas de duplicados (sin eliminar)
 @app.route('/api/admin/duplicates-stats', methods=['GET']) 
 def duplicates_stats():
     """
@@ -166,54 +181,55 @@ def duplicates_stats():
             'error': str(e)
         }, 500
 
-# NUEVA RUTA: Endpoint de prueba para crear alertas manuales
-@app.route('/api/test/create-alert', methods=['POST'])
-def test_create_alert():
-    """
-    Endpoint de prueba para crear alertas (útil para testing)
-    """
-    try:
-        from models.alert_model import alert_model
-        
-        # Datos de prueba
-        product_data = {
-            "unique_id": "test_product_001",
-            "name": "Producto de Prueba - Arroz Superior",
-            "supermarket": "Plaza Vea",
-            "supermarket_key": "plaza_vea",
-            "url": "https://www.plazavea.com.pe/arroz-superior",
-            "brand": "Costeño",
-            "categories": ["abarrotes", "arroz"]
-        }
-        
-        old_price = 8.50
-        new_price = 12.90
-        
-        alert_id = alert_model.create_price_change_alert(
-            product_data=product_data,
-            old_price=old_price,
-            new_price=new_price
-        )
-        
-        if alert_id:
-            return {
-                'success': True,
-                'alert_id': str(alert_id),
-                'message': 'Alerta de prueba creada exitosamente',
-                'product': product_data['name'],
-                'price_change': f'{old_price} → {new_price}'
+# NUEVA RUTA: Endpoint de prueba para crear alertas manuales (solo si alertas están disponibles)
+if ALERTS_AVAILABLE:
+    @app.route('/api/test/create-alert', methods=['POST'])
+    def test_create_alert():
+        """
+        Endpoint de prueba para crear alertas (útil para testing)
+        """
+        try:
+            from models.alert_model import alert_model
+            
+            # Datos de prueba
+            product_data = {
+                "unique_id": "test_product_001",
+                "name": "Producto de Prueba - Arroz Superior",
+                "supermarket": "Plaza Vea",
+                "supermarket_key": "plaza_vea",
+                "url": "https://www.plazavea.com.pe/arroz-superior",
+                "brand": "Costeño",
+                "categories": ["abarrotes", "arroz"]
             }
-        else:
+            
+            old_price = 8.50
+            new_price = 12.90
+            
+            alert_id = alert_model.create_price_change_alert(
+                product_data=product_data,
+                old_price=old_price,
+                new_price=new_price
+            )
+            
+            if alert_id:
+                return {
+                    'success': True,
+                    'alert_id': str(alert_id),
+                    'message': 'Alerta de prueba creada exitosamente',
+                    'product': product_data['name'],
+                    'price_change': f'{old_price} → {new_price}'
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': 'No se pudo crear la alerta'
+                }, 400
+            
+        except Exception as e:
             return {
                 'success': False,
-                'error': 'No se pudo crear la alerta'
-            }, 400
-        
-    except Exception as e:
-        return {
-            'success': False,
-            'error': str(e)
-        }, 500
+                'error': str(e)
+            }, 500
 
 # Registrar función de limpieza
 atexit.register(cleanup)

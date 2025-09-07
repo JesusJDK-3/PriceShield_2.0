@@ -4,7 +4,7 @@ import './styles/products.css';
 import './styles/model.css';
 import TopBarF from './components/TopBarF.jsx';
 import ProductosX from './components/ProductosX.jsx';
-import Drop_DownM from './components/Drop_Down_Menu.jsx';
+
 
 function Products({ user }) { // ✅ CAMBIO 1: Recibir user como prop
   const location = useLocation(); // Hook para acceder al state pasado desde Main
