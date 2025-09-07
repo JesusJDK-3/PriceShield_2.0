@@ -490,10 +490,7 @@ function ProductDetail({user}) {
           </div>
           
           <div className="mercadosYprecios">
-            <div className="footerMercados">
-              {productosFiltrados.length > 0 ? (
-                <>
-                  <div style={{
+            <div style={{
                     textAlign: 'center',
                     marginBottom: '20px',
                     padding: '10px',
@@ -503,6 +500,10 @@ function ProductDetail({user}) {
                   }}>
                     Disponible en {productosFiltrados.length} supermercado{productosFiltrados.length !== 1 ? 's' : ''}
                   </div>
+            <div className="footerMercados">
+              {productosFiltrados.length > 0 ? (
+                <>
+                  
                   
                   {productosFiltrados.map((producto, index) => (
                     <div className="PrecioBajoACMJ"
