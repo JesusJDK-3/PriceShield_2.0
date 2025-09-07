@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import TopBarF from './components/TopBarF.jsx';
 import './styles/We.css';
-function We({ user }) {
+function We({ user, logout }) {
   const [isOpenM, setIsOpenM] = useState(true);
   useEffect(() => { // Responsivo
     const handleResize = () => {
@@ -60,6 +60,7 @@ function We({ user }) {
           onResults={handleResults}
           openMenu={() => setIsOpenM(true)}
           user={user} // ✅ CAMBIO 2: Pasar user al TopBar
+          logout={logout}
         />
       </div>
       <div className="ContenedorNosotros">

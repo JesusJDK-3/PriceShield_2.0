@@ -216,7 +216,7 @@ function Dashboard({ user, logout }) {
     <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
       <div className="buProductos">
         <div className="TopBarFDNPR">
-          <TopBarF onSearch={handleSearch} openMenu={() => setIsOpenM(true)} user={user}  />
+          <TopBarF onSearch={handleSearch} openMenu={() => setIsOpenM(true)} user={user} logout={logout} />
         </div>
 
         {loading && (

@@ -65,7 +65,7 @@ function App() {
         />
         <Route 
           path="/detalle" 
-          element={<ProductDetail user={user} />} 
+          element={<ProductDetail user={user} logout={logout}/>} 
         />
         <Route 
           path="/dashboard" 
