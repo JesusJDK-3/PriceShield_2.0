@@ -232,8 +232,10 @@
 .dashboard-content {
   padding: 20px;
   width: 100%;
-  min-height: 100vh;
+  /*min-height: 100vh;*/
   background-color: #ffffff;
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
 }
 
 .dashboard-grid {
