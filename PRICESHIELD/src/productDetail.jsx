@@ -7,7 +7,7 @@ import './styles/productDetail.css';
 import TopBarF from './components/TopBarF.jsx';
 import Drop_DownM from './components/Drop_Down_Menu.jsx';
 
-function ProductDetail({user}) {
+function ProductDetail({user, logout}) {
   const [isOpenM, setIsOpenM] = useState(true);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [listaProductos, setListaProductos] = useState([]);
@@ -383,7 +383,7 @@ function ProductDetail({user}) {
         
         <div className="buProductos">
           <div>
-            <TopBarF onSearch={handleSearch} openMenu={() => setIsOpenM(true)} user={user} />
+            <TopBarF onSearch={handleSearch} openMenu={() => setIsOpenM(true)} user={user} logout={logout}/>
           </div>
           <div className="detalleProducto">
             <div className="error-message" style={{
@@ -422,6 +422,7 @@ function ProductDetail({user}) {
             onSearch={handleSearch} 
             openMenu={() => setIsOpenM(true)} 
             user={user} 
+            logout={logout}
           />
         </div>
         

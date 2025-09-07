@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import IconSelect from "./IconSelect.jsx";
 import ModalWe from "./ModalWe.jsx";
 import logo from '../assets/img/logF.png';
-const TopBarF = ({ onSearch, onResults, user }) => {
+const TopBarF = ({ onSearch, onResults, user, logout }) => {
     const getUserDisplayName = () => {
         if (!user) return 'Invitado';
         // Si hay nombre completo (Google Auth), usar solo el primer nombre
@@ -94,7 +94,7 @@ const TopBarF = ({ onSearch, onResults, user }) => {
                     <i className="bi bi-person-badge nosotrosBF"></i>
                     </Link>
                 </div>
-                <div className="UsuarioBF">
+                <div className="UsuarioBF" onClick={() => {logout()}}>
                     <span className="nombreUsuario">
                         {getUserDisplayName()}
                     </span>

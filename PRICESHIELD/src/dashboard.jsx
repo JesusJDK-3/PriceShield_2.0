@@ -6,7 +6,7 @@ import DashboardChart from './components/DashBoardChar.jsx';
 import './styles/DashBoardPP.css'; // Importar el archivo CSS
 
 // Componente StatCard mejorado
-function StatCard({ title, value, color, bgColor, textColor }) {
+function StatCard({ title, value, color, bgColor, textColor} ) {
   return (
     <div
       className="stat-card"
@@ -30,7 +30,7 @@ function StatCard({ title, value, color, bgColor, textColor }) {
   );
 }
 
-function Dashboard({ user }) {
+function Dashboard({ user, logout }) {
   const [isOpenM, setIsOpenM] = useState(true);
   const [productoActual, setProductoActual] = useState(null);
   const [datosComparacion, setDatosComparacion] = useState(null);
@@ -181,7 +181,7 @@ function Dashboard({ user }) {
       <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
         <div className="buProductos">
           <div className="TopBarFDNPR">
-            <TopBarF onSearch={handleSearch} openMenu={() => setIsOpenM(true)} user={user} />
+            <TopBarF onSearch={handleSearch} openMenu={() => setIsOpenM(true)} user={user} logout={logout}/>
           </div>
           <div className="no-product-state">
             <p>No se encontró información del producto para mostrar en el dashboard.</p>
@@ -216,7 +216,7 @@ function Dashboard({ user }) {
     <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
       <div className="buProductos">
         <div className="TopBarFDNPR">
-          <TopBarF onSearch={handleSearch} openMenu={() => setIsOpenM(true)} user={user} />
+          <TopBarF onSearch={handleSearch} openMenu={() => setIsOpenM(true)} user={user}  />
         </div>
 
         {loading && (

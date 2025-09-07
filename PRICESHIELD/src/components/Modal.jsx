@@ -192,6 +192,16 @@ const Modal = ({ isOpen, closeModal, updateUser, redirectAfterAuth }) => {
             }
         }
     };
+const logoutUser = () => {
+  // 1. Borrar usuario del estado global
+  setUser(null);
+
+  // 2. Borrar localStorage
+  localStorage.removeItem('user');
+
+  // (Opcional) 3. Redirigir al home
+  navigate('/');
+};
 
     if (!isOpen) return null;
 

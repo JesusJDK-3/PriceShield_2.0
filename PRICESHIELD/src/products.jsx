@@ -6,7 +6,7 @@ import TopBarF from './components/TopBarF.jsx';
 import ProductosX from './components/ProductosX.jsx';
 
 
-function Products({ user }) { // ✅ CAMBIO 1: Recibir user como prop
+function Products({ user, logout }) { // ✅ CAMBIO 1: Recibir user como prop
   const location = useLocation(); // Hook para acceder al state pasado desde Main
   const [isOpenM, setIsOpenM] = useState(true);
   
@@ -220,6 +220,7 @@ function Products({ user }) { // ✅ CAMBIO 1: Recibir user como prop
             onResults={handleResults}
             openMenu={() => setIsOpenM(true)}
             user={user} // ✅ CAMBIO 2: Pasar user al TopBar
+            logout={logout} // ✅ CAMBIO 3: Pasar logout al TopBar
           />
         </div>
         <div className="productosX">

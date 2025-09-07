@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import './styles/alerts.css';
 import TopBarF from './components/TopBarF.jsx';
 import Drop_DownM from './components/Drop_Down_Menu.jsx';
-import Alert from "./components/Alert.jsx";
 
-function Alerts({user}) {
+
+function Alerts({user, logout}) {
     const [isOpenM, setIsOpenM] = useState(true);
     const [alerts, setAlerts] = useState([]);
     const [summary, setSummary] = useState({});
@@ -116,7 +116,7 @@ function Alerts({user}) {
             
             <div className="buProductosA">
                 <div className="TopBarFALR">
-                    <TopBarF onSearch={handleSearch} openMenu={() => setIsOpenM(true)} user={user} />
+                    <TopBarF onSearch={handleSearch} openMenu={() => setIsOpenM(true)} user={user} logout={logout}/>
                 </div>
                 {/* Fin Barra de busqueda superior */}
                 <div className="AlertaDProducto">
@@ -158,7 +158,7 @@ function Alerts({user}) {
                         
                         <div className="NotificacionSinProductoAlerta">
                             <div className="AlertasPs">
-                                <Alert/>
+                                
                                 
                                 {/* Mostrar estado de carga */}
                                 {loading && (
