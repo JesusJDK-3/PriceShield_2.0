@@ -238,12 +238,7 @@ function Alerts({user, logout}) {
                                                 >
                                                     Ver en Panel
                                                 </button>
-                                                <button 
-                                                    className="IgnorarAlerta" 
-                                                    onClick={() => ignoreAlert(alert._id)}
-                                                >
-                                                    Ignorar
-                                                </button>
+
                                                 <button 
                                                     className="LeidoAlerta" 
                                                     onClick={() => markAsRead(alert._id)}

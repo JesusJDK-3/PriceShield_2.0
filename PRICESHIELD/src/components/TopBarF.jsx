@@ -45,68 +45,80 @@ const TopBarF = ({ onSearch, onResults, user, logout }) => {
         // Fallback al ícono de Bootstrap (Manual Auth o sin login)
         return <i className="bi bi-person-circle caraU"></i>;
     };
-      const [isModelOpen, setIsModalOpen] = useState(false);
+    const [isModelOpen, setIsModalOpen] = useState(false);
     const [redirectAfterAuth, setRedirectAfterAuth] = useState(null); // Nueva variable
     // Función para abrir modal con redirección específica
     const openModal = () => {
-      setIsModalOpen(true);
+        setIsModalOpen(true);
     };
-  
+
     // Función cuando se cierra el modal
     const closeModal = () => {
-      setIsModalOpen(false);
+        setIsModalOpen(false);
     };
     return (
         <>
             <div className="BarraSuperior">
-                <span className="LogoPriceShield">
+                <span className="LogoPriceShield" title="Pagina Principal">
                     <a href="/" className="logoPD">
-                              <span className="logIcon">
-                                <img src={logo} alt="PreciShield" />
-                              </span>
-                            </a>
+                        <span className="logIcon">
+                            <img src={logo} alt="PreciShield" />
+                        </span>
+                    </a>
                 </span>
                 <div className="BuscarModal">
-                    <i className="bi bi-search"  onClick={() => setIsModalOpen(true)} ></i>
+                    <i className="bi bi-search" onClick={() => setIsModalOpen(true)} ></i>
                 </div>
                 <div className="BuscadorFiltro">
                     <SearchBoxBF
                         onSearch={onSearch}
                         onResults={onResults}
                     />
-                    
+
                 </div>
                 <div className="IconSelect">
-                    <IconSelect/>
+                    <IconSelect />
+                    <i
+                        className={`bi bi-escape ${getUserDisplayName() !== "Invitado" ? "salirUsuario" : ""}`}
+                        onClick={logout}
+                        title="Cerrar sesión"
+                    ></i>
                 </div>
-                
+
                 <div className="IconosPestañas">
                     <Link to="/products">
-                    <i className="bi bi-bag-check-fill productoBF"></i>
+                        <i className="bi bi-bag-check-fill productoBF" title="Producto"></i>
                     </Link>
                     <Link to="/dashboard">
-                    <i className="bi bi-bar-chart-line-fill dashBF"></i>
+                        <i className="bi bi-bar-chart-line-fill dashBF" title="Panel"></i>
                     </Link>
                     <Link to="/alert">
-                    <i className="bi bi-exclamation-triangle alertaBF"></i>
+                        <i className="bi bi-exclamation-triangle alertaBF" title="Alerta"></i>
                     </Link>
                     <Link to="/we">
-                    <i className="bi bi-person-badge nosotrosBF"></i>
+                        <i className="bi bi-person-badge nosotrosBF" title="Nosotros"></i>
                     </Link>
+                    <i
+                        className={`bi bi-escape ${getUserDisplayName() !== "Invitado" ? "salirUsuario" : ""}`}
+                        onClick={logout}
+                        title="Cerrar sesión"
+                    ></i>
+
                 </div>
-                <div className="UsuarioBF" onClick={() => {logout()}}>
-                    <span className="nombreUsuario">
+                <div className="UsuarioBF" >
+                    <span className={`${getUserDisplayName() !== "Invitado" ? "nombreUsuario" : ""}`}>
                         {getUserDisplayName()}
                     </span>
                     <span className="avatarUsuario">
                         {getUserAvatar()}
                     </span>
                 </div>
+
             </div>
-            <ModalWe 
-        isOpen={isModelOpen}
-        closeModal={closeModal} // Nueva prop
-      />
+            <ModalWe
+                isOpen={isModelOpen}
+                closeModal={closeModal} // Nueva prop
+            />
         </>
 
     );

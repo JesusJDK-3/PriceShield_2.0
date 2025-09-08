@@ -26,18 +26,24 @@ function IconSelect() {
       {/* Opciones desplegables */}
       {isOpen && (
         <div className="icon-options">
-          <Link to="/products" onClick={() => handleSelect("bi-bag-check-fill")}>
-            <i className="bi bi-bag-check-fill"></i>
+          <Link to="/products" onClick={() => handleSelect("bi-bag-check-fill")} className="EliminarDecoracion">
+            <div className="EnlacesIconSelect">
+              <i className="bi bi-bag-check-fill"></i> <span >Producto</span>
+              </div>
           </Link>
-          <Link to="/dashboard">
-            <i className="bi bi-bar-chart-line-fill dashBF"></i>
+          <Link to="/dashboard" className="EliminarDecoracion">
+          <div className="EnlacesIconSelect">
+            <i className="bi bi-bar-chart-line-fill dashBF"></i> <span >Panel</span></div>
           </Link>
-          <Link to="/alert" onClick={() => handleSelect("bi-exclamation-triangle")}>
-            <i className="bi bi-exclamation-triangle"></i>
+          <Link to="/alert" onClick={() => handleSelect("bi-exclamation-triangle")} className="EliminarDecoracion">
+            <div className="EnlacesIconSelect">
+            <i className="bi bi-exclamation-triangle"></i> <span >Alertas</span></div>
           </Link>
-          <Link to="/we" onClick={() => handleSelect("bi-person-badge")}>
-            <i className="bi bi-person-badge"></i>
+          <Link to="/we" onClick={() => handleSelect("bi-person-badge")} className="EliminarDecoracion">
+            <div className="EnlacesIconSelect">
+            <i className="bi bi-person-badge"></i><span >Nosotros</span></div>
           </Link>
+          
         </div>
       )}
     </div>

@@ -29,7 +29,7 @@
     align-items: center;
 
 }
-.productoBF, .dashBF, .alertaBF, .nosotrosBF {
+.productoBF, .dashBF, .alertaBF, .nosotrosBF, .salirUsuario {
     color: white;
     font-size: 2rem;
     cursor: pointer;
@@ -57,6 +57,7 @@
     .IconSelect {
         display: flex;
         justify-content: center;
+        justify-content: space-around;
     }
     .IconosPestañas {
         display: none;
