@@ -18,8 +18,90 @@ function alerts() {
         handleResize();
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
+<<<<<<< Updated upstream
       }, []);
     const handleSearch = (searchTerm) => {  // Maneja la búsqueda de productos
+=======
+    }, []);
+
+    useEffect(() => {
+        loadAlerts();
+    }, []);
+
+    const loadAlerts = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const response = await fetch('http://127.0.0.1:5000/api/alerts/active');
+            const data = await response.json();
+
+            setAlerts(data); // data es el array de alertas
+            setSummary({
+                unread_alerts: data.filter(a => !a.leido).length,
+                total_alerts: data.length,
+                price_increases: data.filter(a => a.change_type === 'subida' && !a.leido).length
+            });
+        } catch (error) {
+            console.error('Error cargando alertas:', error);
+            setError('Error de conexión al cargar alertas');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const markAsRead = async (alertId) => {
+        try {
+            const response = await fetch(`/api/alerts/${alertId}/read`, {
+                method: 'PUT'
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                loadAlerts(); // Recargar alertas
+            } else {
+                console.error('Error marcando como leída');
+            }
+        } catch (error) {
+            console.error('Error marcando como leída:', error);
+        }
+    };
+
+    const ignoreAlert = async (alertId) => {
+        try {
+            const response = await fetch(`/api/alerts/${alertId}/ignore`, {
+                method: 'PUT'
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                loadAlerts(); // Recargar alertas
+            } else {
+                console.error('Error ignorando alerta');
+            }
+        } catch (error) {
+            console.error('Error ignorando alerta:', error);
+        }
+    };
+
+    const goToDashboard = (alert) => {
+        // Navegar al dashboard con los datos del producto
+        const productData = {
+            nombre: alert.product_name,
+            name: alert.product_name,
+            precio: alert.new_price,
+            price: alert.new_price,
+            supermercado: alert.supermarket,
+            supermarket: alert.supermarket,
+            unique_id: alert.product_id,
+            url: alert.product_url,
+            imagen: alert.image || alert.imagen || alert.images?.[0] || '/placeholder-product.png' 
+        };
+        
+        navigate('/dashboard', { state: { producto: productData } });
+    };
+
+    const handleSearch = (searchTerm) => {
+>>>>>>> Stashed changes
         console.log('Buscando:', searchTerm);
     };
 
