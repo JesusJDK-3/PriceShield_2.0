@@ -93,53 +93,34 @@ class ProductController:
     
     def search_saved_products(self):
         """
-        Busca productos guardados en la base de datos
+        Busca productos guardados en la base de datos, sin límite
         """
         try:
-            # Obtener parámetros de query string
-            query = request.args.get('query', '').strip()
-            supermarket = request.args.get('supermarket')
-            limit = int(request.args.get('limit', 50))
+            query = request.args.get('query', '').strip().lower()
             sort_by = request.args.get('sort_by', 'price')
-            
-            if not query:
+
+            if not query or len(query) < 2:
                 return jsonify({
                     "success": False,
-                    "error": "Parámetro 'query' es requerido",
-                    "message": "Debe proporcionar un término de búsqueda"
+                    "error": "Parámetro 'query' es requerido y debe tener al menos 2 caracteres"
                 }), 400
-            
-            if len(query) < 2:
-                return jsonify({
-                    "success": False,
-                    "error": "Query muy corto",
-                    "message": "El término de búsqueda debe tener al menos 2 caracteres"
-                }), 400
-            
-            # Buscar en base de datos
-            products = product_model.search_saved_products(
-                query=query,
-                supermarket=supermarket,
-                limit=limit,
-                sort_by=sort_by
-            )
-            
+
+            # Buscar productos que contengan el término en el nombre
+            productos = list(product_model.products_collection.find({
+                "name": {"$regex": query, "$options": "i"}
+            }).sort(sort_by, 1))
+
+            # Serializar _id
+            for prod in productos:
+                prod["_id"] = str(prod["_id"])
+
             return jsonify({
                 "success": True,
                 "query": query,
-                "supermarket": supermarket,
-                "sort_by": sort_by,
-                "products_count": len(products),
-                "products": products
+                "products_count": len(productos),
+                "products": productos
             }), 200
-            
-        except ValueError as e:
-            return jsonify({
-                "success": False,
-                "error": "Parámetro inválido",
-                "message": str(e)
-            }), 400
-        
+
         except Exception as e:
             print(f"❌ Error buscando productos guardados: {e}")
             return jsonify({
@@ -147,59 +128,56 @@ class ProductController:
                 "error": "Error interno del servidor",
                 "message": str(e)
             }), 500
-    
+
     def get_price_comparison(self):
         """
-        Obtiene comparación de precios entre supermercados
+        Compara precios del mismo producto entre supermercados (máximo 4, uno por supermercado)
         """
         try:
-            # Obtener parámetros
             product_name = request.args.get('product_name', '').strip()
-            days_back = int(request.args.get('days_back', 7))
-            
             if not product_name:
                 return jsonify({
                     "success": False,
-                    "error": "Parámetro 'product_name' es requerido",
-                    "message": "Debe proporcionar el nombre del producto"
+                    "error": "Parámetro 'product_name' es requerido"
                 }), 400
-            
-            if len(product_name) < 2:
-                return jsonify({
-                    "success": False,
-                    "error": "Nombre muy corto",
-                    "message": "El nombre del producto debe tener al menos 2 caracteres"
-                }), 400
-            
-            # Obtener comparación
-            comparison = product_model.get_price_comparison(product_name, days_back)
-            
-            if not comparison:
-                return jsonify({
-                    "success": True,
-                    "product_name": product_name,
-                    "comparison": {},
-                    "message": "No se encontraron productos para comparar"
-                }), 200
-            
-            # Procesar comparación para agregar estadísticas
-            summary = self._generate_comparison_summary(comparison)
-            
+
+            # PROBLEMA SOLUCIONADO: Buscar productos con nombre EXACTO
+            # El código anterior tenía un error con la variable brand_name que no existía
+            productos = list(product_model.products_collection.find({
+                "name": {"$regex": f"^{re.escape(product_name)}$", "$options": "i"}
+            }))
+
+            # Si no encuentra coincidencias exactas, buscar por similitud alta
+            if not productos:
+                # Buscar productos que contengan todas las palabras importantes del nombre
+                palabras_clave = self._extraer_palabras_clave(product_name)
+                
+                if len(palabras_clave) >= 2:  # Al menos 2 palabras importantes
+                    query_regex = ".*".join([re.escape(palabra) for palabra in palabras_clave])
+                    productos = list(product_model.products_collection.find({
+                        "name": {"$regex": query_regex, "$options": "i"}
+                    }))
+                    
+                    # Filtrar solo productos muy similares
+                    productos = self._filtrar_productos_exactos(product_name, productos)
+
+            # Limitar a uno por supermercado, máximo 4
+            productos_por_supermercado = {}
+            for prod in productos:
+                supermercado = prod.get("supermarket")
+                if supermercado and supermercado not in productos_por_supermercado and len(productos_por_supermercado) < 4:
+                    prod["_id"] = str(prod["_id"])
+                    productos_por_supermercado[supermercado] = prod
+
+            resultado = list(productos_por_supermercado.values())
+
             return jsonify({
                 "success": True,
                 "product_name": product_name,
-                "days_back": days_back,
-                "comparison": comparison,
-                "summary": summary
+                "products_count": len(resultado),
+                "products": resultado
             }), 200
-            
-        except ValueError as e:
-            return jsonify({
-                "success": False,
-                "error": "Parámetro inválido",
-                "message": str(e)
-            }), 400
-        
+
         except Exception as e:
             print(f"❌ Error en comparación de precios: {e}")
             return jsonify({
@@ -207,7 +185,62 @@ class ProductController:
                 "error": "Error interno del servidor",
                 "message": str(e)
             }), 500
-    
+
+    def _extraer_palabras_clave(self, nombre_producto):
+        """
+        Extrae palabras clave importantes del nombre del producto
+        """
+        # Palabras a ignorar en la comparación
+        palabras_ignorar = {
+            'de', 'del', 'la', 'el', 'en', 'con', 'sin', 'para', 'por', 'y', 
+            'bolsa', 'paquete', 'caja', 'lata', 'botella', 'frasco', 'envase',
+            'unidad', 'und', 'pack', 'x', 'ml', 'gr', 'kg', 'lt'
+        }
+        
+        palabras = nombre_producto.lower().split()
+        palabras_clave = []
+        
+        for palabra in palabras:
+            # Limpiar palabra de caracteres especiales
+            palabra_limpia = re.sub(r'[^\w]', '', palabra)
+            
+            # Mantener solo palabras importantes
+            if (len(palabra_limpia) > 2 and 
+                palabra_limpia not in palabras_ignorar and 
+                not palabra_limpia.isdigit()):
+                palabras_clave.append(palabra_limpia)
+        
+        return palabras_clave
+
+    def _filtrar_productos_exactos(self, nombre_original, productos_candidatos):
+        """
+        Filtra productos que realmente corresponden al mismo producto
+        """
+        if not productos_candidatos:
+            return []
+        
+        palabras_originales = set(self._extraer_palabras_clave(nombre_original))
+        productos_filtrados = []
+        
+        for producto in productos_candidatos:
+            nombre_producto = producto.get('name', '')
+            palabras_producto = set(self._extraer_palabras_clave(nombre_producto))
+            
+            # Calcular similitud de palabras clave
+            palabras_comunes = palabras_originales.intersection(palabras_producto)
+            
+            # Debe tener al menos 80% de similitud en palabras clave
+            if len(palabras_originales) > 0:
+                similitud = len(palabras_comunes) / len(palabras_originales)
+                
+                # También verificar que el producto tenga al menos 70% de las palabras originales
+                cobertura = len(palabras_comunes) / len(palabras_producto) if len(palabras_producto) > 0 else 0
+                
+                if similitud >= 0.8 and cobertura >= 0.7:
+                    productos_filtrados.append(producto)
+        
+        return productos_filtrados
+
     def get_popular_searches(self):
         """
         Obtiene las búsquedas más populares

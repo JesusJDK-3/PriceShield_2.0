@@ -17,206 +17,240 @@ function ProductDetail({user, logout}) {
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  // 🧠 FUNCIÓN: Extraer información clave del nombre del producto
+  // 🧠 FUNCIÓN MEJORADA: Extraer información clave del nombre del producto
   const extraerInformacionClave = (nombre) => {
     const palabrasIgnorar = [
       'de', 'del', 'la', 'el', 'en', 'con', 'sin', 'para', 'por', 'y', '+', 
       'bolsa', 'paquete', 'caja', 'lata', 'botella', 'frasco', 'envase',
-      'unidad', 'und', 'pack', 'x', ':', 'congelada', 'congelado'
+      'unidad', 'und', 'pack', 'x', ':', 'congelada', 'congelado', 'fresh',
+      'premium', 'light', 'diet', 'zero', 'max', 'ultra', 'super', 'extra'
     ];
     
     const marcasConocidas = [
-      'gloria', 'nestle', 'laive', 'bonle', 'el frutero', 'wong', 'tottus',
-      'plaza vea', 'metro', 'vivanda', 'makro', 'sodimac', 'ripley', 'nike',
-      'adidas', 'puma', 'reebok', 'converse'
+      // Lácteos y bebidas
+      'gloria', 'laive', 'bonle', 'anchor', 'pura vida', 'soprole',
+      'nestle', 'milo', 'sublime', 'maggi', 'carnation',
+      
+      // Aceites y condimentos
+      'primor', 'cocinero', 'bells', 'capri', 'ideal', 'deleite', 'favorita',
+      'alicorp', 'nicolini', 'don vittorio', 'oleosoya', 'chef',
+      
+      // Cereales y harinas
+      'quaker', 'angel', 'blanca flor', 'molitalia', 'cogorno',
+      'fitness', 'corn flakes', 'zucaritas', 'chocapic',
+      
+      // Carnes y embutidos
+      'san fernando', 'redondos', 'braedt', 'otto kunz', 'pierina',
+      'la preferida', 'san jorge', 'razzeto',
+      
+      // Limpieza y cuidado personal
+      'sapolio', 'ace', 'ariel', 'bolivar', 'marsella', 'patito',
+      'head shoulders', 'pantene', 'herbal essences', 'sedal',
+      'nivea', 'dove', 'rexona', 'axe', 'colgate', 'oral-b',
+      
+      // Galletas y snacks
+      'field', 'crackets', 'soda', 'salticas', 'morochas',
+      'festival', 'chips', 'pringles', 'lay', 'cuates',
+      
+      // Conservas
+      'a-1', 'florida', 'campomar', 'costeño', 'real',
+      'san jose', 'yacht', 'bell', 'grated',
+      
+      // Bebidas
+      'coca cola', 'pepsi', 'inca kola', 'sprite', 'fanta',
+      'cielo', 'san luis', 'evian', 'bonafont',
+      
+      // Supermercados
+      'wong', 'tottus', 'plaza vea', 'metro', 'vivanda', 'makro',
+      
+      // Otras marcas populares
+      'bimbo', 'oroweat', 'bembos', 'kfc', 'mcdonald',
+      'casino', 'bell', 'altomayo', 'nescafe', 'pilsen'
     ];
     
-    // Buscar marca
+    const nombreLower = nombre.toLowerCase();
+    
+    // Buscar marca con coincidencia más precisa
     let marca = '';
     for (const marcaConocida of marcasConocidas) {
-      if (nombre.includes(marcaConocida)) {
+      if (nombreLower.includes(marcaConocida)) {
         marca = marcaConocida;
         break;
       }
     }
     
-    // Buscar peso
-    const pesoMatch = nombre.match(/(\d+(?:\.\d+)?)\s*(kg|gr?|ml|lt?|oz|lb)/i);
+    // Buscar peso/volumen con más variaciones
+    const pesoMatch = nombreLower.match(/(\d+(?:\.\d+)?)\s*(kg|kilo|gr?|gramo|ml|mililitro|lt?|litro|oz|onza|lb|libra|unid|und)/i);
     const peso = pesoMatch ? `${pesoMatch[1]}${pesoMatch[2].toLowerCase()}` : '';
     
-    // ✅ ARREGLO: Mejor filtrado de palabras clave
-    const palabrasClave = nombre
+    // Extraer palabras clave importantes (sin marca ni medidas)
+    const palabrasClave = nombreLower
       .replace(/[^\w\s]/g, ' ') // Reemplazar símbolos por espacios
       .split(/\s+/)
-      .map(palabra => palabra.toLowerCase())
       .filter(palabra => palabra.length > 2)
       .filter(palabra => !palabrasIgnorar.includes(palabra))
-      // ✅ CAMBIO: Solo eliminar palabras EXACTAS de la marca, no parciales
+      .filter(palabra => !palabra.match(/^\d+$/)) // Eliminar solo números
       .filter(palabra => {
+        // No eliminar palabras que contengan la marca, eliminar solo marca exacta
         if (!marca) return true;
-        const palabrasMarca = marca.split(' ');
-        return !palabrasMarca.includes(palabra);
-      })
-      // ✅ CAMBIO: Solo eliminar números exactos del peso
-      .filter(palabra => {
-        if (!peso) return true;
-        const numeroPeso = peso.match(/\d+/);
-        return numeroPeso ? palabra !== numeroPeso[0] : true;
+        return palabra !== marca;
       })
       .sort(); // Ordenar para comparar independiente del orden
     
-    console.log('🧠 Extracción de información:', {
+    return { 
+      marca, 
+      peso, 
+      palabrasClave, 
       nombreOriginal: nombre,
-      marca,
-      peso,
-      palabrasClave,
-      palabrasOriginales: nombre.split(/\s+/).map(p => p.toLowerCase())
-    });
-    
-    return { marca, peso, palabrasClave, nombreOriginal: nombre };
+      nombreNormalizado: nombreLower.replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim()
+    };
   };
 
-  // 🎯 FUNCIÓN: Determinar si dos productos son el mismo
+  // 🎯 FUNCIÓN MEJORADA: Determinar si dos productos son el mismo
   const sonElMismoProducto = (info1, info2) => {
-    console.log('🔎 Comparando productos:', {
-      producto1: info1,
-      producto2: info2
-    });
-
-    // 1. Si tienen marcas diferentes, no son el mismo producto
+    // 1. Si tienen marcas diferentes conocidas, no son el mismo producto
     if (info1.marca && info2.marca && info1.marca !== info2.marca) {
-      console.log('❌ Marcas diferentes:', info1.marca, 'vs', info2.marca);
       return false;
     }
     
     // 2. Si tienen pesos muy diferentes, no son el mismo producto
-    if (info1.peso && info2.peso && info1.peso !== info2.peso) {
+    if (info1.peso && info2.peso) {
       const peso1Num = parseFloat(info1.peso);
       const peso2Num = parseFloat(info2.peso);
-      if (Math.abs(peso1Num - peso2Num) > 0.1 && 
-          Math.abs(peso1Num - peso2Num * 1000) > 100 && 
-          Math.abs(peso1Num * 1000 - peso2Num) > 100) {
-        console.log('❌ Pesos diferentes:', info1.peso, 'vs', info2.peso);
+      const diferenciaPorcentaje = Math.abs(peso1Num - peso2Num) / Math.max(peso1Num, peso2Num);
+      
+      // Si la diferencia es mayor al 10%, no son el mismo producto
+      if (diferenciaPorcentaje > 0.1) {
         return false;
       }
     }
     
-    // 3. Calcular similitud de palabras clave
+    // 3. Calcular similitud de palabras clave - CRITERIO MÁS ESTRICTO
     const palabrasComunes = info1.palabrasClave.filter(palabra1 => 
-      info2.palabrasClave.some(palabra2 => 
-        palabra1.includes(palabra2) || palabra2.includes(palabra1) || palabra1 === palabra2
-      )
+      info2.palabrasClave.some(palabra2 => palabra1 === palabra2) // Coincidencia exacta
     );
     
-    const totalPalabras = Math.max(info1.palabrasClave.length, info2.palabrasClave.length);
-    const similitud = palabrasComunes.length / totalPalabras;
+    const totalPalabrasUnicas = new Set([...info1.palabrasClave, ...info2.palabrasClave]).size;
+    const similitudExacta = palabrasComunes.length / Math.max(info1.palabrasClave.length, info2.palabrasClave.length);
     
-    console.log('🎯 Análisis de similitud:', {
+    // 4. CRITERIO MÁS ESTRICTO: 85% de similitud en palabras clave
+    const sonIguales = similitudExacta >= 0.85;
+    
+    console.log('🔍 Análisis de similitud:', {
+      producto1: info1.nombreOriginal,
+      producto2: info2.nombreOriginal,
       palabrasClave1: info1.palabrasClave,
       palabrasClave2: info2.palabrasClave,
       palabrasComunes,
-      totalPalabras,
-      similitud,
-      umbral: 0.7,
-      resultado: similitud >= 0.7 ? '✅ SON EL MISMO' : '❌ NO SON EL MISMO'
+      similitudExacta: (similitudExacta * 100).toFixed(1) + '%',
+      sonIguales: sonIguales ? '✅ SÍ' : '❌ NO'
     });
     
-    // 4. Son el mismo producto si tienen alta similitud (70% o más)
-    return similitud >= 0.7;
+    return sonIguales;
   };
 
-  // ✅ FUNCIÓN INTELIGENTE: Filtrar productos similares
+  // ✅ FUNCIÓN NUEVA: Eliminar duplicados del mismo supermercado
+  const eliminarDuplicadosPorSupermercado = (productos) => {
+    const productosUnicos = new Map();
+    
+    productos.forEach(producto => {
+      const clave = `${producto.supermercado}_${producto.nombre.toLowerCase().replace(/[^\w]/g, '')}`;
+      
+      if (!productosUnicos.has(clave)) {
+        productosUnicos.set(clave, producto);
+      } else {
+        // Si ya existe, mantener el que tenga mejor precio
+        const productoExistente = productosUnicos.get(clave);
+        const precioExistente = extraerNumericoPrecio(productoExistente.precio);
+        const precioNuevo = extraerNumericoPrecio(producto.precio);
+        
+        if (precioNuevo < precioExistente) {
+          productosUnicos.set(clave, producto);
+        }
+      }
+    });
+    
+    return Array.from(productosUnicos.values());
+  };
+
+  // ✅ FUNCIÓN ADAPTATIVA: Filtrar productos similares con criterio inteligente
   const filtrarProductosSimilares = (productoSeleccionado, todosLosProductos) => {
     if (!productoSeleccionado || !todosLosProductos) return [];
 
     const nombreSeleccionado = productoSeleccionado.nombre.toLowerCase().trim();
     const infoSeleccionada = extraerInformacionClave(nombreSeleccionado);
     
-    const productosFiltrados = todosLosProductos.filter(producto => {
+    console.log('🎯 Filtrando para producto:', {
+      nombre: productoSeleccionado.nombre,
+      info: infoSeleccionada
+    });
+    
+    // PASO 1: Primera pasada con criterio ESTRICTO
+    let productosFiltrados = todosLosProductos.filter(producto => {
       const nombreProducto = producto.nombre.toLowerCase().trim();
       
+      // Incluir el producto seleccionado siempre
       if (nombreProducto === nombreSeleccionado) return true;
       
       const infoProducto = extraerInformacionClave(nombreProducto);
-      return sonElMismoProducto(infoSeleccionada, infoProducto);
+      return sonElMismoProducto(infoSeleccionada, infoProducto, true); // Criterio ESTRICTO
     });
 
-    console.log('🔍 DEBUGGING - Filtrado inteligente:', {
-      nombreSeleccionado,
-      infoSeleccionada,
-      totalProductos: todosLosProductos.length,
-      productosFiltrados: productosFiltrados.length,
-      todosLosProductosConInfo: todosLosProductos.map(p => ({
+    // Eliminar duplicados del mismo supermercado
+    productosFiltrados = eliminarDuplicadosPorSupermercado(productosFiltrados);
+    
+    console.log('📊 Resultados con criterio ESTRICTO:', {
+      totalEncontrados: productosFiltrados.length,
+      productos: productosFiltrados.map(p => ({ nombre: p.nombre, supermercado: p.supermercado }))
+    });
+    
+    // PASO 2: Si tenemos menos de 4 productos, aplicar criterio FLEXIBLE
+    if (productosFiltrados.length < 4) {
+      console.log('🔄 Pocos productos encontrados, aplicando criterio FLEXIBLE...');
+      
+      productosFiltrados = todosLosProductos.filter(producto => {
+        const nombreProducto = producto.nombre.toLowerCase().trim();
+        
+        // Incluir el producto seleccionado siempre
+        if (nombreProducto === nombreSeleccionado) return true;
+        
+        const infoProducto = extraerInformacionClave(nombreProducto);
+        return sonElMismoProducto(infoSeleccionada, infoProducto, false); // Criterio FLEXIBLE
+      });
+
+      // Eliminar duplicados del mismo supermercado
+      productosFiltrados = eliminarDuplicadosPorSupermercado(productosFiltrados);
+      
+      console.log('📊 Resultados con criterio FLEXIBLE:', {
+        totalEncontrados: productosFiltrados.length,
+        productos: productosFiltrados.map(p => ({ nombre: p.nombre, supermercado: p.supermercado }))
+      });
+    }
+    
+    // PASO 3: Limitar a máximo 4 supermercados diferentes
+    const supermercadosUnicos = new Map();
+    const resultadoFinal = [];
+    
+    productosFiltrados.forEach(producto => {
+      if (supermercadosUnicos.size < 4 && !supermercadosUnicos.has(producto.supermercado)) {
+        supermercadosUnicos.set(producto.supermercado, true);
+        resultadoFinal.push(producto);
+      }
+    });
+
+    console.log('🏪 RESULTADO FINAL:', {
+      productoOriginal: productoSeleccionado.nombre,
+      totalEncontrados: resultadoFinal.length,
+      criterioAplicado: productosFiltrados.length >= 5 ? 'ESTRICTO' : 'FLEXIBLE',
+      supermercados: resultadoFinal.map(p => p.supermercado),
+      productos: resultadoFinal.map(p => ({
         nombre: p.nombre,
         supermercado: p.supermercado,
-        info: extraerInformacionClave(p.nombre.toLowerCase()),
-        esMismoProducto: sonElMismoProducto(infoSeleccionada, extraerInformacionClave(p.nombre.toLowerCase()))
-      })),
-      productos: productosFiltrados.map(p => ({ 
-        nombre: p.nombre, 
-        supermercado: p.supermercado,
-        info: extraerInformacionClave(p.nombre.toLowerCase())
+        precio: p.precio
       }))
     });
 
-    return productosFiltrados;
-  };
-
-  // ✅ FUNCIÓN PARA DETECTAR SI ES OFERTA O DUPLICADO
-  const analizarProductosSimilares = (productos) => {
-    if (productos.length < 2) return productos;
-
-    const grupos = new Map();
-    
-    productos.forEach(producto => {
-      // Crear clave base sin considerar precio
-      const claveBase = `${producto.supermercado}_${producto.nombre.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
-      
-      if (!grupos.has(claveBase)) {
-        grupos.set(claveBase, []);
-      }
-      grupos.get(claveBase).push(producto);
-    });
-
-    const productosFinales = [];
-    
-    grupos.forEach((grupoProductos, clave) => {
-      if (grupoProductos.length === 1) {
-        // Un solo producto, mantenerlo
-        productosFinales.push(grupoProductos[0]);
-      } else {
-        // Múltiples productos "iguales" - analizar si son ofertas
-        grupoProductos.sort((a, b) => extraerNumericoPrecio(a.precio) - extraerNumericoPrecio(b.precio));
-        
-        const precioMenor = extraerNumericoPrecio(grupoProductos[0].precio);
-        const precioMayor = extraerNumericoPrecio(grupoProductos[grupoProductos.length - 1].precio);
-        const diferenciaPorcentaje = ((precioMayor - precioMenor) / precioMayor) * 100;
-        
-        if (diferenciaPorcentaje > 5) {
-          // Gran diferencia de precio = ofertas legítimas
-          console.log(`🏷️ OFERTAS detectadas para "${grupoProductos[0].nombre}":`, {
-            supermercado: grupoProductos[0].supermercado,
-            precioNormal: grupoProductos[grupoProductos.length - 1].precio,
-            precioOferta: grupoProductos[0].precio,
-            descuento: `${diferenciaPorcentaje.toFixed(1)}%`
-          });
-          
-          // Mantener solo el más barato (la oferta)
-          productosFinales.push(grupoProductos[0]);
-          
-        } else {
-          // Poca diferencia = posible duplicado, mantener solo uno
-          console.log(`🔍 DUPLICADO detectado para "${grupoProductos[0].nombre}":`, {
-            productos: grupoProductos.length,
-            diferencia: `${diferenciaPorcentaje.toFixed(1)}%`
-          });
-          
-          productosFinales.push(grupoProductos[0]);
-        }
-      }
-    });
-
-    return productosFinales;
+    return resultadoFinal;
   };
 
   useEffect(() => {
@@ -227,34 +261,9 @@ function ProductDetail({user, logout}) {
       setListaProductos(lista || []);
       
       if (producto && lista && lista.length > 0) {
+        // Solo usar la función filtrarProductosSimilares mejorada
         const productosFiltradosNuevos = filtrarProductosSimilares(producto, lista);
         
-        // 🔧 NUEVO: Analizar ofertas vs duplicados
-        const productosSinDuplicados = analizarProductosSimilares(productosFiltradosNuevos);
-        
-        setProductosFiltrados(productosSinDuplicados);
-        
-        if (productosSinDuplicados.length > 0) {
-          const masBarato = encontrarProductoMasBarato(productosSinDuplicados);
-          setProductoMasBarato(masBarato);
-        }
-      } else {
-        setProductosFiltrados([]);
-        setProductoMasBarato(null);
-      }
-    }
-  }, [state]);
-  useEffect(() => {
-    if (state) {
-      const { producto, listaProductos: lista } = state;
-      
-      console.log('📦 Datos recibidos:', { producto, lista });
-      
-      setProductoSeleccionado(producto);
-      setListaProductos(lista || []);
-      
-      if (producto && lista && lista.length > 0) {
-        const productosFiltradosNuevos = filtrarProductosSimilares(producto, lista);
         setProductosFiltrados(productosFiltradosNuevos);
         
         if (productosFiltradosNuevos.length > 0) {

@@ -24,11 +24,11 @@ const TopBarF = ({ onSearch, onResults, user, logout }) => {
     };
     // Función para obtener la imagen de perfil
     const getUserAvatar = () => {
-        // Si el usuario tiene foto (Google Auth)
-        if (user?.foto) {
+        const avatarUrl = user?.foto || user?.image || user?.avatar || user?.profile_picture;
+        if (avatarUrl) {
             return (
                 <img
-                    src={user.foto}
+                    src={avatarUrl}
                     alt="Avatar"
                     className="caraU avatar-img"
                     style={{
@@ -39,10 +39,10 @@ const TopBarF = ({ onSearch, onResults, user, logout }) => {
                         border: '2px solid #fff',
                         boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                     }}
+                    onError={e => { e.target.src = '/assets/img/default-user.png'; }}
                 />
             );
         }
-        // Fallback al ícono de Bootstrap (Manual Auth o sin login)
         return <i className="bi bi-person-circle caraU"></i>;
     };
     const [isModelOpen, setIsModalOpen] = useState(false);
