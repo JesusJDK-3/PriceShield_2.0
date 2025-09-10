@@ -4,7 +4,6 @@ import './styles/alerts.css';
 import TopBarF from './components/TopBarF.jsx';
 import Drop_DownM from './components/Drop_Down_Menu.jsx';
 
-
 function Alerts({user, logout}) {
     const [isOpenM, setIsOpenM] = useState(true);
     const [alerts, setAlerts] = useState([]);
@@ -30,18 +29,49 @@ function Alerts({user, logout}) {
         try {
             setLoading(true);
             setError(null);
+            
+            console.log('🔄 Cargando alertas...');
             const response = await fetch('http://127.0.0.1:5000/api/alerts/active');
+            
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            }
+            
             const data = await response.json();
+            console.log('📨 Respuesta del servidor:', data);
 
-            setAlerts(data); // data es el array de alertas
-            setSummary({
-                unread_alerts: data.filter(a => !a.leido).length,
-                total_alerts: data.length,
-                price_increases: data.filter(a => a.change_type === 'subida' && !a.leido).length
-            });
+            // CORRECCIÓN: Verificar estructura de respuesta
+            if (data.success && Array.isArray(data.alerts)) {
+                setAlerts(data.alerts);
+                setSummary({
+                    unread_alerts: data.alerts.filter(a => !a.is_read).length,
+                    total_alerts: data.alerts.length,
+                    price_increases: data.alerts.filter(a => a.is_price_increase && !a.is_read).length
+                });
+                console.log(`✅ ${data.alerts.length} alertas cargadas`);
+            } else if (Array.isArray(data)) {
+                // Fallback si la respuesta es directamente un array
+                setAlerts(data);
+                setSummary({
+                    unread_alerts: data.filter(a => !a.is_read).length,
+                    total_alerts: data.length,
+                    price_increases: data.filter(a => a.is_price_increase && !a.is_read).length
+                });
+                console.log(`✅ ${data.length} alertas cargadas (formato directo)`);
+            } else {
+                console.warn('⚠️ Formato de respuesta inesperado:', data);
+                setAlerts([]);
+                setSummary({
+                    unread_alerts: 0,
+                    total_alerts: 0,
+                    price_increases: 0
+                });
+            }
+
         } catch (error) {
-            console.error('Error cargando alertas:', error);
+            console.error('❌ Error cargando alertas:', error);
             setError('Error de conexión al cargar alertas');
+            setAlerts([]);
         } finally {
             setLoading(false);
         }
@@ -49,39 +79,78 @@ function Alerts({user, logout}) {
 
     const markAsRead = async (alertId) => {
         try {
-            const response = await fetch(`/api/alerts/${alertId}/read`, {
-                method: 'PUT'
+            console.log('📖 Marcando alerta como leída:', alertId);
+            
+            // CORRECCIÓN: Cambiar PUT por POST
+            const response = await fetch(`http://127.0.0.1:5000/api/alerts/${alertId}/read`, {
+                method: 'POST'  // ✅ Cambiado de PUT a POST
             });
+            
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            }
+            
             const data = await response.json();
+            console.log('📖 Respuesta marcar como leída:', data);
             
             if (data.success) {
+                console.log('✅ Alerta marcada como leída exitosamente');
                 loadAlerts(); // Recargar alertas
             } else {
-                console.error('Error marcando como leída');
+                console.error('❌ Error marcando como leída:', data.message);
+                alert('Error: ' + (data.message || 'No se pudo marcar la alerta como leída'));
             }
         } catch (error) {
-            console.error('Error marcando como leída:', error);
+            console.error('❌ Error marcando como leída:', error);
+            alert('Error de conexión al marcar la alerta como leída');
         }
     };
 
     const ignoreAlert = async (alertId) => {
         try {
-            const response = await fetch(`/api/alerts/${alertId}/ignore`, {
-                method: 'PUT'
+            console.log('🚫 Ignorando alerta:', alertId);
+            
+            // CORRECCIÓN: Cambiar PUT por POST
+            const response = await fetch(`http://127.0.0.1:5000/api/alerts/${alertId}/ignore`, {
+                method: 'POST'  // ✅ Cambiado de PUT a POST
             });
+            
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            }
+            
             const data = await response.json();
+            console.log('🚫 Respuesta ignorar alerta:', data);
             
             if (data.success) {
+                console.log('✅ Alerta ignorada exitosamente');
                 loadAlerts(); // Recargar alertas
             } else {
-                console.error('Error ignorando alerta');
+                console.error('❌ Error ignorando alerta:', data.message);
+                alert('Error: ' + (data.message || 'No se pudo ignorar la alerta'));
             }
         } catch (error) {
-            console.error('Error ignorando alerta:', error);
+            console.error('❌ Error ignorando alerta:', error);
+            alert('Error de conexión al ignorar la alerta');
         }
     };
 
-    const goToDashboard = (alert) => {
+    const goToDashboard = async (alert) => {
+        try {
+            console.log('📊 Navegando al dashboard para producto:', alert.product_id);
+            
+            // CORRECCIÓN: Cambiar PUT por POST y mejorar la URL
+            await fetch(`http://127.0.0.1:5000/api/alerts/product/${alert.product_id}/mark-read`, {
+                method: 'POST'  // ✅ Cambiado de PUT a POST
+            });
+            
+            console.log('✅ Alertas del producto marcadas como leídas');
+            
+        } catch (error) {
+            console.error('⚠️ Error marcando alertas del producto como leídas:', error);
+            // No bloquear la navegación por este error
+        }
+        
         // Navegar al dashboard con los datos del producto
         const productData = {
             nombre: alert.product_name,
@@ -91,24 +160,59 @@ function Alerts({user, logout}) {
             supermercado: alert.supermarket,
             supermarket: alert.supermarket,
             unique_id: alert.product_id,
-            url: alert.product_url
+            url: alert.product_url,
         };
         
+        console.log('🏠 Navegando al dashboard con:', productData);
         navigate('/dashboard', { state: { producto: productData } });
     };
 
+    const createTestAlerts = async () => {
+        try {
+            console.log('🧪 Creando alertas de prueba...');
+            
+            const response = await fetch('http://127.0.0.1:5000/api/alerts/test/create', {
+                method: 'POST'
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('✅ Alertas de prueba creadas:', data);
+                alert('Alertas de prueba creadas exitosamente');
+                loadAlerts(); // Recargar para mostrar las nuevas alertas
+            } else {
+                console.error('❌ Error creando alertas de prueba');
+            }
+        } catch (error) {
+            console.error('❌ Error:', error);
+        }
+    };
+
     const handleSearch = (searchTerm) => {
-        console.log('Buscando:', searchTerm);
+        console.log('🔍 Buscando:', searchTerm);
     };
 
     const formatDate = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleString('es-ES', {
-            day: '2-digit',
-            month: 'short',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        if (!dateString) return 'Fecha no disponible';
+        
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleString('es-ES', {
+                day: '2-digit',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (error) {
+            console.error('Error formateando fecha:', error);
+            return 'Fecha inválida';
+        }
+    };
+
+    const formatPercentageChange = (percentage) => {
+        if (!percentage && percentage !== 0) return '0.0';
+        const absPercentage = Math.abs(percentage);
+        return absPercentage.toFixed(1);
     };
 
     return (
@@ -125,6 +229,23 @@ function Alerts({user, logout}) {
                         <div className="BotRP">
                             <button className='BotonRegresar' onClick={() => navigate(-1)}> 
                                 <span className='flechita'>←</span> Volver
+                            </button>
+                            
+                            {/* BOTÓN DE PRUEBA - Remover en producción */}
+                            <button 
+                                onClick={createTestAlerts}
+                                style={{
+                                    marginLeft: '10px',
+                                    padding: '8px 16px',
+                                    backgroundColor: '#3498db',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    fontSize: '14px'
+                                }}
+                            >
+                                🧪 Crear Alertas de Prueba
                             </button>
                         </div>
                         {/* Fin Botón regresar superior */}
@@ -159,7 +280,6 @@ function Alerts({user, logout}) {
                         <div className="NotificacionSinProductoAlerta">
                             <div className="AlertasPs">
                                 
-                                
                                 {/* Mostrar estado de carga */}
                                 {loading && (
                                     <div style={{ 
@@ -167,7 +287,7 @@ function Alerts({user, logout}) {
                                         padding: '20px',
                                         color: '#666'
                                     }}>
-                                        Cargando alertas...
+                                        🔄 Cargando alertas...
                                     </div>
                                 )}
                                 
@@ -182,7 +302,7 @@ function Alerts({user, logout}) {
                                         margin: '10px',
                                         border: '1px solid #fadbd8'
                                     }}>
-                                        {error}
+                                        ❌ {error}
                                         <button 
                                             onClick={loadAlerts}
                                             style={{
@@ -195,7 +315,7 @@ function Alerts({user, logout}) {
                                                 cursor: 'pointer'
                                             }}
                                         >
-                                            Reintentar
+                                            🔄 Reintentar
                                         </button>
                                     </div>
                                 )}
@@ -208,8 +328,22 @@ function Alerts({user, logout}) {
                                         color: '#666'
                                     }}>
                                         <i className="bi bi-bell" style={{ fontSize: '48px', marginBottom: '16px' }}></i>
-                                        <h3>No hay alertas</h3>
+                                        <h3>No hay alertas activas</h3>
                                         <p>Cuando haya cambios de precio en los productos, aparecerán aquí.</p>
+                                        <button 
+                                            onClick={createTestAlerts}
+                                            style={{
+                                                marginTop: '16px',
+                                                padding: '10px 20px',
+                                                backgroundColor: '#3498db',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                cursor: 'pointer'
+                                            }}
+                                        >
+                                            🧪 Crear Alertas de Prueba
+                                        </button>
                                     </div>
                                 )}
                                 
@@ -224,8 +358,8 @@ function Alerts({user, logout}) {
                                                        fontSize: '24px'
                                                    }}></i>
                                                 <div className="nombreYmas">
-                                                    <h3>{alert.product_name}</h3>
-                                                    <p>{alert.supermarket}</p>
+                                                    <h3>{alert.product_name || 'Producto sin nombre'}</h3>
+                                                    <p>{alert.supermarket || 'Supermercado desconocido'}</p>
                                                     <small style={{ color: '#888' }}>
                                                         {formatDate(alert.created_at)}
                                                     </small>
@@ -236,25 +370,47 @@ function Alerts({user, logout}) {
                                                     className="DashAlerta"
                                                     onClick={() => goToDashboard(alert)}
                                                 >
-                                                    Ver en Panel
+                                                    📊 Ver en Panel
                                                 </button>
 
                                                 <button 
                                                     className="LeidoAlerta" 
                                                     onClick={() => markAsRead(alert._id)}
                                                     disabled={alert.is_read}
+                                                    style={{
+                                                        opacity: alert.is_read ? 0.6 : 1,
+                                                        cursor: alert.is_read ? 'not-allowed' : 'pointer'
+                                                    }}
                                                 >
-                                                    {alert.is_read ? 'Leída' : 'Marcar como leído'}
+                                                    {alert.is_read ? '✅ Leída' : '📖 Marcar como leído'}
+                                                </button>
+                                                
+                                                <button 
+                                                    className="IgnorarAlerta" 
+                                                    onClick={() => ignoreAlert(alert._id)}
+                                                    style={{
+                                                        backgroundColor: '#f39c12',
+                                                        color: 'white',
+                                                        border: 'none',
+                                                        padding: '8px 12px',
+                                                        borderRadius: '4px',
+                                                        cursor: 'pointer',
+                                                        fontSize: '12px'
+                                                    }}
+                                                >
+                                                    🚫 Ignorar
                                                 </button>
                                             </div>
                                         </div>
                                         <div className="PrecioAlerta">
-                                            <h1 className="PrecioAlertaH1">S/ {alert.new_price.toFixed(2)}</h1>
+                                            <h1 className="PrecioAlertaH1">
+                                                S/ {(alert.new_price || 0).toFixed(2)}
+                                            </h1>
                                             <small className={`mensaVPA ${alert.is_price_increase ? 'aumento' : 'descenso'}`}>
-                                                {alert.is_price_increase ? '↑' : '↓'}{Math.abs(alert.percentage_change).toFixed(1)}%
+                                                {alert.is_price_increase ? '↑' : '↓'}{formatPercentageChange(alert.percentage_change)}%
                                             </small>
                                             <div style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
-                                                Antes: S/ {alert.old_price.toFixed(2)}
+                                                Antes: S/ {(alert.old_price || 0).toFixed(2)}
                                             </div>
                                         </div>
                                     </div>

@@ -3,10 +3,10 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import TopBarF from './components/TopBarF.jsx';
 import Drop_DownM from './components/Drop_Down_Menu.jsx';
 import DashboardChart from './components/DashBoardChar.jsx';
-import './styles/DashBoardPP.css'; // Importar el archivo CSS
+import './styles/DashBoardPP.css';
 
 // Componente StatCard mejorado
-function StatCard({ title, value, color, bgColor, textColor} ) {
+function StatCard({ title, value, color, bgColor, textColor }) {
   return (
     <div
       className="stat-card"
@@ -33,11 +33,16 @@ function StatCard({ title, value, color, bgColor, textColor} ) {
 function Dashboard({ user, logout }) {
   const [isOpenM, setIsOpenM] = useState(true);
   const [productoActual, setProductoActual] = useState(null);
-  const [datosComparacion, setDatosComparacion] = useState(null);
   const [historialPrecios, setHistorialPrecios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [chartType, setChartType] = useState('bar');
+  const [estadisticas, setEstadisticas] = useState({
+    precioActual: 0,
+    precioPromedio: 0,
+    precioMinimo: 0,
+    precioMaximo: 0
+  });
 
   const { state } = useLocation();
   const navigate = useNavigate();
@@ -48,76 +53,146 @@ function Dashboard({ user, logout }) {
     return parseFloat(precio.toString().replace(/[^\d.]/g, '')) || 0;
   };
 
-  // Función para obtener comparación de precios
-  const obtenerComparacionPrecios = async (nombreProducto) => {
+  // Función CORREGIDA para obtener historial del MISMO producto
+  const obtenerHistorialProducto = async (productoData) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/products/compare?product_name=${encodeURIComponent(nombreProducto)}&days_back=30`);
+      console.log('📊 Obteniendo historial para producto específico...');
+      console.log('Producto:', productoData);
+
+      let url = '';
+      let params = new URLSearchParams();
+      params.append('days_back', '30');
+
+      // Priorizar búsqueda por unique_id si está disponible
+      if (productoData.unique_id) {
+        params.append('unique_id', productoData.unique_id);
+        console.log('🔍 Buscando por unique_id:', productoData.unique_id);
+      } else if (productoData.nombre || productoData.name) {
+        const nombreProducto = productoData.nombre || productoData.name;
+        params.append('product_name', nombreProducto);
+        console.log('🔍 Buscando por nombre:', nombreProducto);
+      } else {
+        throw new Error('No se encontró identificador válido para el producto');
+      }
+
+      url = `http://localhost:5000/api/dashboard/product-history-unified?${params.toString()}`;
+      console.log('🌐 URL de consulta:', url);
+
+      const response = await fetch(url);
       const data = await response.json();
 
-      if (data.success) {
-        return data.comparison;
+      console.log('📡 Respuesta del servidor:', data);
+
+      if (data.success && data.products) {
+        console.log(`✅ Historial encontrado: ${data.products.length} entradas`);
+        return data.products;
+      } else {
+        console.warn('⚠️ No se encontró historial:', data.message);
+        return [];
       }
-      throw new Error(data.message || 'Error obteniendo comparación');
     } catch (error) {
-      console.error('Error en comparación:', error);
-      return null;
-    }
-  };
-
-  // Función para buscar productos similares (para historial)
-  const buscarProductosSimilares = async (nombreProducto) => {
-    try {
-      console.log('Buscando historial unificado para:', nombreProducto);
-
-      // USAR LA NUEVA RUTA
-      const response = await fetch(`http://localhost:5000/api/products/product-history-unified?product_name=${encodeURIComponent(nombreProducto)}&days_back=30`);
-
-      const data = await response.json();
-
-      if (data.success) {
-        console.log('Productos históricos encontrados:', data.products?.length || 0);
-        return data.products || [];
-      }
-      throw new Error(data.message || 'Error buscando productos');
-    } catch (error) {
-      console.error('Error en búsqueda:', error);
+      console.error('❌ Error obteniendo historial:', error);
       return [];
     }
   };
 
-  // Función para generar datos del historial
-  const generarDatosHistorial = (productos) => {
+  // Función CORREGIDA para generar datos del historial para el gráfico
+  const procesarHistorialParaGrafico = (productos) => {
     if (!productos || productos.length === 0) {
-      return { labels: ['Sin datos'], precios: [0] };
+      console.log('📊 No hay productos para procesar');
+      return { 
+        labels: ['Sin datos'], 
+        precios: [0],
+        totalEntradas: 0
+      };
     }
 
-    // Filtrar y ordenar TODAS las actualizaciones por fecha
-    const productosOrdenados = productos
+    console.log(`📊 Procesando ${productos.length} entradas de historial`);
+
+    // Filtrar y ordenar por fecha
+    const productosValidos = productos
       .filter(p => p.scraped_at && p.price > 0)
       .sort((a, b) => new Date(a.scraped_at) - new Date(b.scraped_at));
 
-    if (productosOrdenados.length === 0) {
-      return { labels: ['Sin datos'], precios: [0] };
+    if (productosValidos.length === 0) {
+      return { 
+        labels: ['Sin datos válidos'], 
+        precios: [0],
+        totalEntradas: 0
+      };
     }
 
-    // Mostrar TODAS las actualizaciones (sin límite de 10)
-    const labels = productosOrdenados.map((producto, index) => {
-      const fecha = new Date(producto.scraped_at);
-      return fecha.toLocaleDateString('es-ES', {
-        day: '2-digit',
-        month: 'short',
-        hour: '2-digit',
-        minute: '2-digit'
-      }) + ` (#${index + 1})`;  // Agregar número de actualización
+    // Limitar a las últimas 15 entradas para mejor visualización
+    const productosRecientes = productosValidos.slice(-15);
+
+    const labels = productosRecientes.map((producto, index) => {
+      try {
+        const fecha = new Date(producto.scraped_at);
+        const fechaFormateada = fecha.toLocaleDateString('es-ES', {
+          day: '2-digit',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+        return `${fechaFormateada} (#${index + 1})`;
+      } catch (e) {
+        return `Entrada #${index + 1}`;
+      }
     });
 
-    const precios = productosOrdenados.map(producto =>
+    const precios = productosRecientes.map(producto => 
       parseFloat(extraerNumericoPrecio(producto.price))
     );
 
-    console.log(`📊 Mostrando ${precios.length} actualizaciones de precio para: ${productosOrdenados[0]?.name}`);
+    console.log('📊 Datos procesados para gráfico:');
+    console.log('   - Entradas totales:', productos.length);
+    console.log('   - Entradas válidas:', productosValidos.length);
+    console.log('   - Entradas mostradas:', productosRecientes.length);
+    console.log('   - Rango de precios:', Math.min(...precios), '-', Math.max(...precios));
 
-    return { labels, precios };
+    return { 
+      labels, 
+      precios,
+      totalEntradas: productos.length,
+      entradasMostradas: productosRecientes.length
+    };
+  };
+
+  // Función para calcular estadísticas
+  const calcularEstadisticas = (precios, productoActual) => {
+    if (!precios || precios.length === 0) {
+      const precioActual = extraerNumericoPrecio(productoActual?.precio || productoActual?.price);
+      return {
+        precioActual,
+        precioPromedio: precioActual,
+        precioMinimo: precioActual,
+        precioMaximo: precioActual
+      };
+    }
+
+    const preciosValidos = precios.filter(p => p > 0);
+    
+    if (preciosValidos.length === 0) {
+      const precioActual = extraerNumericoPrecio(productoActual?.precio || productoActual?.price);
+      return {
+        precioActual,
+        precioPromedio: precioActual,
+        precioMinimo: precioActual,
+        precioMaximo: precioActual
+      };
+    }
+
+    const precioActual = preciosValidos[preciosValidos.length - 1]; // Último precio
+    const precioPromedio = preciosValidos.reduce((a, b) => a + b, 0) / preciosValidos.length;
+    const precioMinimo = Math.min(...preciosValidos);
+    const precioMaximo = Math.max(...preciosValidos);
+
+    return {
+      precioActual,
+      precioPromedio,
+      precioMinimo,
+      precioMaximo
+    };
   };
 
   // Cargar datos al montar el componente
@@ -129,30 +204,31 @@ function Dashboard({ user, logout }) {
         return;
       }
 
+      console.log('🚀 Iniciando carga de datos del dashboard');
+      console.log('📦 Producto recibido:', state.producto);
+
       setProductoActual(state.producto);
       setLoading(true);
+      setError(null);
 
       try {
-        const comparacion = await obtenerComparacionPrecios(state.producto.nombre || state.producto.name);
-        setDatosComparacion(comparacion);
+        // Obtener historial del MISMO producto
+        const historialProductos = await obtenerHistorialProducto(state.producto);
+        
+        // Procesar para gráfico
+        const datosHistorial = procesarHistorialParaGrafico(historialProductos);
+        setHistorialPrecios(datosHistorial);
 
-        const productosSimilares = await buscarProductosSimilares(state.producto.nombre || state.producto.name);
+        // Calcular estadísticas
+        const stats = calcularEstadisticas(datosHistorial.precios, state.producto);
+        setEstadisticas(stats);
 
-        if (productosSimilares.length > 0) {
-          const datosHistorial = generarDatosHistorial(productosSimilares);
-          setHistorialPrecios(datosHistorial);
-        } else {
-          // Si no hay datos, mostrar solo el precio actual
-          console.warn('No se encontraron productos similares en la base de datos');
-          setHistorialPrecios({
-            labels: ['Sin historial'],
-            precios: [extraerNumericoPrecio(state.producto.precio || state.producto.price)]
-          });
-        }
+        console.log('✅ Datos cargados exitosamente');
+        console.log('📊 Estadísticas calculadas:', stats);
 
       } catch (error) {
-        console.error('Error cargando datos:', error);
-        setError(error.message);
+        console.error('❌ Error cargando datos:', error);
+        setError(`Error cargando datos: ${error.message}`);
       }
 
       setLoading(false);
@@ -172,7 +248,7 @@ function Dashboard({ user, logout }) {
   }, []);
 
   const handleSearch = (query) => {
-    console.log('Buscando en dashboard:', query);
+    console.log('🔍 Buscando en dashboard:', query);
   };
 
   // Si no hay producto, mostrar error
@@ -184,6 +260,7 @@ function Dashboard({ user, logout }) {
             <TopBarF onSearch={handleSearch} openMenu={() => setIsOpenM(true)} user={user} logout={logout}/>
           </div>
           <div className="no-product-state">
+            <h2>No hay producto seleccionado</h2>
             <p>No se encontró información del producto para mostrar en el dashboard.</p>
             <button
               onClick={() => navigate('/products')}
@@ -197,19 +274,11 @@ function Dashboard({ user, logout }) {
     );
   }
 
-  // Calcular estadísticas y datos para los gráficos
-  const precios = historialPrecios.precios || [];
-  const precioActual = precios[precios.length - 1] || extraerNumericoPrecio(productoActual?.precio || productoActual?.price);
-  const precioPromedio = precios.length > 0 ? (precios.reduce((a, b) => a + b, 0) / precios.length) : precioActual;
-  const precioMinimo = precios.length > 0 ? Math.min(...precios) : precioActual;
-  const precioMaximo = precios.length > 0 ? Math.max(...precios) : precioActual;
-
   // Datos del producto organizados
   const productData = {
-    nombre: productoActual?.nombre || productoActual?.name,
+    nombre: productoActual?.nombre || productoActual?.name || 'Producto sin nombre',
     imagen: productoActual?.imagen || productoActual?.images?.[0] || '/placeholder-product.png',
-    precioActual: precioActual,
-    supermercado: productoActual?.supermercado || productoActual?.supermarket
+    supermercado: productoActual?.supermercado || productoActual?.supermarket || 'Desconocido'
   };
 
   return (
@@ -221,13 +290,42 @@ function Dashboard({ user, logout }) {
 
         {loading && (
           <div className="loading-state">
-            Cargando datos del producto...
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <div>Cargando historial del producto...</div>
+              <div style={{ fontSize: '14px', color: '#666', marginTop: '8px' }}>
+                Obteniendo datos históricos de precios
+              </div>
+            </div>
           </div>
         )}
 
         {error && (
           <div className="error-state">
-            Error: {error}
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '40px',
+              color: '#e74c3c',
+              backgroundColor: '#fdf2f2',
+              borderRadius: '8px',
+              margin: '20px',
+              border: '1px solid #fadbd8'
+            }}>
+              <h3>Error cargando datos</h3>
+              <p>{error}</p>
+              <button 
+                onClick={() => window.location.reload()}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#3498db',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Reintentar
+              </button>
+            </div>
           </div>
         )}
 
@@ -253,8 +351,8 @@ function Dashboard({ user, logout }) {
                   <div className="product-details">
                     <div>
                       <span>Precio actual: </span>
-                      <span style={{ color: '#059669' }}>
-                        S/ {productData.precioActual}
+                      <span style={{ color: '#059669', fontWeight: 'bold', fontSize: '18px' }}>
+                        S/ {estadisticas.precioActual.toFixed(2)}
                       </span>
                     </div>
                     <div>
@@ -295,24 +393,43 @@ function Dashboard({ user, logout }) {
               <div className="chart-panel">
                 <div className="chart-header">
                   <h2 className="chart-title">
-                    Historial Completo de Actualizaciones (Últimas {precios.length} actualizaciones)
+                    Historial de Precios - {productData.nombre}
                   </h2>
                   <div className="update-badge">
-                    Actualizado hoy
+                    {historialPrecios.totalEntradas > 0 
+                      ? `${historialPrecios.entradasMostradas || historialPrecios.labels?.length || 0} de ${historialPrecios.totalEntradas} actualizaciones`
+                      : 'Sin historial disponible'
+                    }
                   </div>
                 </div>
 
-                <DashboardChart
-                  chartType={chartType}
-                  historialPrecios={historialPrecios}
-                />
+                {historialPrecios.labels && historialPrecios.labels.length > 0 ? (
+                  <DashboardChart
+                    chartType={chartType}
+                    historialPrecios={historialPrecios}
+                  />
+                ) : (
+                  <div style={{ 
+                    textAlign: 'center', 
+                    padding: '60px', 
+                    color: '#666',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '8px',
+                    border: '1px solid #dee2e6'
+                  }}>
+                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>📊</div>
+                    <h3>Sin historial de precios</h3>
+                    <p>Este producto aún no tiene suficientes datos históricos para mostrar un gráfico.</p>
+                    <p>Los datos aparecerán aquí conforme el sistema actualice los precios.</p>
+                  </div>
+                )}
               </div>
 
               {/* Panel de estadísticas */}
               <div className="stats-panel">
                 <StatCard
                   title="Precio Actual"
-                  value={productData.precioActual.toFixed(2)}
+                  value={estadisticas.precioActual.toFixed(2)}
                   color="#059669"
                   bgColor="rgba(240, 253, 250, 0.8)"
                   textColor="#059669"
@@ -320,7 +437,7 @@ function Dashboard({ user, logout }) {
 
                 <StatCard
                   title="Precio Promedio"
-                  value={precioPromedio.toFixed(2)}
+                  value={estadisticas.precioPromedio.toFixed(2)}
                   color="#3b82f6"
                   bgColor="rgba(239, 246, 255, 0.8)"
                   textColor="#3b82f6"
@@ -328,7 +445,7 @@ function Dashboard({ user, logout }) {
 
                 <StatCard
                   title="Precio Mínimo"
-                  value={precioMinimo.toFixed(2)}
+                  value={estadisticas.precioMinimo.toFixed(2)}
                   color="#f59e0b"
                   bgColor="rgba(255, 251, 235, 0.8)"
                   textColor="#f59e0b"
@@ -336,13 +453,39 @@ function Dashboard({ user, logout }) {
 
                 <StatCard
                   title="Precio Máximo"
-                  value={precioMaximo.toFixed(2)}
+                  value={estadisticas.precioMaximo.toFixed(2)}
                   color="#ef4444"
                   bgColor="rgba(254, 242, 242, 0.8)"
                   textColor="#ef4444"
                 />
               </div>
             </div>
+
+            {/* Información adicional */}
+            {historialPrecios.totalEntradas > 0 && (
+              <div style={{ 
+                marginTop: '20px', 
+                padding: '16px', 
+                backgroundColor: '#f0f9ff', 
+                borderRadius: '8px',
+                border: '1px solid #bfdbfe'
+              }}>
+                <h4 style={{ margin: '0 0 8px 0', color: '#1e40af' }}>
+                  📈 Información del Historial
+                </h4>
+                <div style={{ fontSize: '14px', color: '#374151' }}>
+                  <p style={{ margin: '4px 0' }}>
+                    • Total de actualizaciones registradas: <strong>{historialPrecios.totalEntradas}</strong>
+                  </p>
+                  <p style={{ margin: '4px 0' }}>
+                    • Actualizaciones mostradas en el gráfico: <strong>{historialPrecios.entradasMostradas || historialPrecios.labels?.length || 0}</strong>
+                  </p>
+                  <p style={{ margin: '4px 0' }}>
+                    • Rango de variación: <strong>S/ {(estadisticas.precioMaximo - estadisticas.precioMinimo).toFixed(2)}</strong>
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
