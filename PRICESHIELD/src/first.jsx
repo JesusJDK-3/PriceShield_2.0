@@ -35,10 +35,10 @@ function Main({ user, updateUser }) {
       if (!response.ok) throw new Error('API error');
       const data = await response.json();
       setFooterStats({
-        totalProducts: formatNumber(data.total_products),
-        totalSupermarkets: data.total_supermarkets,
-        activeAlerts: data.active_alerts,
-        totalUpdates: formatNumber(data.total_updates),
+        totalProducts: formatNumber(data.stats.products.total),
+        totalSupermarkets: data.stats.products.supermarkets,
+        activeAlerts: data.stats.alerts.total_alerts,
+        totalUpdates: formatNumber(data.stats.activity.price_changes),
         loading: false,
         error: false
       });
