@@ -20,34 +20,26 @@ function Products({ user, logout }) { // ✅ CAMBIO 1: Recibir user como prop
   const [pagination, setPagination] = useState(null);
 
   // Manejar datos pasados desde Main.jsx cuando se hace búsqueda
-  useEffect(() => {
-    if (location.state) {
-      const { searchResults, searchQuery: query, autoSearch, searchType } = location.state;
-      
-      if (searchResults && query) {
-        // Si vienen resultados directos desde Main
-        console.log('📦 Recibiendo resultados desde Main:', searchResults.length);
-        setProductos(searchResults);
-        setSearchQuery(query);
-        setPagination(null);
-        
-        // Limpiar el state para evitar re-renderizados
-        window.history.replaceState({}, document.title);
-        
-      } else if (autoSearch && query) {
-        // Si viene con autoSearch=true, ejecutar búsqueda automáticamente
-        console.log('🔍 Ejecutando búsqueda automática para:', query);
-        setSearchQuery(query);
-        executeSearch(query);
-        
-        // Limpiar el state
-        window.history.replaceState({}, document.title);
-      }
-    } else {
-      // Carga normal: mostrar todos los productos
-      loadAllProducts();
+ useEffect(() => {
+  if (location.state) {
+    const { searchResults, searchQuery: query, searchType } = location.state;
+
+    if (searchResults && query) {
+      console.log('📦 Recibiendo resultados desde navegación:', searchResults.length);
+      setProductos(searchResults);
+      setSearchQuery(query);
+      setPagination(null);
+    } else if (query) {
+      console.log('🔍 Ejecutando búsqueda automática para:', query);
+      setSearchQuery(query);
+      executeSearch(query);
     }
-  }, [location.state]);
+  } else {
+    // Si no hay búsqueda, carga normal
+    loadAllProducts();
+  }
+}, [location.state]);
+
 
   // Función auxiliar para ejecutar búsqueda
   const executeSearch = async (query) => {

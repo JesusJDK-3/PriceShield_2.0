@@ -1,28 +1,22 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
+import { Link, useNavigate } from 'react-router-dom'; // ⬅️ Importa useNavigate
 import SearchBoxBF from './SearchBoxBF.jsx';
 import '../styles/TopBarF.css';
-import { Link } from 'react-router-dom';
 import IconSelect from "./IconSelect.jsx";
 import ModalWe from "./ModalWe.jsx";
 import logo from '../assets/img/logF.png';
+
 const TopBarF = ({ onSearch, onResults, user, logout }) => {
+    const navigate = useNavigate(); // ⬅️ Inicializa navigate
+
     const getUserDisplayName = () => {
         if (!user) return 'Invitado';
-        // Si hay nombre completo (Google Auth), usar solo el primer nombre
-        if (user.nombre && user.nombre.trim()) {
-            return user.nombre.split(' ')[0];
-        }
-        // Si no hay nombre, usar la parte antes del @ del correo (Manual Auth)
-        if (user.email) {
-            return user.email.split('@')[0];
-        }
-        // Fallback con correo si existe
-        if (user.correo) {
-            return user.correo.split('@')[0];
-        }
+        if (user.nombre && user.nombre.trim()) return user.nombre.split(' ')[0];
+        if (user.email) return user.email.split('@')[0];
+        if (user.correo) return user.correo.split('@')[0];
         return 'Usuario';
     };
-    // Función para obtener la imagen de perfil
+
     const getUserAvatar = () => {
         const avatarUrl = user?.foto || user?.image || user?.avatar || user?.profile_picture;
         if (avatarUrl) {
@@ -45,17 +39,28 @@ const TopBarF = ({ onSearch, onResults, user, logout }) => {
         }
         return <i className="bi bi-person-circle caraU"></i>;
     };
-    const [isModelOpen, setIsModalOpen] = useState(false);
-    const [redirectAfterAuth, setRedirectAfterAuth] = useState(null); // Nueva variable
-    // Función para abrir modal con redirección específica
-    const openModal = () => {
-        setIsModalOpen(true);
-    };
 
-    // Función cuando se cierra el modal
-    const closeModal = () => {
-        setIsModalOpen(false);
-    };
+    const [isModelOpen, setIsModalOpen] = useState(false);
+
+    const openModal = () => setIsModalOpen(true);
+    const closeModal = () => setIsModalOpen(false);
+
+   // 🚀 Función para manejar resultados y redirigir a productos
+const handleResults = (results, searchValue, source) => {
+    if (onResults) {
+        onResults(results, searchValue, source);
+    }
+
+    navigate("/products", {
+        state: {
+            searchResults: results,
+            searchQuery: searchValue,
+            searchType: source
+        }
+    });
+};
+
+
     return (
         <>
             <div className="BarraSuperior">
@@ -72,9 +77,8 @@ const TopBarF = ({ onSearch, onResults, user, logout }) => {
                 <div className="BuscadorFiltro">
                     <SearchBoxBF
                         onSearch={onSearch}
-                        onResults={onResults}
+                        onResults={handleResults}
                     />
-
                 </div>
                 <div className="IconSelect">
                     <IconSelect />
@@ -98,12 +102,6 @@ const TopBarF = ({ onSearch, onResults, user, logout }) => {
                     <Link to="/we">
                         <i className="bi bi-person-badge nosotrosBF" title="Nosotros"></i>
                     </Link>
-                    <i
-                        className={`bi bi-escape ${getUserDisplayName() !== "Invitado" ? "salirUsuario" : ""}`}
-                        onClick={logout}
-                        title="Cerrar sesión"
-                    ></i>
-
                 </div>
                 <div className="UsuarioBF" >
                     <span className={`${getUserDisplayName() !== "Invitado" ? "nombreUsuario" : ""}`}>
@@ -113,16 +111,13 @@ const TopBarF = ({ onSearch, onResults, user, logout }) => {
                         {getUserAvatar()}
                     </span>
                 </div>
-
             </div>
             <ModalWe
                 isOpen={isModelOpen}
-                closeModal={closeModal} // Nueva prop
+                closeModal={closeModal}
             />
         </>
-
     );
-
 };
 
 export default TopBarF;

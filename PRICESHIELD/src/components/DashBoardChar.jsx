@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Bar, Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -26,18 +26,29 @@ ChartJS.register(
 );
 
 function DashboardChart({ chartType, historialPrecios, isCompact }) {
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const chartContainerRef = useRef(null);
+  const [containerWidth, setContainerWidth] = useState(0);
 
-  // Actualiza el ancho cada vez que la ventana cambia
+  // Detectar tamaño real del contenedor
   useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    const updateWidth = () => {
+      if (chartContainerRef.current) {
+        setContainerWidth(chartContainerRef.current.offsetWidth);
+      }
+    };
+    updateWidth();
+    window.addEventListener("resize", updateWidth);
+    return () => window.removeEventListener("resize", updateWidth);
   }, []);
 
   const precios = historialPrecios.precios || [];
   const minPrice = precios.length > 0 ? Math.min(...precios) : 0;
   const maxPrice = precios.length > 0 ? Math.max(...precios) : 0;
+
+  // 🔥 Ajuste dinámico del grosor de barras
+  const dynamicBarThickness = precios.length
+    ? Math.max(10, Math.min(containerWidth / (precios.length * 2), 50)) // Entre 10 y 50 px
+    : 20;
 
   const chartOptions = {
     responsive: true,
@@ -61,9 +72,9 @@ function DashboardChart({ chartType, historialPrecios, isCompact }) {
     scales: {
       x: {
         ticks: {
-          font: { size: 12, weight: "500" },
+          font: { size: containerWidth < 500 ? 10 : 12, weight: "500" },
           color: "#6b7280",
-          maxRotation: windowWidth <= 768 ? 45 : 0
+          maxRotation: containerWidth < 500 ? 45 : 0
         },
         grid: { display: false },
         border: { display: false }
@@ -103,8 +114,8 @@ function DashboardChart({ chartType, historialPrecios, isCompact }) {
             : "rgba(59,130,246,1)"
         ),
         borderWidth: 2,
-        barThickness: windowWidth <= 768 ? 20 : 35,
-        maxBarThickness: 40
+        barThickness: dynamicBarThickness,
+        maxBarThickness: dynamicBarThickness + 10
       }
     ]
   };
@@ -127,19 +138,20 @@ function DashboardChart({ chartType, historialPrecios, isCompact }) {
         ),
         pointBorderColor: "#fff",
         pointBorderWidth: 2,
-        pointRadius: 5,
-        pointHoverRadius: 7
+        pointRadius: containerWidth < 500 ? 3 : 5, // 🔥 puntos más pequeños en móviles
+        pointHoverRadius: containerWidth < 500 ? 5 : 7
       }
     ]
   };
 
   return (
-    <>
-      <div style={{ height: isCompact ? "200px" : "250px", position: "relative" }}>
-        {chartType === "bar" && <Bar data={barData} options={chartOptions} />}
-        {chartType === "line" && <Line data={lineData} options={chartOptions} />}
-      </div>
-    </>
+    <div
+      ref={chartContainerRef}
+      style={{ height: isCompact ? "200px" : "250px", position: "relative" }}
+    >
+      {chartType === "bar" && <Bar data={barData} options={chartOptions} />}
+      {chartType === "line" && <Line data={lineData} options={chartOptions} />}
+    </div>
   );
 }
 

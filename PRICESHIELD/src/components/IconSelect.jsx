@@ -28,7 +28,7 @@ function IconSelect() {
         <div className="icon-options">
           <Link to="/products" onClick={() => handleSelect("bi-bag-check-fill")} className="EliminarDecoracion">
             <div className="EnlacesIconSelect">
-              <i className="bi bi-bag-check-fill"></i> <span >Producto</span>
+              <i className="bi bi-bag-check-fill productoBF"></i> <span >Producto</span>
               </div>
           </Link>
           <Link to="/dashboard" className="EliminarDecoracion">
@@ -37,11 +37,11 @@ function IconSelect() {
           </Link>
           <Link to="/alert" onClick={() => handleSelect("bi-exclamation-triangle")} className="EliminarDecoracion">
             <div className="EnlacesIconSelect">
-            <i className="bi bi-exclamation-triangle"></i> <span >Alertas</span></div>
+            <i className="bi bi-exclamation-triangle alertaBF"></i> <span >Alertas</span></div>
           </Link>
           <Link to="/we" onClick={() => handleSelect("bi-person-badge")} className="EliminarDecoracion">
             <div className="EnlacesIconSelect">
-            <i className="bi bi-person-badge"></i><span >Nosotros</span></div>
+            <i className="bi bi-person-badge nosotrosBF"></i><span >Nosotros</span></div>
           </Link>
           
         </div>

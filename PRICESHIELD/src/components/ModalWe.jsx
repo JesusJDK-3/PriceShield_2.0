@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom'; // Importar useNavigate
 import log from "../assets/img/log.png";
 import SearchBoxBF from './SearchBoxBF.jsx';
 
-const Modal = ({ isOpen, closeModal, updateUser, redirectAfterAuth,onSearch, onResults }) => {
+const Modal = ({ isOpen, closeModal, updateUser, redirectAfterAuth, onSearch, onResults }) => {
     const navigate = useNavigate(); // Hook para navegación
     const [showPassword, setShowPassword] = useState(false);
     const googleInitializedRef = useRef(false);
-    
+
     // Estados para el formulario y la conexión con el backend
     const [formData, setFormData] = useState({
         correo: '',
@@ -24,14 +24,14 @@ const Modal = ({ isOpen, closeModal, updateUser, redirectAfterAuth,onSearch, onR
         if (updateUser) {
             updateUser(userData);
         }
-        
+
         // Guardar en localStorage
         localStorage.setItem('user', JSON.stringify(userData));
-        
+
         // Cerrar modal después de éxito y redirigir
         setTimeout(() => {
             closeModal();
-            
+
             // Redirigir si hay una ruta especificada
             if (redirectAfterAuth) {
                 console.log('🔀 Redirigiendo a:', redirectAfterAuth);
@@ -105,7 +105,7 @@ const Modal = ({ isOpen, closeModal, updateUser, redirectAfterAuth,onSearch, onR
         try {
             // Decodificar el JWT token de Google para obtener la información del usuario
             const userInfo = parseJwt(response.credential);
-            
+
             if (!userInfo) {
                 throw new Error('No se pudo decodificar la información del usuario');
             }
@@ -133,10 +133,10 @@ const Modal = ({ isOpen, closeModal, updateUser, redirectAfterAuth,onSearch, onR
             if (data.success) {
                 setMessage(data.message || 'Login con Google exitoso');
                 setMessageType('success');
-                
+
                 // Usar la nueva función para manejar éxito
                 handleSuccessfulAuth(data.user);
-                
+
             } else {
                 setMessage(data.message || 'Error en autenticación con Google');
                 setMessageType('error');
@@ -172,11 +172,11 @@ const Modal = ({ isOpen, closeModal, updateUser, redirectAfterAuth,onSearch, onR
     // Renderizar botón de Google automáticamente
     const renderGoogleButton = () => {
         const buttonContainer = document.getElementById('google-signin-container');
-        
+
         if (buttonContainer && window.google && googleInitializedRef.current) {
             // Limpiar contenedor previo
             buttonContainer.innerHTML = '';
-            
+
             try {
                 // Renderizar botón de Google
                 window.google.accounts.id.renderButton(buttonContainer, {
@@ -187,7 +187,7 @@ const Modal = ({ isOpen, closeModal, updateUser, redirectAfterAuth,onSearch, onR
                     locale: 'es',
                     width: '280'
                 });
-                
+
             } catch (error) {
                 console.error('❌ Error renderizando botón:', error);
             }
@@ -202,7 +202,7 @@ const Modal = ({ isOpen, closeModal, updateUser, redirectAfterAuth,onSearch, onR
             ...formData,
             [e.target.name]: e.target.value
         });
-        
+
         // Limpiar mensaje cuando el usuario empiece a escribir
         if (message) {
             setMessage('');
@@ -234,13 +234,13 @@ const Modal = ({ isOpen, closeModal, updateUser, redirectAfterAuth,onSearch, onR
                 // Éxito - Login o Registro
                 setMessage(data.message);
                 setMessageType('success');
-                
+
                 console.log('✅ Usuario autenticado:', data.user);
                 console.log('📋 Acción realizada:', data.action); // 'login' o 'register'
-                
+
                 // Usar la nueva función para manejar éxito
                 handleSuccessfulAuth(data.user);
-                
+
             } else {
                 // Error - Mostrar mensaje de error
                 setMessage(data.message);
@@ -275,12 +275,30 @@ const Modal = ({ isOpen, closeModal, updateUser, redirectAfterAuth,onSearch, onR
                     <br />
                     <div className="Contenedorsearch-boxBF">
                         <SearchBoxBF
-                        onSearch={onSearch}
-                        onResults={onResults}
-                    />
+                            onSearch={onSearch}
+                            onResults={(results, query, source) => {
+                                //Pasar los resultados al callback padre
+                                if (onResults) {
+                                    onResults(results, query, source);
+                                }
+
+                                //Cerrar el modal
+                                closeModal();
+
+                                //Redirigir a productos con resultados
+                                navigate("/products", {
+                                    state: {
+                                        searchResults: results,
+                                        searchQuery: query,
+                                        searchType: source
+                                    }
+                                });
+                            }}
+                        />
                     </div>
 
-                    
+
+
 
                 </div>
             </div>
