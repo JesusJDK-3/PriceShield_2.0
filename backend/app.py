@@ -27,7 +27,12 @@ load_dotenv()
 app = Flask(__name__)
 
 # Configurar CORS para permitir peticiones desde react (puerto 5173 de vite)
-CORS(app, origins=['http://localhost:5173'])
+# Configurar CORS para permitir peticiones desde React local y desde producción en Render
+CORS(app, origins=[
+    'http://localhost:5173',                  # desarrollo local
+    'https://priceshield-2-0-1.onrender.com'  # producción (frontend en Render)
+])
+
 
 # Configurar la clave secreta para sesiones
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
