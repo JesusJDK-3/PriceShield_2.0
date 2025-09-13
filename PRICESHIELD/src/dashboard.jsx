@@ -31,6 +31,7 @@ function StatCard({ title, value, color, bgColor, textColor }) {
 }
 
 function Dashboard({ user, logout }) {
+  const apiUrl = import.meta.env.VITE_API_URL;
   const [isOpenM, setIsOpenM] = useState(true);
   const [productoActual, setProductoActual] = useState(null);
   const [historialPrecios, setHistorialPrecios] = useState([]);
@@ -75,7 +76,7 @@ function Dashboard({ user, logout }) {
         throw new Error('No se encontró identificador válido para el producto');
       }
 
-      url = `http://localhost:5000/api/dashboard/product-history-unified?${params.toString()}`;
+      url = `${apiUrl}/api/dashboard/product-history-unified?${params.toString()}`;
       console.log('🌐 URL de consulta:', url);
 
       const response = await fetch(url);

@@ -5,6 +5,7 @@ import TopBarF from './components/TopBarF.jsx';
 import Drop_DownM from './components/Drop_Down_Menu.jsx';
 
 function Alerts({user, logout}) {
+    const apiUrl = import.meta.env.VITE_API_URL;
     const [isOpenM, setIsOpenM] = useState(true);
     const [alerts, setAlerts] = useState([]);
     const [summary, setSummary] = useState({});
@@ -31,7 +32,7 @@ function Alerts({user, logout}) {
             setError(null);
             
             console.log('🔄 Cargando alertas...');
-            const response = await fetch('http://127.0.0.1:5000/api/alerts/active');
+            const response = await fetch('${apiUrl}/api/alerts/active');
             
             if (!response.ok) {
                 throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -82,7 +83,7 @@ function Alerts({user, logout}) {
             console.log('📖 Marcando alerta como leída:', alertId);
             
             // CORRECCIÓN: Cambiar PUT por POST
-            const response = await fetch(`http://127.0.0.1:5000/api/alerts/${alertId}/read`, {
+            const response = await fetch(`${apiUrl}/api/alerts/${alertId}/read`, {
                 method: 'POST'  // ✅ Cambiado de PUT a POST
             });
             
@@ -111,7 +112,7 @@ function Alerts({user, logout}) {
             console.log('🚫 Ignorando alerta:', alertId);
             
             // CORRECCIÓN: Cambiar PUT por POST
-            const response = await fetch(`http://127.0.0.1:5000/api/alerts/${alertId}/ignore`, {
+            const response = await fetch(`${apiUrl}/api/alerts/${alertId}/ignore`, {
                 method: 'POST'  // ✅ Cambiado de PUT a POST
             });
             
@@ -140,7 +141,7 @@ function Alerts({user, logout}) {
             console.log('📊 Navegando al dashboard para producto:', alert.product_id);
             
             // CORRECCIÓN: Cambiar PUT por POST y mejorar la URL
-            await fetch(`http://127.0.0.1:5000/api/alerts/product/${alert.product_id}/mark-read`, {
+            await fetch(`${apiUrl}/api/alerts/product/${alert.product_id}/mark-read`, {
                 method: 'POST'  // ✅ Cambiado de PUT a POST
             });
             
@@ -171,7 +172,7 @@ function Alerts({user, logout}) {
         try {
             console.log('🧪 Creando alertas de prueba...');
             
-            const response = await fetch('http://127.0.0.1:5000/api/alerts/test/create', {
+            const response = await fetch('${apiUrl}/api/alerts/test/create', {
                 method: 'POST'
             });
             

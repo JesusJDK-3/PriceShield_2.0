@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import '../styles/SearchBoxBF.css';
 const SearchBox = ({ onSearch, onResults }) => {
+  const apiUrl = import.meta.env.VITE_API_URL;
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -32,7 +33,7 @@ const SearchBox = ({ onSearch, onResults }) => {
       // PASO 1: Buscar primero en productos guardados
       console.log('🔍 Buscando en productos guardados...');
       const savedResponse = await fetch(
-        `http://127.0.0.1:5000/api/products/search/saved?query=${encodeURIComponent(searchValue)}&limit=50&sort_by=price`,
+        `${apiUrl}/api/products/search/saved?query=${encodeURIComponent(searchValue)}&limit=50&sort_by=price`,
         {
           method: 'GET',
           headers: {
@@ -53,7 +54,7 @@ const SearchBox = ({ onSearch, onResults }) => {
         // PASO 2: Si no hay productos guardados, buscar en APIs en tiempo real
         console.log('🌐 No hay productos guardados, buscando en APIs...');
         
-        const apiResponse = await fetch('http://127.0.0.1:5000/api/products/search', {
+        const apiResponse = await fetch('${apiUrl}/api/products/search', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

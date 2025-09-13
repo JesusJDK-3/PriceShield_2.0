@@ -4,6 +4,7 @@ import log from "../assets/img/log.png";
 import SearchBoxBF from './SearchBoxBF.jsx';
 
 const Modal = ({ isOpen, closeModal, updateUser, redirectAfterAuth, onSearch, onResults }) => {
+    const apiUrl = import.meta.env.VITE_API_URL;
     const navigate = useNavigate(); // Hook para navegación
     const [showPassword, setShowPassword] = useState(false);
     const googleInitializedRef = useRef(false);
@@ -120,7 +121,7 @@ const Modal = ({ isOpen, closeModal, updateUser, redirectAfterAuth, onSearch, on
             };
 
             // Enviar al backend para crear/autenticar usuario con Google
-            const backendResponse = await fetch('http://localhost:5000/api/auth/google-auth', {
+            const backendResponse = await fetch('${apiUrl}/api/auth/google-auth', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -217,7 +218,7 @@ const Modal = ({ isOpen, closeModal, updateUser, redirectAfterAuth, onSearch, on
 
         try {
             // Hacer petición al backend
-            const response = await fetch('http://localhost:5000/api/auth/smart-auth', {
+            const response = await fetch('${apiUrl}/api/auth/smart-auth', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

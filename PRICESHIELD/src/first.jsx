@@ -6,7 +6,9 @@ import Modal from "./components/Modal.jsx";
 import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 
+
 function Main({ user, updateUser }) {
+  const apiUrl = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
 
   // Estados para el modal
@@ -31,7 +33,7 @@ function Main({ user, updateUser }) {
   const loadFooterStats = async () => {
     setFooterStats(prev => ({ ...prev, loading: true, error: false }));
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/dashboard/stats');
+      const response = await fetch('${apiUrl}/api/dashboard/stats');
       if (!response.ok) throw new Error('API error');
       const data = await response.json();
       setFooterStats({
