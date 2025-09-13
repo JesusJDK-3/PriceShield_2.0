@@ -54,7 +54,7 @@ const SearchBox = ({ onSearch, onResults }) => {
         // PASO 2: Si no hay productos guardados, buscar en APIs en tiempo real
         console.log('🌐 No hay productos guardados, buscando en APIs...');
         
-        const apiResponse = await fetch('${apiUrl}/api/products/search', {
+        const apiResponse = await fetch(`${apiUrl}/api/products/search`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

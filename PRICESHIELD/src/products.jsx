@@ -65,7 +65,7 @@ function Products({ user, logout }) { // ✅ CAMBIO 1: Recibir user como prop
         console.log(`✅ Encontrados ${savedData.products.length} productos guardados`);
       } else {
         // PASO 2: Buscar en APIs
-        const apiResponse = await fetch('${apiUrl}/api/products/search', {
+        const apiResponse = await fetch(`${apiUrl}/api/products/search`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

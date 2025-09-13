@@ -32,7 +32,8 @@ function Alerts({user, logout}) {
             setError(null);
             
             console.log('🔄 Cargando alertas...');
-            const response = await fetch('${apiUrl}/api/alerts/active');
+            const response = await fetch(`${apiUrl}/api/alerts/active`);
+            
             
             if (!response.ok) {
                 throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -172,7 +173,7 @@ function Alerts({user, logout}) {
         try {
             console.log('🧪 Creando alertas de prueba...');
             
-            const response = await fetch('${apiUrl}/api/alerts/test/create', {
+            const response = await fetch(`${apiUrl}/api/alerts/test/create`, {
                 method: 'POST'
             });
             
