@@ -21,6 +21,8 @@ from services.scheduler import database_scheduler
 # Cargar variables de entorno del archivo .env
 load_dotenv()
 
+
+
 # Crear la aplicación Flask
 app = Flask(__name__)
 

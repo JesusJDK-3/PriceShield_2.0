@@ -7,6 +7,8 @@ import ProductosX from './components/ProductosX.jsx';
 
 
 function Products({ user, logout }) { // ✅ CAMBIO 1: Recibir user como prop
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   const location = useLocation(); // Hook para acceder al state pasado desde Main
   const [isOpenM, setIsOpenM] = useState(true);
   
@@ -49,7 +51,7 @@ function Products({ user, logout }) { // ✅ CAMBIO 1: Recibir user como prop
       
       // PASO 1: Buscar en productos guardados
       const savedResponse = await fetch(
-        `http://127.0.0.1:5000/api/products/search/saved?query=${encodeURIComponent(query)}&limit=50&sort_by=price`,
+        `${apiUrl}/api/products/search/saved?query=${encodeURIComponent(query)}&limit=50&sort_by=price`,
         {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' }
@@ -63,7 +65,7 @@ function Products({ user, logout }) { // ✅ CAMBIO 1: Recibir user como prop
         console.log(`✅ Encontrados ${savedData.products.length} productos guardados`);
       } else {
         // PASO 2: Buscar en APIs
-        const apiResponse = await fetch('http://127.0.0.1:5000/api/products/search', {
+        const apiResponse = await fetch('${apiUrl}/api/products/search', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -107,7 +109,7 @@ function Products({ user, logout }) { // ✅ CAMBIO 1: Recibir user como prop
       console.log(`📦 Cargando productos desde la base de datos (página ${page})...`);
       
       const response = await fetch(
-        `http://127.0.0.1:5000/api/products/all?page=${page}&limit=100&sort_by=updated_at`,
+        `${apiUrl}/api/products/all?page=${page}&limit=100&sort_by=updated_at`,
         {
           method: 'GET',
           headers: {

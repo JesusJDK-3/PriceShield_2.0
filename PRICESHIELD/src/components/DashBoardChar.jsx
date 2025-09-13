@@ -152,6 +152,7 @@ function DashboardChart({ chartType, historialPrecios, isCompact }) {
       {chartType === "bar" && <Bar data={barData} options={chartOptions} />}
       {chartType === "line" && <Line data={lineData} options={chartOptions} />}
     </div>
+  
   );
 }
 
