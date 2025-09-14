@@ -1,5 +1,4 @@
-// App.jsx
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import First from './first';        
 import Products from './products'; 
@@ -10,11 +9,9 @@ import We from './We';
 import './styles/App.css'
 
 function App() {
-  // Estado global para manejar autenticación
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Verificar si hay usuario logueado al cargar la app
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
@@ -28,13 +25,11 @@ function App() {
     setLoading(false);
   }, []);
 
-  // Función para cerrar sesión
   const logout = () => {
     localStorage.removeItem('user');
     setUser(null);
   };
 
-  // Función para actualizar usuario (cuando se loguea/registra)
   const updateUser = (userData) => {
     setUser(userData);
   };
@@ -53,34 +48,14 @@ function App() {
   }
 
   return (
-    <Router>
-      <Routes>
-        <Route 
-          path="/" 
-          element={<First user={user} updateUser={updateUser} />} 
-        />
-        <Route 
-          path="/products" 
-          element={<Products user={user} logout={logout} />} 
-        />
-        <Route 
-          path="/detalle" 
-          element={<ProductDetail user={user} logout={logout}/>} 
-        />
-        <Route 
-          path="/dashboard" 
-          element={<ProductDashboard user={user} logout={logout} />} 
-        />
-        <Route 
-          path="/alert" 
-          element={<Alerts user={user} logout={logout} />} 
-        />
-        <Route 
-          path="/we" 
-          element={<We user={user} logout={logout} />} 
-        />
-      </Routes>
-    </Router>
+    <Routes>
+      <Route path="/" element={<First user={user} updateUser={updateUser} />} />
+      <Route path="/products" element={<Products user={user} logout={logout} />} />
+      <Route path="/detalle" element={<ProductDetail user={user} logout={logout}/>} />
+      <Route path="/dashboard" element={<ProductDashboard user={user} logout={logout} />} />
+      <Route path="/alert" element={<Alerts user={user} logout={logout} />} />
+      <Route path="/we" element={<We user={user} logout={logout} />} />
+    </Routes>
   );
 }
 
