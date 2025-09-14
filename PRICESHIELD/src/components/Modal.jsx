@@ -120,7 +120,7 @@ const Modal = ({ isOpen, closeModal, updateUser, redirectAfterAuth }) => {
             };
 
             // Enviar al backend para crear/autenticar usuario con Google
-            const backendResponse = await fetch('${apiUrl}/api/auth/google-auth', {
+            const backendResponse = await fetch(`${apiUrl}/api/auth/google-auth`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -227,7 +227,7 @@ const logoutUser = () => {
 
         try {
             // Hacer petición al backend
-            const response = await fetch('${apiUrl}/api/auth/smart-auth', {
+            const response = await fetch(`${apiUrl}/api/auth/smart-auth`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
