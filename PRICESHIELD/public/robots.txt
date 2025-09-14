@@ -13,3 +13,4 @@ Allow: /
 Allow: /products
 Allow: /dashboard
 Allow: /alert
+Allow: /we
