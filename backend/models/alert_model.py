@@ -60,7 +60,6 @@ class Alert:
                 "supermarket": product_data.get("supermarket"),
                 "supermarket_key": product_data.get("supermarket_key"),
                 "product_url": product_data.get("url"),
-                "product_image": product_data.get("images", [{}])[0] if product_data.get("images") else None,
                 "categories": product_data.get("categories", []),
                 
                 # Datos del cambio de precio
@@ -191,16 +190,6 @@ class Alert:
                 # Convertir ObjectId a string
                 alert["_id"] = str(alert["_id"])
                 
-                # Si no tiene imagen, buscar en la base de datos del producto
-                if not alert.get("product_image") and alert.get("product_id"):
-                    try:
-                        from services.db import db
-                        product = db.products.find_one({"unique_id": alert["product_id"]})
-                        if product and product.get("images"):
-                            alert["product_image"] = product["images"][0]
-                    except:
-                        pass
-
                 # Formatear fecha
                 created_at = alert.get("created_at")
                 if created_at:
