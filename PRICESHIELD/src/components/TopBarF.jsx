@@ -102,6 +102,11 @@ const handleResults = (results, searchValue, source) => {
                     <Link to="/we">
                         <i className="bi bi-person-badge nosotrosBF" title="Nosotros"></i>
                     </Link>
+                    <i
+                        className={`bi bi-escape ${getUserDisplayName() !== "Invitado" ? "salirUsuario" : ""}`}
+                        onClick={logout}
+                        title="Cerrar sesión"
+                    ></i>
                 </div>
                 <div className="UsuarioBF" >
                     <span className={`${getUserDisplayName() !== "Invitado" ? "nombreUsuario" : ""}`}>
@@ -112,6 +117,7 @@ const handleResults = (results, searchValue, source) => {
                     </span>
                 </div>
             </div>
+
             <ModalWe
                 isOpen={isModelOpen}
                 closeModal={closeModal}
