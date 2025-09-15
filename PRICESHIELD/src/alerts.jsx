@@ -26,14 +26,30 @@ function Alerts({user, logout}) {
         loadAlerts();
     }, []);
 
+    // Función auxiliar para verificar si una fecha es de hoy
+    const isToday = (dateString) => {
+        if (!dateString) return false;
+        
+        try {
+            const alertDate = new Date(dateString);
+            const today = new Date();
+            
+            // Comparar año, mes y día
+            return alertDate.getDate() === today.getDate() &&
+                   alertDate.getMonth() === today.getMonth() &&
+                   alertDate.getFullYear() === today.getFullYear();
+        } catch (error) {
+            console.error('Error verificando fecha:', error);
+            return false;
+        }
+    };
+
     const loadAlerts = async () => {
         try {
             setLoading(true);
             setError(null);
             
-            
             const response = await fetch(`${apiUrl}/api/alerts/active`);
-            
             
             if (!response.ok) {
                 throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -41,34 +57,29 @@ function Alerts({user, logout}) {
             
             const data = await response.json();
             
-
-            // CORRECCIÓN: Verificar estructura de respuesta
+            let allAlerts = [];
+            
+            // Verificar estructura de respuesta
             if (data.success && Array.isArray(data.alerts)) {
-                setAlerts(data.alerts);
-                setSummary({
-                    unread_alerts: data.alerts.filter(a => !a.is_read).length,
-                    total_alerts: data.alerts.length,
-                    price_increases: data.alerts.filter(a => a.is_price_increase && !a.is_read).length
-                });
-                
+                allAlerts = data.alerts;
             } else if (Array.isArray(data)) {
-                // Fallback si la respuesta es directamente un array
-                setAlerts(data);
-                setSummary({
-                    unread_alerts: data.filter(a => !a.is_read).length,
-                    total_alerts: data.length,
-                    price_increases: data.filter(a => a.is_price_increase && !a.is_read).length
-                });
-                
+                allAlerts = data;
             } else {
                 console.warn('⚠️ Formato de respuesta inesperado:', data);
-                setAlerts([]);
-                setSummary({
-                    unread_alerts: 0,
-                    total_alerts: 0,
-                    price_increases: 0
-                });
+                allAlerts = [];
             }
+
+            // 🔥 FILTRAR SOLO ALERTAS DE HOY
+            const todayAlerts = allAlerts.filter(alert => isToday(alert.created_at));
+            
+            console.log(`📅 Total alertas: ${allAlerts.length}, Alertas de hoy: ${todayAlerts.length}`);
+            
+            setAlerts(todayAlerts);
+            setSummary({
+                unread_alerts: todayAlerts.filter(a => !a.is_read).length,
+                total_alerts: todayAlerts.length,
+                price_increases: todayAlerts.filter(a => a.is_price_increase && !a.is_read).length
+            });
 
         } catch (error) {
             console.error('❌ Error cargando alertas:', error);
@@ -81,11 +92,8 @@ function Alerts({user, logout}) {
 
     const markAsRead = async (alertId) => {
         try {
-            
-            
-            // CORRECCIÓN: Cambiar PUT por POST
             const response = await fetch(`${apiUrl}/api/alerts/${alertId}/read`, {
-                method: 'POST'  // ✅ Cambiado de PUT a POST
+                method: 'POST'
             });
             
             if (!response.ok) {
@@ -94,9 +102,7 @@ function Alerts({user, logout}) {
             
             const data = await response.json();
             
-            
             if (data.success) {
-                
                 loadAlerts(); // Recargar alertas
             } else {
                 console.error('❌ Error marcando como leída:', data.message);
@@ -110,11 +116,8 @@ function Alerts({user, logout}) {
 
     const ignoreAlert = async (alertId) => {
         try {
-            
-            
-            // CORRECCIÓN: Cambiar PUT por POST
             const response = await fetch(`${apiUrl}/api/alerts/${alertId}/ignore`, {
-                method: 'POST'  // ✅ Cambiado de PUT a POST
+                method: 'POST'
             });
             
             if (!response.ok) {
@@ -124,7 +127,6 @@ function Alerts({user, logout}) {
             const data = await response.json();
             
             if (data.success) {
-                
                 loadAlerts(); // Recargar alertas
             } else {
                 console.error('❌ Error ignorando alerta:', data.message);
@@ -138,20 +140,13 @@ function Alerts({user, logout}) {
 
     const goToDashboard = async (alert) => {
         try {
-            
-            
-            // CORRECCIÓN: Cambiar PUT por POST y mejorar la URL
             await fetch(`${apiUrl}/api/alerts/product/${alert.product_id}/mark-read`, {
-                method: 'POST'  // ✅ Cambiado de PUT a POST
+                method: 'POST'
             });
-            
-            
         } catch (error) {
             console.error('⚠️ Error marcando alertas del producto como leídas:', error);
-            // No bloquear la navegación por este error
         }
         
-        // Navegar al dashboard con los datos del producto
         const productData = {
             nombre: alert.product_name,
             name: alert.product_name,
@@ -193,6 +188,17 @@ function Alerts({user, logout}) {
         return absPercentage.toFixed(1);
     };
 
+    // Función para obtener la fecha actual en formato legible
+    const getTodayDate = () => {
+        const today = new Date();
+        return today.toLocaleDateString('es-ES', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
     return (
         <div className={`contenedor_general ${!isOpenM ? 'soloContenido' : ''}`}>
             
@@ -200,7 +206,7 @@ function Alerts({user, logout}) {
                 <div className="TopBarFALR">
                     <TopBarF onSearch={handleSearch} openMenu={() => setIsOpenM(true)} user={user} logout={logout}/>
                 </div>
-                {/* Fin Barra de busqueda superior */}
+                
                 <div className="AlertaDProducto">
                     <div className="AlertaDPExtendido">
                         {/* Botón regresar superior */}
@@ -208,9 +214,32 @@ function Alerts({user, logout}) {
                             <button className='BotonRegresar' onClick={() => navigate(-1)}> 
                                 <span className='flechita'>←</span> Volver
                             </button>
-                            
                         </div>
-                        {/* Fin Botón regresar superior */}
+                        
+                        {/* Título con fecha actual */}
+                        <div style={{ 
+                            textAlign: 'center', 
+                            margin: '20px 0',
+                            padding: '15px',
+                            backgroundColor: '#f8f9fa',
+                            borderRadius: '8px',
+                            border: '1px solid #e9ecef'
+                        }}>
+                            <h2 style={{ 
+                                color: '#2c3e50',
+                                margin: '0 0 5px 0',
+                                fontSize: '24px'
+                            }}>
+                                📅 Alertas de Hoy
+                            </h2>
+                            <p style={{ 
+                                color: '#6c757d',
+                                margin: '0',
+                                fontSize: '16px'
+                            }}>
+                                {getTodayDate()}
+                            </p>
+                        </div>
                         
                         {/* Cuadritos de información de alertas */}
                         <div className="DivDAlerta">
@@ -218,17 +247,17 @@ function Alerts({user, logout}) {
                                 <div className="Alerta1">
                                     <h1 className="PACT">{summary.unread_alerts || 0}</h1>
                                     <h5>Alertas Pendientes</h5>
-                                    <small className='mensaVPA'>Sin leer</small>
+                                    <small className='mensaVPA'>Sin leer hoy</small>
                                 </div>
                                 <div className="Alerta2">
                                     <h1 className="PPROM">{summary.total_alerts || 0}</h1>
-                                    <h5>Total Alertas</h5>
-                                    <small className="mensaVPPO">Históricas</small>
+                                    <h5>Total Hoy</h5>
+                                    <small className="mensaVPPO">De hoy</small>
                                 </div>
                                 <div className="Alerta3">
                                     <h1 className="PMIN">{summary.price_increases || 0}</h1>
                                     <h5>Subidas Precio</h5>
-                                    <small className="mensaVPMI">No leídas</small>
+                                    <small className="mensaVPMI">Hoy sin leer</small>
                                 </div>
                                 <div className="Alerta4">
                                     <h1 className="PMAX">{alerts.length}</h1>
@@ -237,7 +266,6 @@ function Alerts({user, logout}) {
                                 </div>
                             </div>
                         </div>
-                        {/* FIN Cuadritos de información de alertas */}
                         
                         <div className="NotificacionSinProductoAlerta">
                             <div className="AlertasPs">
@@ -249,7 +277,7 @@ function Alerts({user, logout}) {
                                         padding: '20px',
                                         color: '#666'
                                     }}>
-                                        🔄 Cargando alertas...
+                                        🔄 Cargando alertas de hoy...
                                     </div>
                                 )}
                                 
@@ -282,30 +310,19 @@ function Alerts({user, logout}) {
                                     </div>
                                 )}
                                 
-                                {/* Mostrar mensaje si no hay alertas */}
+                                {/* Mostrar mensaje si no hay alertas de hoy */}
                                 {!loading && !error && alerts.length === 0 && (
                                     <div style={{ 
                                         textAlign: 'center', 
                                         padding: '40px',
                                         color: '#666'
                                     }}>
-                                        <i className="bi bi-bell" style={{ fontSize: '48px', marginBottom: '16px' }}></i>
-                                        <h3>No hay alertas activas</h3>
-                                        <p>Cuando haya cambios de precio en los productos, aparecerán aquí.</p>
-                                        <button 
-                                            onClick={createTestAlerts}
-                                            style={{
-                                                marginTop: '16px',
-                                                padding: '10px 20px',
-                                                backgroundColor: '#3498db',
-                                                color: 'white',
-                                                border: 'none',
-                                                borderRadius: '4px',
-                                                cursor: 'pointer'
-                                            }}
-                                        >
-                                            🧪 Crear Alertas de Prueba
-                                        </button>
+                                        <i className="bi bi-calendar-check" style={{ fontSize: '48px', marginBottom: '16px' }}></i>
+                                        <h3>No hay alertas nuevas hoy</h3>
+                                        <p>Cuando haya cambios de precio hoy en los productos, aparecerán aquí.</p>
+                                        <small style={{ color: '#888' }}>
+                                            Las alertas anteriores no se muestran para mantener la vista limpia
+                                        </small>
                                     </div>
                                 )}
                                 
@@ -379,7 +396,6 @@ function Alerts({user, logout}) {
                                 ))}
                             </div>
                         </div>
-                        {/* FIN Producto Seleccionado */}
                     </div>
                 </div>
             </div>
