@@ -31,7 +31,7 @@ const SearchBox = ({ onSearch, onResults }) => {
       }
 
       // PASO 1: Buscar primero en productos guardados
-      console.log('🔍 Buscando en productos guardados...');
+      
       const savedResponse = await fetch(
         `${apiUrl}/api/products/search/saved?query=${encodeURIComponent(searchValue)}&limit=50&sort_by=price`,
         {
@@ -49,34 +49,11 @@ const SearchBox = ({ onSearch, onResults }) => {
         if (onResults) {
           onResults(savedData.products, searchValue, 'search_saved');
         }
-        console.log(`✅ Encontrados ${savedData.products.length} productos guardados`);
-      } else {
-        // PASO 2: Si no hay productos guardados, buscar en APIs en tiempo real
-        console.log('🌐 No hay productos guardados, buscando en APIs...');
         
-        const apiResponse = await fetch(`${apiUrl}/api/products/search`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            query: searchValue,
-            limit: 20,
-            save_to_db: true // Guardar resultados para futuras búsquedas
-          })
-        });
-
-        const apiData = await apiResponse.json();
-
-        if (apiData.success) {
-          // Pasar los resultados de las APIs al componente padre
-          if (onResults) {
-            onResults(apiData.results, searchValue, 'search_api');
-          }
-          console.log('✅ Búsqueda en APIs exitosa:', apiData);
-        } else {
-          setError(apiData.message || 'Error en la búsqueda');
-          console.error('❌ Error en búsqueda:', apiData);
+      } else {
+        // No hay productos guardados - mostrar mensaje
+        if (onResults) {
+          onResults([], searchValue, 'no_results');
         }
       }
 
@@ -105,41 +82,6 @@ const SearchBox = ({ onSearch, onResults }) => {
           disabled={isLoading}
         />
       </form>
-      
-      {/* Mostrar error si existe */}
-      {error && (
-        <div className="search-error" style={{ 
-          color: 'red', 
-          fontSize: '14px', 
-          marginTop: '8px',
-          padding: '8px',
-          backgroundColor: '#ffebee',
-          borderRadius: '4px',
-          border: '1px solid #ffcdd2'
-        }}>
-          ⚠️ {error}
-        </div>
-      )}
-      
-      {/* Indicador de carga */}
-      {isLoading && (
-        <div className="search-loading" style={{
-          fontSize: '14px',
-          marginTop: '8px',
-          padding: '8px',
-          backgroundColor: '#e3f2fd',
-          borderRadius: '4px',
-          border: '1px solid #bbdefb',
-          color: '#1976d2'
-        }}>
-          <div className="loading-steps">
-            <div>🔍 Buscando en productos guardados...</div>
-            <div style={{ fontSize: '12px', opacity: 0.7 }}>
-              Si no se encuentran resultados, buscaremos en tiempo real
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
