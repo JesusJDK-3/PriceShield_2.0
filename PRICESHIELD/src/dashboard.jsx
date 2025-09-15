@@ -86,7 +86,10 @@ function Dashboard({ user, logout }) {
 
       if (data.success && data.products) {
         console.log(`✅ Historial encontrado: ${data.products.length} entradas`);
-        return data.products;
+        return {
+        products: data.products,
+        current_product: data.current_product
+      };
       } else {
         console.warn('⚠️ No se encontró historial:', data.message);
         return [];
@@ -227,10 +230,19 @@ function Dashboard({ user, logout }) {
 
       try {
         // Obtener historial del MISMO producto
-        const historialProductos = await obtenerHistorialProducto(state.producto);
+        const historialData = await obtenerHistorialProducto(state.producto);
         
         // Procesar para gráfico
-        const datosHistorial = procesarHistorialParaGrafico(historialProductos);
+        const datosHistorial = procesarHistorialParaGrafico(historialData.products);
+        // Completar datos del producto con información del servidor
+        // Completar imagen
+        if (historialData.current_product && historialData.current_product.images) {
+          setProductoActual(prev => ({
+            ...prev,
+            images: historialData.current_product.images,
+            imagen: historialData.current_product.images[0]
+          }));
+        }
         setHistorialPrecios(datosHistorial);
 
         // Calcular estadísticas
