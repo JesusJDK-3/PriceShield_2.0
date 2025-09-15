@@ -67,7 +67,7 @@ const handleResults = (results, searchValue, source) => {
                 <span className="LogoPriceShield" title="Pagina Principal">
                     <a href="/" className="logoPD">
                         <span className="logIcon">
-                            <img src={logo} alt="PreciShield" />
+                            <img src={logo} alt="PriceShield" />
                         </span>
                     </a>
                 </span>

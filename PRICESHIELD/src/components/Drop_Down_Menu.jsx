@@ -16,7 +16,7 @@ const Drop_DownM = ({ isOpenM, closeDown }) => {
       <div className='DropDown'>
         <a href="/" className="logoPD">
           <span className="logIcon">
-            <img src={logo} alt="PreciShield" />
+            <img src={logo} alt="PriceShield" />
           </span>
         </a>
         <i className="bi bi-list down" onClick={closeDown}></i>

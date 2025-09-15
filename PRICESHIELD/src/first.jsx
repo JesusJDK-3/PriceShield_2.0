@@ -111,7 +111,7 @@ function Main({ user, updateUser }) {
           <div className="container">
             <div className="detalles">
               <span className="log">
-                <img src={logo} alt="PreciShield Logo" />
+                <img src={logo} alt="PriceShield Logo" />
                 <h2>
                   P<span className="danger">riceShield</span>
                 </h2>
