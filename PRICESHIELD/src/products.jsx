@@ -27,12 +27,11 @@ function Products({ user, logout }) { // ✅ CAMBIO 1: Recibir user como prop
     const { searchResults, searchQuery: query, searchType } = location.state;
 
     if (searchResults && query) {
-      console.log('📦 Recibiendo resultados desde navegación:', searchResults.length);
+      
       setProductos(searchResults);
       setSearchQuery(query);
       setPagination(null);
     } else if (query) {
-      console.log('🔍 Ejecutando búsqueda automática para:', query);
       setSearchQuery(query);
       executeSearch(query);
     }
@@ -62,7 +61,7 @@ function Products({ user, logout }) { // ✅ CAMBIO 1: Recibir user como prop
 
       if (savedData.success && savedData.products && savedData.products.length > 0) {
         setProductos(savedData.products);
-        console.log(`✅ Encontrados ${savedData.products.length} productos guardados`);
+        
       } else {
         // PASO 2: Buscar en APIs
         const apiResponse = await fetch(`${apiUrl}/api/products/search`, {
@@ -106,7 +105,6 @@ function Products({ user, logout }) { // ✅ CAMBIO 1: Recibir user como prop
     try {
       setIsLoadingProducts(true);
       setLoadingType(page === 1 ? "initial" : "pagination");
-      console.log(`📦 Cargando productos desde la base de datos (página ${page})...`);
       
       const response = await fetch(
         `${apiUrl}/api/products/all?page=${page}&limit=100&sort_by=updated_at`,
@@ -124,11 +122,9 @@ function Products({ user, logout }) { // ✅ CAMBIO 1: Recibir user como prop
         setProductos(data.products || []);
         setPagination(data.pagination || null);
         setSearchQuery(""); // Limpiar query de búsqueda
-        console.log(`✅ Productos cargados: ${data.products?.length || 0}`);
         
         if (data.products?.length === 0 && page === 1) {
           // Si no hay productos en la primera carga, intentar forzar actualización
-          console.log("🔄 No hay productos, considerando forzar actualización de BD...");
         }
       } else {
         console.error('❌ Error cargando productos:', data.message);
@@ -160,7 +156,6 @@ function Products({ user, logout }) { // ✅ CAMBIO 1: Recibir user como prop
 
   // Callback para cuando se inicia una búsqueda desde TopBar
   const handleSearch = (query) => {
-    console.log('🔍 Iniciando búsqueda:', query);
     setSearchQuery(query);
     executeSearch(query);
   };
@@ -185,12 +180,11 @@ function Products({ user, logout }) { // ✅ CAMBIO 1: Recibir user como prop
         });
       }
       
-      console.log(`📦 Total productos de APIs: ${allProducts.length}`);
+
       setProductos(allProducts);
       setPagination(null); // No hay paginación en búsquedas de API
     } else if (type === "search_saved" || type === "filtered") {
       // Resultados de búsqueda en productos guardados
-      console.log(`📦 Productos filtrados: ${results?.length || 0}`);
       setProductos(results || []);
       setPagination(null); // No hay paginación en búsquedas filtradas
     }

@@ -136,16 +136,6 @@ function ProductDetail({user, logout}) {
     // 4. CRITERIO MÁS ESTRICTO: 85% de similitud en palabras clave
     const sonIguales = similitudExacta >= 0.85;
     
-    console.log('🔍 Análisis de similitud:', {
-      producto1: info1.nombreOriginal,
-      producto2: info2.nombreOriginal,
-      palabrasClave1: info1.palabrasClave,
-      palabrasClave2: info2.palabrasClave,
-      palabrasComunes,
-      similitudExacta: (similitudExacta * 100).toFixed(1) + '%',
-      sonIguales: sonIguales ? '✅ SÍ' : '❌ NO'
-    });
-    
     return sonIguales;
   };
 
@@ -180,10 +170,6 @@ function ProductDetail({user, logout}) {
     const nombreSeleccionado = productoSeleccionado.nombre.toLowerCase().trim();
     const infoSeleccionada = extraerInformacionClave(nombreSeleccionado);
     
-    console.log('🎯 Filtrando para producto:', {
-      nombre: productoSeleccionado.nombre,
-      info: infoSeleccionada
-    });
     
     // PASO 1: Primera pasada con criterio ESTRICTO
     let productosFiltrados = todosLosProductos.filter(producto => {
@@ -199,14 +185,10 @@ function ProductDetail({user, logout}) {
     // Eliminar duplicados del mismo supermercado
     productosFiltrados = eliminarDuplicadosPorSupermercado(productosFiltrados);
     
-    console.log('📊 Resultados con criterio ESTRICTO:', {
-      totalEncontrados: productosFiltrados.length,
-      productos: productosFiltrados.map(p => ({ nombre: p.nombre, supermercado: p.supermercado }))
-    });
     
     // PASO 2: Si tenemos menos de 4 productos, aplicar criterio FLEXIBLE
     if (productosFiltrados.length < 4) {
-      console.log('🔄 Pocos productos encontrados, aplicando criterio FLEXIBLE...');
+      
       
       productosFiltrados = todosLosProductos.filter(producto => {
         const nombreProducto = producto.nombre.toLowerCase().trim();
@@ -221,10 +203,6 @@ function ProductDetail({user, logout}) {
       // Eliminar duplicados del mismo supermercado
       productosFiltrados = eliminarDuplicadosPorSupermercado(productosFiltrados);
       
-      console.log('📊 Resultados con criterio FLEXIBLE:', {
-        totalEncontrados: productosFiltrados.length,
-        productos: productosFiltrados.map(p => ({ nombre: p.nombre, supermercado: p.supermercado }))
-      });
     }
     
     // PASO 3: Limitar a máximo 4 supermercados diferentes
@@ -236,18 +214,6 @@ function ProductDetail({user, logout}) {
         supermercadosUnicos.set(producto.supermercado, true);
         resultadoFinal.push(producto);
       }
-    });
-
-    console.log('🏪 RESULTADO FINAL:', {
-      productoOriginal: productoSeleccionado.nombre,
-      totalEncontrados: resultadoFinal.length,
-      criterioAplicado: productosFiltrados.length >= 5 ? 'ESTRICTO' : 'FLEXIBLE',
-      supermercados: resultadoFinal.map(p => p.supermercado),
-      productos: resultadoFinal.map(p => ({
-        nombre: p.nombre,
-        supermercado: p.supermercado,
-        precio: p.precio
-      }))
     });
 
     return resultadoFinal;
@@ -301,24 +267,11 @@ function ProductDetail({user, logout}) {
 
     if (productosConPrecio.length === 0) return null;
 
-    // Debug: Mostrar todos los precios
-    console.log('🏪 Comparando precios:', productosConPrecio.map(p => ({
-      supermercado: p.supermercado,
-      precioOriginal: p.precio,
-      precioNumerico: extraerNumericoPrecio(p.precio)
-    })));
-
     const masBarato = productosConPrecio.reduce((masBarato, productoActual) => {
       const precioActual = extraerNumericoPrecio(productoActual.precio);
       const precioMasBarato = extraerNumericoPrecio(masBarato.precio);
       
       return precioActual < precioMasBarato ? productoActual : masBarato;
-    });
-
-    console.log('🎯 Producto más barato encontrado:', {
-      supermercado: masBarato.supermercado,
-      precio: masBarato.precio,
-      precioNumerico: extraerNumericoPrecio(masBarato.precio)
     });
 
     return masBarato;
@@ -353,19 +306,13 @@ function ProductDetail({user, logout}) {
     numeroLimpio = numeroLimpio.replace(/[^\d.]/g, '');
     
     const resultado = parseFloat(numeroLimpio);
-    
-    // Debug para ver qué está pasando
-    console.log('💰 Conversión precio:', {
-      precioOriginal: precio,
-      numeroLimpio,
-      resultado: isNaN(resultado) ? 'ERROR - No es número' : resultado
-    });
+
     
     return isNaN(resultado) ? Infinity : resultado;
   };
 
   const handleSearch = (searchTerm) => {
-    console.log('Buscando:', searchTerm);
+    
   };
 
   const handleClickD = () => {
