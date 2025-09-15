@@ -62,11 +62,8 @@ class DatabaseScheduler:
             print("⚠️ El programador ya está ejecutándose")
             return
 
-        # Programar actualización diaria a las 01:03 (para testing)
-        schedule.every().day.at("01:03").do(self.daily_database_update_with_history)
-        
-        # Programar limpieza semanal los domingos a las 3:00 AM
-        schedule.every().sunday.at("03:00").do(self.weekly_cleanup)
+        # Programar actualización diaria a las 20:40 (para testing)
+        schedule.every().day.at("20:40").do(self.daily_database_update_with_history)
         
         # Iniciar thread del programador
         self.is_running = True
@@ -75,8 +72,7 @@ class DatabaseScheduler:
         self.scheduler_thread.start()
         
         print("✅ Programador de tareas iniciado")
-        print("   - Actualización diaria: 16:43 (testing)")
-        print("   - Limpieza semanal: Domingos 03:00 AM")
+        print("   - Actualización diaria: 05:00 (testing)")
     
     def stop_scheduler(self):
         """
