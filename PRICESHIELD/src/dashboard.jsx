@@ -487,31 +487,6 @@ function Dashboard({ user, logout }) {
               </div>
             </div>
 
-            {/* Información adicional */}
-            {historialPrecios.totalEntradas > 0 && (
-              <div style={{ 
-                marginTop: '20px', 
-                padding: '16px', 
-                backgroundColor: '#f0f9ff', 
-                borderRadius: '8px',
-                border: '1px solid #bfdbfe'
-              }}>
-                <h4 style={{ margin: '0 0 8px 0', color: '#1e40af' }}>
-                  📈 Información del Historial
-                </h4>
-                <div style={{ fontSize: '14px', color: '#374151' }}>
-                  <p style={{ margin: '4px 0' }}>
-                    • Total de actualizaciones registradas: <strong>{historialPrecios.totalEntradas}</strong>
-                  </p>
-                  <p style={{ margin: '4px 0' }}>
-                    • Actualizaciones mostradas en el gráfico: <strong>{historialPrecios.entradasMostradas || historialPrecios.labels?.length || 0}</strong>
-                  </p>
-                  <p style={{ margin: '4px 0' }}>
-                    • Rango de variación: <strong>S/ {(estadisticas.precioMaximo - estadisticas.precioMinimo).toFixed(2)}</strong>
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
         )}
       </div>
