@@ -208,7 +208,16 @@ function Dashboard({ user, logout }) {
       console.log('🚀 Iniciando carga de datos del dashboard');
       console.log('📦 Producto recibido:', state.producto);
 
-      setProductoActual(state.producto);
+      // Si viene de alerta con current_product, usar esos datos
+      if (state.producto.current_product) {
+        setProductoActual({
+          ...state.producto,
+          ...state.producto.current_product,
+          images: state.producto.current_product.images
+        });
+      } else {
+        setProductoActual(state.producto);
+      }
       setLoading(true);
       setError(null);
 
@@ -278,7 +287,7 @@ function Dashboard({ user, logout }) {
   // Datos del producto organizados
   const productData = {
     nombre: productoActual?.nombre || productoActual?.name || 'Producto sin nombre',
-    imagen: productoActual?.imagen || productoActual?.images?.[0] || '/placeholder-product.png',
+    imagen: productoActual?.imagen || productoActual?.images?.[0] || productoActual?.current_product?.images?.[0] || 'https://via.placeholder.com/200x200/f0f0f0/999999?text=Sin+Imagen',
     supermercado: productoActual?.supermercado || productoActual?.supermarket || 'Desconocido'
   };
 
@@ -341,7 +350,7 @@ function Dashboard({ user, logout }) {
                   alt={productData.nombre}
                   className="product-image"
                   onError={(e) => {
-                    e.target.src = '/placeholder-product.png';
+                    e.target.src = 'https://via.placeholder.com/200x200/f0f0f0/999999?text=Sin+Imagen';
                   }}
                 />
                 <div className="product-info">
