@@ -57,8 +57,7 @@ function Dashboard({ user, logout }) {
   // Función CORREGIDA para obtener historial del MISMO producto
   const obtenerHistorialProducto = async (productoData) => {
     try {
-      console.log('📊 Obteniendo historial para producto específico...');
-      console.log('Producto:', productoData);
+      
 
       let url = '';
       let params = new URLSearchParams();
@@ -67,25 +66,25 @@ function Dashboard({ user, logout }) {
       // Priorizar búsqueda por unique_id si está disponible
       if (productoData.unique_id) {
         params.append('unique_id', productoData.unique_id);
-        console.log('🔍 Buscando por unique_id:', productoData.unique_id);
+        
       } else if (productoData.nombre || productoData.name) {
         const nombreProducto = productoData.nombre || productoData.name;
         params.append('product_name', nombreProducto);
-        console.log('🔍 Buscando por nombre:', nombreProducto);
+        
       } else {
         throw new Error('No se encontró identificador válido para el producto');
       }
 
       url = `${apiUrl}/api/dashboard/product-history-unified?${params.toString()}`;
-      console.log('🌐 URL de consulta:', url);
+      
 
       const response = await fetch(url);
       const data = await response.json();
 
-      console.log('📡 Respuesta del servidor:', data);
+      
 
       if (data.success && data.products) {
-        console.log(`✅ Historial encontrado: ${data.products.length} entradas`);
+        
         return {
         products: data.products,
         current_product: data.current_product
@@ -103,7 +102,7 @@ function Dashboard({ user, logout }) {
   // Función CORREGIDA para generar datos del historial para el gráfico
   const procesarHistorialParaGrafico = (productos) => {
     if (!productos || productos.length === 0) {
-      console.log('📊 No hay productos para procesar');
+      
       return { 
         labels: ['Sin datos'], 
         precios: [0],
@@ -111,7 +110,6 @@ function Dashboard({ user, logout }) {
       };
     }
 
-    console.log(`📊 Procesando ${productos.length} entradas de historial`);
 
     // Filtrar y ordenar por fecha
     const productosValidos = productos
@@ -148,12 +146,6 @@ function Dashboard({ user, logout }) {
       parseFloat(extraerNumericoPrecio(producto.price))
     );
 
-    console.log('📊 Datos procesados para gráfico:');
-    console.log('   - Entradas totales:', productos.length);
-    console.log('   - Entradas válidas:', productosValidos.length);
-    console.log('   - Entradas mostradas:', productosRecientes.length);
-    console.log('   - Rango de precios:', Math.min(...precios), '-', Math.max(...precios));
-
     return { 
       labels, 
       precios,
@@ -185,10 +177,7 @@ function Dashboard({ user, logout }) {
         precioMaximo: precioActual
       };
     }
-    
-    console.log('📦 Producto recibido:', state.producto);
-    console.log('🖼️ ¿Tiene imágenes?', state.producto.images);
-    console.log('🖼️ ¿Tiene imagen?', state.producto.imagen);
+
     
     const precioActual = preciosValidos[preciosValidos.length - 1]; // Último precio
     const precioPromedio = preciosValidos.reduce((a, b) => a + b, 0) / preciosValidos.length;
@@ -212,8 +201,6 @@ function Dashboard({ user, logout }) {
         return;
       }
 
-      console.log('🚀 Iniciando carga de datos del dashboard');
-      console.log('📦 Producto recibido:', state.producto);
 
       // Si viene de alerta con current_product, usar esos datos
       if (state.producto.current_product) {
@@ -249,8 +236,6 @@ function Dashboard({ user, logout }) {
         const stats = calcularEstadisticas(datosHistorial.precios, state.producto);
         setEstadisticas(stats);
 
-        console.log('✅ Datos cargados exitosamente');
-        console.log('📊 Estadísticas calculadas:', stats);
 
       } catch (error) {
         console.error('❌ Error cargando datos:', error);
@@ -274,7 +259,7 @@ function Dashboard({ user, logout }) {
   }, []);
 
   const handleSearch = (query) => {
-    console.log('🔍 Buscando en dashboard:', query);
+    
   };
 
   // Si no hay producto, mostrar error
