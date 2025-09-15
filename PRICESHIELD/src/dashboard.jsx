@@ -182,7 +182,11 @@ function Dashboard({ user, logout }) {
         precioMaximo: precioActual
       };
     }
-
+    
+    console.log('📦 Producto recibido:', state.producto);
+    console.log('🖼️ ¿Tiene imágenes?', state.producto.images);
+    console.log('🖼️ ¿Tiene imagen?', state.producto.imagen);
+    
     const precioActual = preciosValidos[preciosValidos.length - 1]; // Último precio
     const precioPromedio = preciosValidos.reduce((a, b) => a + b, 0) / preciosValidos.length;
     const precioMinimo = Math.min(...preciosValidos);
@@ -287,7 +291,7 @@ function Dashboard({ user, logout }) {
   // Datos del producto organizados
   const productData = {
     nombre: productoActual?.nombre || productoActual?.name || 'Producto sin nombre',
-    imagen: productoActual?.imagen || productoActual?.images?.[0] || productoActual?.current_product?.images?.[0] || 'https://via.placeholder.com/200x200/f0f0f0/999999?text=Sin+Imagen',
+    imagen: productoActual?.imagen || productoActual?.images?.[0] || productoActual?.current_product?.images?.[0],
     supermercado: productoActual?.supermercado || productoActual?.supermarket || 'Desconocido'
   };
 
@@ -350,7 +354,7 @@ function Dashboard({ user, logout }) {
                   alt={productData.nombre}
                   className="product-image"
                   onError={(e) => {
-                    e.target.src = 'https://via.placeholder.com/200x200/f0f0f0/999999?text=Sin+Imagen';
+                    e.target.style.display = 'none';
                   }}
                 />
                 <div className="product-info">
