@@ -31,7 +31,7 @@ function Alerts({user, logout}) {
             setLoading(true);
             setError(null);
             
-            console.log('🔄 Cargando alertas...');
+            
             const response = await fetch(`${apiUrl}/api/alerts/active`);
             
             
@@ -40,7 +40,7 @@ function Alerts({user, logout}) {
             }
             
             const data = await response.json();
-            console.log('📨 Respuesta del servidor:', data);
+            
 
             // CORRECCIÓN: Verificar estructura de respuesta
             if (data.success && Array.isArray(data.alerts)) {
@@ -50,7 +50,7 @@ function Alerts({user, logout}) {
                     total_alerts: data.alerts.length,
                     price_increases: data.alerts.filter(a => a.is_price_increase && !a.is_read).length
                 });
-                console.log(`✅ ${data.alerts.length} alertas cargadas`);
+                
             } else if (Array.isArray(data)) {
                 // Fallback si la respuesta es directamente un array
                 setAlerts(data);
@@ -59,7 +59,7 @@ function Alerts({user, logout}) {
                     total_alerts: data.length,
                     price_increases: data.filter(a => a.is_price_increase && !a.is_read).length
                 });
-                console.log(`✅ ${data.length} alertas cargadas (formato directo)`);
+                
             } else {
                 console.warn('⚠️ Formato de respuesta inesperado:', data);
                 setAlerts([]);
@@ -81,7 +81,7 @@ function Alerts({user, logout}) {
 
     const markAsRead = async (alertId) => {
         try {
-            console.log('📖 Marcando alerta como leída:', alertId);
+            
             
             // CORRECCIÓN: Cambiar PUT por POST
             const response = await fetch(`${apiUrl}/api/alerts/${alertId}/read`, {
@@ -93,10 +93,10 @@ function Alerts({user, logout}) {
             }
             
             const data = await response.json();
-            console.log('📖 Respuesta marcar como leída:', data);
+            
             
             if (data.success) {
-                console.log('✅ Alerta marcada como leída exitosamente');
+                
                 loadAlerts(); // Recargar alertas
             } else {
                 console.error('❌ Error marcando como leída:', data.message);
@@ -110,7 +110,7 @@ function Alerts({user, logout}) {
 
     const ignoreAlert = async (alertId) => {
         try {
-            console.log('🚫 Ignorando alerta:', alertId);
+            
             
             // CORRECCIÓN: Cambiar PUT por POST
             const response = await fetch(`${apiUrl}/api/alerts/${alertId}/ignore`, {
@@ -122,10 +122,9 @@ function Alerts({user, logout}) {
             }
             
             const data = await response.json();
-            console.log('🚫 Respuesta ignorar alerta:', data);
             
             if (data.success) {
-                console.log('✅ Alerta ignorada exitosamente');
+                
                 loadAlerts(); // Recargar alertas
             } else {
                 console.error('❌ Error ignorando alerta:', data.message);
@@ -139,14 +138,13 @@ function Alerts({user, logout}) {
 
     const goToDashboard = async (alert) => {
         try {
-            console.log('📊 Navegando al dashboard para producto:', alert.product_id);
+            
             
             // CORRECCIÓN: Cambiar PUT por POST y mejorar la URL
             await fetch(`${apiUrl}/api/alerts/product/${alert.product_id}/mark-read`, {
                 method: 'POST'  // ✅ Cambiado de PUT a POST
             });
             
-            console.log('✅ Alertas del producto marcadas como leídas');
             
         } catch (error) {
             console.error('⚠️ Error marcando alertas del producto como leídas:', error);
@@ -165,33 +163,11 @@ function Alerts({user, logout}) {
             url: alert.product_url,
         };
         
-        console.log('🏠 Navegando al dashboard con:', productData);
         navigate('/dashboard', { state: { producto: productData } });
     };
 
-    const createTestAlerts = async () => {
-        try {
-            console.log('🧪 Creando alertas de prueba...');
-            
-            const response = await fetch(`${apiUrl}/api/alerts/test/create`, {
-                method: 'POST'
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                console.log('✅ Alertas de prueba creadas:', data);
-                alert('Alertas de prueba creadas exitosamente');
-                loadAlerts(); // Recargar para mostrar las nuevas alertas
-            } else {
-                console.error('❌ Error creando alertas de prueba');
-            }
-        } catch (error) {
-            console.error('❌ Error:', error);
-        }
-    };
-
     const handleSearch = (searchTerm) => {
-        console.log('🔍 Buscando:', searchTerm);
+        
     };
 
     const formatDate = (dateString) => {
@@ -233,22 +209,6 @@ function Alerts({user, logout}) {
                                 <span className='flechita'>←</span> Volver
                             </button>
                             
-                            {/* BOTÓN DE PRUEBA - Remover en producción */}
-                            <button 
-                                onClick={createTestAlerts}
-                                style={{
-                                    marginLeft: '10px',
-                                    padding: '8px 16px',
-                                    backgroundColor: '#3498db',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    fontSize: '14px'
-                                }}
-                            >
-                                🧪 Crear Alertas de Prueba
-                            </button>
                         </div>
                         {/* Fin Botón regresar superior */}
                         
