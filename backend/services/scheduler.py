@@ -63,7 +63,7 @@ class DatabaseScheduler:
             return
 
         # Programar actualización diaria a las 20:40 (para testing)
-        schedule.every().day.at("20:40").do(self.daily_database_update_with_history)
+        schedule.every().day.at("17:28").do(self.daily_database_update_with_history)
         
         # Iniciar thread del programador
         self.is_running = True
